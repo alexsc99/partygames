@@ -197,6 +197,34 @@ describe('PartyGame Server', () => {
     return sid;
   }
 
+  it('acknowledges answers so phones can show whether they arrived', async () => {
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const url = sid => `${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid}`;
+    const post = (sid, body) => fetch(url(sid), { method: 'POST', body });
+    const pollUntil = async (sid, re) => {
+      let all = '';
+      for (let i = 0; i < 6 && !re.test(all); i++) all += await (await fetch(url(sid))).text();
+      return all;
+    };
+    const sidP = await connectPollingClient(code);
+    const sidH = await connectPollingClient(code);
+    try {
+      await post(sidP, '42["join",{"name":"Acki"}]');
+      await post(sidH, '42["host:wheelEnabled",false]\x1e42["host:mode","quiz"]');
+      await post(sidH, '42["host:start"]');
+      await post(sidP, '421["answer",0]');
+      assert.match(await pollUntil(sidP, /431\[/), /431\[\{"ok":true\}\]/);
+      // Einziger Spieler hat geantwortet → Auflösung; spätere Antworten werden abgelehnt
+      await post(sidP, '422["answer",1]');
+      assert.match(await pollUntil(sidP, /432\[/), /432\[\{"ok":false\}\]/);
+    } finally {
+      await post(sidP, '41');
+      await post(sidH, '41');
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
   it('allows multiple devices to control a room via /admin host events', async () => {
     const createRes = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
     const created = await createRes.json();
@@ -334,7 +362,7 @@ describe('PartyGame Server', () => {
     const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'style.css'), 'utf8');
 
     assert.ok(playHtml.includes('if (phoneSig === lastPhoneSig) return;'), 'play.html must have render-diff guard');
-    assert.ok(playHtml.includes('if (r.myAnswer !== undefined) myAnswer = r.myAnswer;'), 'play.html reconnect must restore myAnswer');
+    assert.ok(playHtml.includes('myAnswer = r.myAnswer; ansState = \'ok\''), 'play.html reconnect must restore myAnswer');
     assert.ok(playHtml.includes('id="connBanner"') && playHtml.includes('undoPad()'), 'play.html must provide offline banner and draw undo');
     assert.ok(hostHtml.includes('pgInitWakeLock({ videoFallback: true'), 'host.html must enable video fallback wake lock');
     assert.ok(hostHtml.includes('id="hostNextBtn"'), 'host.html must provide touch Next button');

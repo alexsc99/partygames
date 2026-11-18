@@ -157,6 +157,7 @@ app.get('/health', (_req, res) => {
     version: APP_VERSION,
     rooms: rooms.size,
     players: totalPlayers,
+    sockets: io.of('/').sockets.size,
     uptimeSec: Math.round(process.uptime())
   });
 });
@@ -1607,24 +1608,28 @@ function attachSocket(socket, ip, allowEvent) {
     });
   });
 
-  socket.on('answer', val => {
-    if (!allowEvent('answer', 10_000, 20)) return;
+  // ack({ ok }) lässt das Handy anzeigen, ob die Antwort angekommen ist (wichtig bei Mobilfunk)
+  socket.on('answer', (val, ack) => {
+    const reply = ok => { if (typeof ack === 'function') ack({ ok }); };
+    if (!allowEvent('answer', 10_000, 20)) return reply(false);
     const p = players[socket.id];
-    if (!p || state.paused) return;
+    if (!p || state.paused) return reply(false);
 
     const m = activeMode();
     if (m === 'reaction') {
-      if (p.answer !== null) return;
+      if (p.answer !== null) return reply(false);
       if (state.phase === 'wait') { p.answer = -1; broadcast(); }
       else if (state.phase === 'go') { p.answer = Math.max(1, Date.now() - state.reactionGoAt); broadcast(); }
+      else return reply(false);
+      reply(true);
       if ((state.phase === 'go' || state.phase === 'wait') && pVals().every(x => x.answer !== null)) {
         if (state.phase === 'go') showResult();
       }
       return;
     }
 
-    if (state.phase !== 'question') return;
-    submitPlayerAnswer(p, val);
+    if (state.phase !== 'question') return reply(false);
+    reply(submitPlayerAnswer(p, val));
   });
 
   socket.on('truthlie:submit', (arr, ack) => {
@@ -2264,8 +2269,28 @@ io.on('connection', socket => {
     return e.count <= max;
   };
 
+  const ua = String(socket.handshake.headers['user-agent'] || '');
+  const device = /iPad|iPhone|iPod/.test(ua) ? 'ios' : /Android/.test(ua) ? 'android' : /Macintosh|Windows|Linux|CrOS/.test(ua) ? 'desktop' : 'other';
   const rawRoom = socket.handshake?.query?.room || socket.handshake?.auth?.room || '';
+  const page = String(socket.handshake?.query?.page || '').slice(0, 10);
+
+  // JS-Fehler der Clients landen im Server-Log (gedrosselt), damit Probleme auf Handys sichtbar werden
+  socket.on('client:error', e => {
+    if (!allowEvent('clientError', 60_000, 5) || !e || typeof e !== 'object') return;
+    writeLog('WARN', 'client_error', {
+      room: normalizeRoomCode(rawRoom), page, device, ip,
+      msg: String(e.msg || '').slice(0, 300),
+      src: String(e.src || '').slice(0, 120),
+      line: Number(e.line) || 0,
+      ver: String(e.ver || '').slice(0, 20),
+    });
+  });
+
   const room = getRoom(rawRoom);
+  writeLog('INFO', 'socket_connected', {
+    socketId: socket.id, room: room ? room.code : null, page, device,
+    transport: socket.conn.transport.name, recovered: socket.recovered,
+  });
   if (!room) {
     socket.emit('room:error', { error: 'Raum nicht gefunden oder abgelaufen.' });
     return;

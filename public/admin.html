@@ -110,7 +110,7 @@ async function createAndOpenAdmin() {
   } catch {}
 }
 if (!ROOM_CODE) { createAndOpenAdmin(); }
-const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE }, transports: ['websocket', 'polling'], tryAllTransports: true }) : { on(){}, emit(){} };
+const socket = ROOM_CODE ? pgConnect(ROOM_CODE, 'admin') : { on(){}, emit(){} };
 if (ROOM_CODE) {
   const connBanner = document.getElementById('adminConnBanner');
   socket.on('connect', () => {

@@ -15,8 +15,17 @@ body::before {
               #1b1340;
 }
 .c0 { background: #e21b3c; } .c1 { background: #1368ce; } .c2 { background: #d89e00; } .c3 { background: #26890c; } .c4 { background: #7c4dff; } .c5 { background: #e86c00; }
-button { font: inherit; border: 0; border-radius: 12px; color: #fff; cursor: pointer; transition: transform .12s ease, opacity .2s ease, background .2s ease, box-shadow .2s ease; }
+button { font: inherit; border: 0; border-radius: 12px; color: #fff; cursor: pointer; transition: transform .12s ease, opacity .2s ease, background .2s ease, box-shadow .2s ease; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 button:active:not(:disabled) { transform: scale(.96); }
+
+/* Phasenwechsel weich überblenden (View Transitions API; ohne Support wird einfach direkt gerendert).
+   Nur der Spielbereich #app blendet über, Footer/Overlays bleiben ruhig stehen. */
+#app { view-transition-name: app; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+@keyframes vtOut { to { opacity: 0; transform: translateY(-6px) scale(.985); } }
+@keyframes vtIn { from { opacity: 0; transform: translateY(10px); } }
+::view-transition-old(app) { animation: 170ms ease-in both vtOut; }
+::view-transition-new(app) { animation: 240ms cubic-bezier(.2, .8, .2, 1) both vtIn; }
 
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(14px); }
@@ -116,6 +125,7 @@ button:active:not(:disabled) { transform: scale(.96); }
   transform-origin: bottom;
   animation: eqBounce .75s ease-in-out infinite;
 }
+.eqBars.paused .eqBar { animation-play-state: paused; }
 
 /* 2. Live Avatar Pop-In & 4. Streak Flame */
 @keyframes popBounce {

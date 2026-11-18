@@ -1,0 +1,12 @@
+# Installation: sudo install -m 644 scripts/logrotate-partygame /etc/logrotate.d/partygame
+/opt/partygame/logs/partygame.log {
+  su games games
+  daily
+  maxsize 20M
+  rotate 14
+  compress
+  delaycompress
+  missingok
+  notifempty
+  copytruncate
+}

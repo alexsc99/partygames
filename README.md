@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.5.3)
+# 🎉 PartyGame (Version 3.6.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -175,18 +175,28 @@ npm start
   ./start.sh
   ./stop.sh --all
   ```
+- **Produktiv (systemd, Server `palworld`)** – als `schultheissa` in `/opt/partygame`:
+  ```bash
+  scripts/deploy.sh          # holt main, startet neu – bricht ab, wenn gerade jemand verbunden ist
+  scripts/deploy.sh --wait   # wartet, bis niemand mehr verbunden ist
+  scripts/deploy.sh --force  # trotzdem neu starten (laufende Räume gehen verloren!)
+  ```
+  `/health` zeigt `sockets` (aktive Verbindungen); ein Neustart löscht alle Räume, da sie nur im Speicher liegen.
+- Log-Rotation einmalig installieren: `sudo install -m 644 scripts/logrotate-partygame /etc/logrotate.d/partygame`
 
 ### 5. Hinweis für Reverse Proxy (Nginx / Caddy / Cloudflare)
 Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 - **WebSockets (`Upgrade` / `Connection`)** müssen an `http://127.0.0.1:3000` weitergeleitet werden (für Socket.IO).
 - `ALLOWED_ORIGINS` auf die eigene Domain setzen, sonst blockt Socket.IO externe Browser-Verbindungen.
 - `PUBLIC_URL` setzen (oder nach dem Start einfach einmal in `/admin` unter **QR-Code / Spieler-URL** eintragen).
+- **HTTP/2 aktivieren** (bei Wildcard-Zertifikaten sonst `421 Misdirected Request`, wenn der Browser Verbindungen anderer Subdomains wiederverwendet) und **gzip für CSS/JS/JSON/SVG** (`gzip_types text/css application/javascript application/json image/svg+xml …`). Bei `party.goldens.cloud` ist beides im Nginx Proxy Manager (Host 24, „Advanced“) gesetzt.
 
 ---
 
 ## 💾 Backups & Versionen
 
-- **v3.5.3 (Aktueller Stand):** Fix: Handys mit gecachter alter `ux-helpers.js` blieben nach dem Update auf dem Lobby-Screen hängen, obwohl das Spiel (und die Musik) weiterlief. CSS/JS werden jetzt mit Inhalts-Hash (`?v=…`) eingebunden und dauerhaft gecacht; ohne Hash wird immer revalidiert.
+- **v3.6.0 (Aktueller Stand):** Besseres Handling für Handys & Mobilfunk: automatischer Wiedereinstieg nach Neuladen/verworfenem Tab; sofortiger Reconnect nach Bildschirmsperre/App-Wechsel (statt bis zu 35 s Ping-Timeout) mit Session-Wiederherstellung; Antworten mit Empfangsbestätigung („⏳ wird gesendet“ → „✅ angekommen“), unbestätigte Antworten werden nach Reconnect nachgesendet; Haptik-Countdown in den letzten 3 s und Feedback bei richtig/falsch; Konfetti auch am Handy (richtige Antwort, Podium); weiche Phasenübergänge (View Transitions) auf TV & Handy; Konfetti zeitbasiert (gleich schnell auf 120-Hz-Displays); Safe-Area für iPhone-Homescreen-App; JS-Fehler der Clients und Verbindungsart werden im Server-Log protokolliert; `scripts/deploy.sh` (startet nur neu, wenn niemand verbunden ist) und Log-Rotation.
+- **v3.5.3:** Fix: Handys mit gecachter alter `ux-helpers.js` blieben nach dem Update auf dem Lobby-Screen hängen, obwohl das Spiel (und die Musik) weiterlief. CSS/JS werden jetzt mit Inhalts-Hash (`?v=…`) eingebunden und dauerhaft gecacht; ohne Hash wird immer revalidiert.
 - **v3.5.2:** Performance für schwache Geräte & Mobilfunk: Rate-Limit nur noch auf `/api`, `/qr.png`, `/info` (Partygäste teilen sich eine NAT-IP); HTML wird per ETag revalidiert statt jedes Mal neu geladen; Socket.IO verbindet per WebSocket zuerst (`socket.io.min.js`); Handys laden den nächsten Song nur noch im Ohne-TV-Modus mit Ton und erst, wenn der aktuelle Song fertig gepuffert ist; Zeichnen sendet gebündelte Punkt-Chunks (~15–20/s statt einer Nachricht pro Fingerbewegung); Glücksrad wird offscreen gerendert und stoppt nach dem Auslaufen; Timer-Balken per `transform`; Glow-Animationen nur noch über `opacity`; Emoji-Reaktionen begrenzt; Lobby auf `/host` aktualisiert nur noch geänderte Teile; Bild-Quiz-Bilder komprimiert (12,6 MB → 5,4 MB).
 - **v3.5.1:** iPadOS `<audio>`-Element-Unlock über `/silent.mp3` & Ergebnis-Ducking im Song-Quiz, Render-Diffing & Reconnect-Banner in `/admin` und `/play`, 4s Reconnect-Grace-Period bei Netzrucklern, Pinselgröße + Undo beim Zeichnen, saubere Trennung von Test- und Produktions-Logs.
 - **v3.5.0:** PWA & iPad-Wake-Lock (inkl. Silent-Video-Fallback), lokale Album-Cover (`data/song-art/`) & bereinigte Original-Song-Previews, Render-Diffing & Performance-Optimierungen in `/play` und `/host`, Geheime Missionen auf `/play` & `/host` gefixt, Auto-Next für *Kennenlernen*, Mehrgeräte-`/admin` pro Raum.

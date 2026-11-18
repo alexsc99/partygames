@@ -152,7 +152,7 @@ async function createAndOpenRoom(basePath) {
   } catch {}
 }
 if (!ROOM_CODE) { createAndOpenRoom('/host'); }
-const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE }, transports: ['websocket', 'polling'], tryAllTransports: true }) : { on(){}, emit(){} };
+const socket = ROOM_CODE ? pgConnect(ROOM_CODE, 'host') : { on(){}, emit(){} };
 if (ROOM_CODE) {
   socket.on('connect', () => {
     const tok = localStorage.getItem('pg_host_' + ROOM_CODE);
@@ -160,42 +160,7 @@ if (ROOM_CODE) {
   });
   socket.on('room:error', () => createAndOpenRoom('/host'));
 }
-let S = null, url = '', lastPreloadImg = '', feed = [], muted = false, lastSfxKey = '', lastTickSec = -1, lastSongKey = '', songPlayingSent = '', confettiRaf = 0, clientDeadline = 0, clientTotalMs = 5000;
-function launchConfetti(count = 110) {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const c = document.getElementById('confetti');
-  if (!c) return;
-  const x = c.getContext('2d');
-  c.width = innerWidth; c.height = innerHeight;
-  const cols = ['#ffd33d', '#ff6b9d', '#7c4dff', '#26890c', '#1368ce', '#e21b3c'];
-  const pts = Array.from({ length: count }, () => ({
-    x: Math.random() * c.width,
-    y: -20 - Math.random() * c.height * 0.4,
-    vx: (Math.random() - 0.5) * 6,
-    vy: 3 + Math.random() * 5,
-    s: 6 + Math.random() * 8,
-    r: Math.random() * Math.PI * 2,
-    vr: (Math.random() - 0.5) * 0.25,
-    col: cols[Math.floor(Math.random() * cols.length)],
-  }));
-  cancelAnimationFrame(confettiRaf);
-  const start = performance.now();
-  (function step(now) {
-    x.clearRect(0, 0, c.width, c.height);
-    const fade = Math.max(0, 1 - Math.max(0, now - start - 2200) / 900);
-    x.globalAlpha = fade;
-    let alive = false;
-    for (const p of pts) {
-      p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.r += p.vr;
-      if (p.y < c.height + 30) alive = true;
-      x.save(); x.translate(p.x, p.y); x.rotate(p.r);
-      x.fillStyle = p.col; x.fillRect(-p.s / 2, -p.s / 4, p.s, p.s * 0.55);
-      x.restore();
-    }
-    if (alive && fade > 0) confettiRaf = requestAnimationFrame(step);
-    else x.clearRect(0, 0, c.width, c.height);
-  })(start);
-}
+let S = null, url = '', lastPreloadImg = '', feed = [], muted = false, lastSfxKey = '', lastTickSec = -1, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000;
 const songAudio = document.getElementById('songAudio');
 songAudio.loop = true;
 let audioBlocked = false, audioError = false, audioElUnlocked = false;
@@ -360,8 +325,8 @@ socket.on('state', s => {
     lastTickSec = -1;
     if (s.phase === 'go') sfx('go');
     else if (s.phase === 'question' && s.mode !== 'songquiz') sfx('question');
-    else if (s.phase === 'result') { sfx('result'); if (s.mode === 'imposter' && s.result && s.result.caught) launchConfetti(70); }
-    else if (s.phase === 'end') { sfx('end'); launchConfetti(130); }
+    else if (s.phase === 'result') { sfx('result'); if (s.mode === 'imposter' && s.result && s.result.caught) pgConfetti(70); }
+    else if (s.phase === 'end') { sfx('end'); pgConfetti(130); }
   }
   const songKey = `${s.mode}:${s.idx}`;
   if (s.paused) {
@@ -484,7 +449,7 @@ function startWheelAnim(spin) {
     onTick: () => sfx('wheelTick'),
     onWin: label => {
       sfx('wheelWin');
-      launchConfetti(65);
+      pgConfetti(65);
       const wb = document.getElementById('wheelWinner');
       if (wb) wb.innerHTML = `<div class="wheelWinnerBadge">🎉 ${esc(label)}</div>`;
     },
@@ -532,9 +497,12 @@ function renderPodium() {
 }
 
 function render() {
-  renderView();
-  updateTimerUI();
-  animateScores();
+  // Phasenwechsel weich überblenden; Updates innerhalb einer Phase rendern sofort
+  pgTransition(S ? `${S.mode}:${S.idx}:${S.phase}` : '', () => {
+    renderView();
+    updateTimerUI();
+    animateScores();
+  });
 }
 
 function renderView() {
@@ -875,7 +843,7 @@ function renderView() {
       : '';
     const songBanner = res
       ? `<div class="card" style="display:flex;align-items:center;gap:2.5vw;margin-bottom:2vh">
-          <div class="vinylDisc">${r.art && /^(https:\/\/|\/song-art\/)/i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover" decoding="sync" loading="eager">` : '<span style="font-size:4.5vh">🎵</span>'}</div>
+          <div class="vinylDisc">${r.art && /^(https:\/\/|\/song-art\/)/i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover" decoding="async" loading="eager">` : '<span style="font-size:4.5vh">🎵</span>'}</div>
           <div><div style="font-size:4.2vh;font-weight:900;color:#ffd33d">🎵 ${esc(r.title)}</div>
           <div style="font-size:3vh">${esc(r.artist)} · ${r.year} · ${r.type === 'solo' ? 'Solo' : 'Band / Gruppe'}</div></div>
         </div>`

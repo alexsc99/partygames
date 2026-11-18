@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><title>PartyGame</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#1b1340">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -8,7 +8,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css">
 <style>
- body { padding: 18px; max-width: 560px; width: 100%; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; text-align: center; }
+ body { padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); max-width: 560px; width: 100%; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; text-align: center; }
  input { font: inherit; font-size: 22px; padding: 14px; border-radius: 12px; border: 0; width: 100%; margin: 12px 0; text-align: center; }
  .go { background: #7c4dff; padding: 16px; width: 100%; font-size: 22px; font-weight: 700; margin-top: 8px; }
  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; animation: fadeSlideUp .25s ease-out both; }
@@ -31,7 +31,7 @@
  .sz { min-width: 34px; height: 34px; padding: 0 8px; border-radius: 10px; background: #2d2266; color: #fff; font-size: 13px; font-weight: 800; border: 2px solid transparent; }
  .sz.on { border-color: #ffd33d; background: #4b3a9e; }
  .clr { background: #e21b3c; padding: 8px 12px; font-size: 14px; font-weight: 700; border-radius: 10px; }
- #connBanner { display: none; position: sticky; top: 6px; z-index: 95; background: rgba(226,27,60,.94); color: #fff; font-weight: 700; font-size: 14px; padding: 9px 12px; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+ #connBanner { display: none; position: sticky; top: max(6px, env(safe-area-inset-top)); z-index: 95; background: rgba(226,27,60,.94); color: #fff; font-weight: 700; font-size: 14px; padding: 9px 12px; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
  h1 { margin: 10px 0; } .msg { font-size: 25px; margin-top: 14vh; animation: popIn .28s ease-out both; }
  .qtxt { font-size: 20px; font-weight: 700; margin: 12px 0; animation: fadeSlideUp .25s ease-out both; }
  .err { color: #ff8a8a; min-height: 24px; }
@@ -48,6 +48,11 @@
  .resAns.win { outline: 2px solid #ffd33d; }
  .resChips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
  .resChip { background: #ffffff1a; padding: 5px 10px; border-radius: 999px; font-size: 14px; }
+ .ansState { display: inline-block; font-size: 14px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: #ffffff14; animation: popIn .25s ease-out both; }
+ .ansState.ok { background: rgba(38,137,12,.35); }
+ .ansState.pending { animation: popIn .25s ease-out both, ansPulse 1s ease-in-out .25s infinite; }
+ .ansState.unsure, .ansState.rejected, .ansState.late { background: rgba(226,27,60,.3); }
+ @keyframes ansPulse { 50% { opacity: .55; } }
 </style></head>
 <body>
 <div id="connBanner">🔄 Verbindung unterbrochen — verbinde neu…</div>
@@ -69,6 +74,7 @@
   </div>
 </div>
 <div id="emojiLayer"></div>
+<canvas id="confetti" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999"></canvas>
 <audio id="playSongAudio"></audio>
 <script src="/js/ux-helpers.js"></script>
 <script src="/socket.io/socket.io.min.js"></script>
@@ -87,8 +93,7 @@ const NAMES = {
 const AVATARS = ['😎', '🦊', '🐼', '🐸', '🦁', '🦄', '🐙', '🐱', '🚀', '🌟', '🍕', '🔥', '🪅', '🤡', '🤪', '🥳', '👽', '👻', '💩', '🐵', '🦖', '🦩', '🦝', '🦆', '🦥', '🦫', '🍺', '🌮', '🪩', '🤖', '🧙', '🥷', '🧛', '🍌', '🧀', '🌵'];
 const ROOM_CODE = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 let roomError = '';
-// WebSocket zuerst (spart auf Mobilfunk 2–3 Roundtrips beim (Re-)Connect), Polling nur als Fallback
-const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE }, transports: ['websocket', 'polling'], tryAllTransports: true }) : { on(){}, emit(){} };
+const socket = ROOM_CODE ? pgConnect(ROOM_CODE, 'play') : { on(){}, emit(){}, timeout() { return this; } };
 if (ROOM_CODE) {
   socket.on('room:error', (e) => {
     roomError = (e && e.error) || 'Raum nicht gefunden oder abgelaufen.';
@@ -135,7 +140,9 @@ async function createRoomFromHome(target) {
     }
   } catch {}
 }
-let S = null, P = null, joined = false, myAnswer = null, sortPicks = [], lastRoundKey = '', name = localStorage.getItem('qn') || '', avatar = localStorage.getItem('qa') || '😎', reconnectToken = localStorage.getItem('qt') || '';
+let S = null, P = null, joined = false, myAnswer = null, ansState = '', sortPicks = [], lastRoundKey = '', name = localStorage.getItem('qn') || '', avatar = localStorage.getItem('qa') || '😎', reconnectToken = localStorage.getItem('qt') || '';
+const JOINED_KEY = 'pg_joined_' + ROOM_CODE;
+let unconfirmed = null; // { rk, v } – Antwort ohne Bestätigung, wird nach Rejoin erneut gesendet
 let localRevealed = false, localSecret = null, localImposterDone = [], localNameDraft = '', localActiveName = '';
 let pWheelStop = () => {}, pActiveSpinId = -1;
 
@@ -192,7 +199,7 @@ let padRect = null, pendingChunk = null, chunkTimer = 0;
 const CHUNK_MS = 50, CHUNK_MAX_PTS = 60;
 const phoneLineWidth = w => Math.max(2, Math.round((w || 6) * 0.7));
 // esc() is provided by /js/ux-helpers.js
-let lastVibKey = '';
+let lastVibKey = '', phoneTickSec = -1;
 
 function drawSeg(ctx, cvs, seg) {
   ctx.strokeStyle = seg.c || '#111';
@@ -373,6 +380,7 @@ socket.on('state', s => {
   const rk = `${s.mode}:${s.idx}:${s.phase === 'lobby' ? 'l' : ''}`;
   if (rk !== lastRoundKey) {
     myAnswer = null;
+    ansState = '';
     P = null;
     sortPicks = [];
     localRevealed = false;
@@ -406,31 +414,56 @@ if (socket.io) {
 }
 socket.on('connect', () => {
   if (connBanner) connBanner.style.display = 'none';
-  if (joined && name) {
-    socket.emit('join', { name, avatar, reconnectToken }, r => {
-      if (r && r.ok) {
-        if (r.reconnectToken) { reconnectToken = r.reconnectToken; localStorage.setItem('qt', reconnectToken); }
-        if (r.myAnswer !== undefined) myAnswer = r.myAnswer;
-        render();
-      }
-    });
-  }
+  // Auto-Rejoin: auch nach Neuladen / wenn iOS den Tab im Hintergrund verworfen hat
+  if ((joined || localStorage.getItem(JOINED_KEY)) && name) doJoin(true);
 });
 
 function pickAv(av) { avatar = av; localStorage.setItem('qa', av); render(); }
-function join() {
-  name = document.getElementById('n').value.trim();
+function doJoin(auto) {
   socket.emit('join', { name, avatar, reconnectToken }, r => {
     if (r && r.ok) {
       joined = true;
       localStorage.setItem('qn', name);
+      localStorage.setItem(JOINED_KEY, '1');
       if (r.reconnectToken) { reconnectToken = r.reconnectToken; localStorage.setItem('qt', reconnectToken); }
-      if (r.myAnswer !== undefined && r.myAnswer !== null) myAnswer = r.myAnswer;
+      // Unbestätigte Antwort dieser Runde hat Vorrang (ein per Timeout verworfenes Paket wird so nachgesendet)
+      const resend = unconfirmed && unconfirmed.rk === lastRoundKey && S && S.phase === 'question'
+        && JSON.stringify(unconfirmed.v) !== JSON.stringify(r.myAnswer);
+      if (resend) { ans(unconfirmed.v); return; }
+      if (r.myAnswer !== undefined && r.myAnswer !== null) { myAnswer = r.myAnswer; ansState = 'ok'; unconfirmed = null; }
       render();
-    } else document.getElementById('e').textContent = (r && r.error) || 'Fehler';
+    } else if (auto && !joined) {
+      localStorage.removeItem(JOINED_KEY);
+      render();
+      const e = document.getElementById('e');
+      if (e) e.textContent = (r && r.error) || 'Automatischer Wiedereinstieg fehlgeschlagen';
+    } else if (!auto) {
+      const e = document.getElementById('e');
+      if (e) e.textContent = (r && r.error) || 'Fehler';
+    }
   });
 }
-function ans(v) { myAnswer = v; pgVibrate(25); socket.emit('answer', v); render(); }
+function join() {
+  name = document.getElementById('n').value.trim();
+  doJoin(false);
+}
+// Antworten mit Empfangsbestätigung: das Handy zeigt, ob die Antwort beim Server angekommen ist
+function ans(v) {
+  myAnswer = v;
+  ansState = 'pending';
+  pgVibrate(25);
+  const rk = lastRoundKey;
+  unconfirmed = { rk, v };
+  socket.timeout(8000).emit('answer', v, (err, r) => {
+    if (rk !== lastRoundKey || myAnswer !== v) return;
+    if (err) ansState = 'unsure';
+    else if (r && r.ok) { ansState = 'ok'; unconfirmed = null; }
+    else if (S && S.phase === 'question') { myAnswer = null; ansState = 'rejected'; }
+    else ansState = 'late';
+    render();
+  });
+  render();
+}
 function editAnswer() { myAnswer = null; sortPicks = []; render(); }
 function vote(i) { const t = S.players[i]?.name; if (t) ans(t); }
 function sendEst() {
@@ -851,7 +884,11 @@ function syncBox(id, show, marginTop, html) {
   if (el.innerHTML !== html) el.innerHTML = html;
 }
 
+// Phasenwechsel (Frage → Auflösung → nächste Runde) weich überblenden; gleiche Phase rendert sofort
 function render() {
+  pgTransition(S && joined ? `${S.mode}:${S.idx}:${S.phase}` : 'setup', renderNow);
+}
+function renderNow() {
   const activeEl = document.activeElement;
   if (S && (S.phase === 'question' || S.phase === 'write') && activeEl && activeEl.tagName === 'INPUT' && activeEl.type !== 'range' && app.contains(activeEl)) {
     updatePhoneTimerUI();
@@ -874,6 +911,15 @@ function render() {
     skipHtml = `<button class="go" style="margin:6px auto;background:${iVoted ? '#26a69a' : '#5c43c7'};font-size:15px;padding:10px 14px" onclick="socket.emit('player:skipVote')">${label} (${sv.count}/${sv.needed})</button>`;
   }
   syncBox('skipVoteBox', showSkip, '12px', skipHtml);
+  const ansMsg = {
+    pending: '⏳ Antwort wird gesendet…',
+    ok: '✅ Antwort ist angekommen',
+    unsure: '⚠️ Schwaches Netz – Antwort wird nachgesendet',
+    rejected: '↩️ Nicht angekommen – bitte nochmal tippen',
+    late: '⏰ Antwort kam zu spät an',
+  }[ansState];
+  const showAns = Boolean(joined && S && S.phase === 'question' && S.displayMode !== 'onedevice' && ansMsg && (myAnswer !== null || ansState === 'rejected'));
+  syncBox('ansStateBox', showAns, '10px', `<div class="ansState ${ansState}">${ansMsg}</div>`);
   updatePhoneTimerUI();
   animatePhoneScores();
 }
@@ -992,6 +1038,11 @@ function renderView() {
       ? `<div class="resBox"><div class="resTitle">🏅 Auszeichnungen</div>${S.awards.map(a => `<div class="resRow"><span>${a.icon} ${esc(a.title)}</span><b>${esc(a.name)} (${esc(a.detail)})</b></div>`).join('')}</div>`
       : '';
     app.innerHTML = `<div class="msg" style="margin-top:2vh">Spiel vorbei! Platz ${rank} 🎉<br><small>${me ? me.score : 0} Punkte</small></div>${renderPhonePodium()}${awardsHtml}${renderLb('🏆 Endstand')}${renderEmojiBar()}`;
+    const endVib = `end:${S.mode}`;
+    if (lastVibKey !== endVib) {
+      lastVibKey = endVib;
+      if (rank >= 1 && rank <= 3) { pgConfetti(rank === 1 ? 110 : 60); pgVibrate([30, 60, 30, 60, 80]); }
+    }
     return;
   }
 
@@ -1115,14 +1166,16 @@ function renderView() {
     } else if (S.mode === 'songquiz') {
       const cls = S.q.a.length === 2 ? 'wyr' : 'grid';
       const minH = S.q.a.length > 4 ? ';min-height:12vh' : '';
+      // Vinyl/EQ nur animieren, wenn wirklich Musik läuft (TV-Modus: am TV; Ohne-TV: auf diesem Handy)
+      const musicOn = !S.noTvMode || (playAudioOn && !playAudioBlocked && !playAudioError);
       const vinylHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0">
-        <div class="vinylDisc" style="width:64px;height:64px;min-width:64px;min-height:64px"><span style="font-size:22px">🎵</span></div>
-        <div class="eqBars" style="height:36px;min-height:36px">${[0, 1, 2, 3, 4, 5, 6].map(i => `<div class="eqBar" style="width:6px;animation-duration:${0.48 + (i % 4) * 0.12}s;animation-delay:${(i * 0.08).toFixed(2)}s"></div>`).join('')}</div>
+        <div class="vinylDisc${musicOn ? '' : ' paused'}" style="width:64px;height:64px;min-width:64px;min-height:64px"><span style="font-size:22px">🎵</span></div>
+        <div class="eqBars${musicOn ? '' : ' paused'}" style="height:36px;min-height:36px">${[0, 1, 2, 3, 4, 5, 6].map(i => `<div class="eqBar" style="width:6px;animation-duration:${0.48 + (i % 4) * 0.12}s;animation-delay:${(i * 0.08).toFixed(2)}s"></div>`).join('')}</div>
       </div>`;
       app.innerHTML = `${top}${renderAudioControls(false)}${vinylHtml}<div class="qtxt">${esc(S.q.q)}</div><div class="${cls}">${S.q.a.map((a, i) => `<button class="c${i}" style="font-size:18px${minH}" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(${i})">${esc(a)}${myAnswer === i ? ' ✓' : ''}</button>`).join('')}</div>${myAnswer !== null ? renderEmojiBar() : ''}`;
     }
     if (S.mode !== 'songquiz' && myAnswer !== null) {
-      app.innerHTML += renderEmojiBar();
+      app.insertAdjacentHTML('beforeend', renderEmojiBar());
     }
     return;
   }
@@ -1163,6 +1216,12 @@ function renderView() {
   const isBad = msg.startsWith('❌') || msg.startsWith('⏰') || msg.startsWith('😈');
   const details = renderPhoneResult();
   const gainTag = me && me.lastGain > 0 ? ` <span class="gainBadge" style="font-size:14px">+${me.lastGain}</span>` : '';
+  const resVib = `res:${S.mode}:${S.idx}`;
+  if (lastVibKey !== resVib) {
+    lastVibKey = resVib;
+    if (me && me.lastGain > 0) { pgVibrate([20, 50, 20]); if (isGood) pgConfetti(40); }
+    else if (isBad) pgVibrate(90);
+  }
   const nextBannerHtml = S.mode === 'songquiz' ? '<div style="text-align:center"><div class="nextBanner" style="font-size:15px;padding:10px 16px;margin:10px auto">⏭️ Es geht weiter…</div></div>' : '';
   app.innerHTML = `${top}<div class="msg ${isGood ? 'good' : isBad ? 'bad' : ''}" style="margin-top:2vh">${msg}<br><small>${me ? me.score : 0} Pkt${gainTag}</small></div>${nextBannerHtml}${renderEmojiBar()}${details}`;
 }
@@ -1192,7 +1251,7 @@ function renderPhoneResult() {
   let body = '';
   if (m === 'quiz' || m === 'imagequiz' || m === 'songquiz') {
     const artDisc = m === 'songquiz'
-      ? `<div class="vinylDisc" style="width:58px;height:58px;min-width:58px;min-height:58px">${r.art && /^(https:\/\/|\/song-art\/)/i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover" decoding="sync" loading="eager">` : '<span style="font-size:20px">🎵</span>'}</div>`
+      ? `<div class="vinylDisc" style="width:58px;height:58px;min-width:58px;min-height:58px">${r.art && /^(https:\/\/|\/song-art\/)/i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover" decoding="async" loading="eager">` : '<span style="font-size:20px">🎵</span>'}</div>`
       : '';
     const song = m === 'songquiz' && r.title ? `<div class="resRow" style="justify-content:center;text-align:left;gap:12px">${artDisc}<div><b>🎵 ${esc(r.title)}</b><br><small style="opacity:.8">${esc(r.artist)} · ${r.year}</small></div></div>` : '';
     const ansHtml = S.q && S.q.a ? S.q.a.map((a, i) => `<div class="resAns c${i} ${i === r.correct ? 'win' : 'dim'}"><span>${i === r.correct ? '✔ ' : ''}${esc(a)}</span><span>${(r.counts && r.counts[i]) || 0}</span></div>`).join('') : '';
@@ -1274,6 +1333,11 @@ function updatePhoneTimerUI() {
   const dur = Math.max(1000, clientTotalMs);
   pgSetBar(b, left / dur);
   const sLeft = Math.ceil(left / 1000);
+  // Letzte 3 Sekunden: kurzer Haptik-Tick, solange noch nicht geantwortet (Android; iOS ignoriert vibrate)
+  if (S.phase === 'question' && myAnswer === null && joined && sLeft >= 1 && sLeft <= 3 && sLeft !== phoneTickSec) {
+    phoneTickSec = sLeft;
+    pgVibrate(15);
+  }
   if (s) {
     pgSetText(s, S.phase === 'result' ? `Weiter in ${sLeft}s…` : `⏱ ${sLeft}s`);
     s.classList.toggle('urgent', (S.phase === 'question' || S.phase === 'go') && sLeft >= 1 && sLeft <= 3);

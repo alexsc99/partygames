@@ -316,4 +316,106 @@
   window.pgSetText = function (el, txt) {
     if (el && el.textContent !== txt) el.textContent = txt;
   };
+
+  // ---- Client-Fehler sammeln und an den Server melden (max. 5 pro Seitenaufruf) ----
+  const ASSET_VER = (() => { try { return new URL(document.currentScript.src).searchParams.get('v') || ''; } catch { return ''; } })();
+  const errQueue = [];
+  let errSocket = null, errSent = 0;
+  function pushError(e) {
+    if (errSent + errQueue.length >= 5 || !e.msg || e.msg === 'Script error.') return;
+    errQueue.push({ ...e, ver: ASSET_VER });
+    flushErrors();
+  }
+  function flushErrors() {
+    while (errSocket && errSocket.connected && errQueue.length) { errSocket.emit('client:error', errQueue.shift()); errSent++; }
+  }
+  window.addEventListener('error', e => pushError({ msg: e.message, src: (e.filename || '').replace(location.origin, ''), line: e.lineno }));
+  window.addEventListener('unhandledrejection', e => pushError({ msg: 'unhandledrejection: ' + String(e.reason && e.reason.message || e.reason) }));
+
+  // ---- Socket-Verbindung mit schnellem Reconnect für Handys ----
+  // WebSocket zuerst (spart auf Mobilfunk Roundtrips), Polling nur als Fallback; kurze Backoffs.
+  // Nach längerem Hintergrund (Bildschirm gesperrt, App-Wechsel) ist die alte Verbindung oft tot,
+  // ohne dass es jemand merkt → sofort neu verbinden statt bis zu 35 s auf den Ping-Timeout zu warten.
+  window.pgConnect = function (room, page) {
+    const socket = io({
+      query: { room, page },
+      transports: ['websocket', 'polling'],
+      tryAllTransports: true,
+      reconnectionDelay: 400,
+      reconnectionDelayMax: 3000,
+    });
+    errSocket = socket;
+    socket.on('connect', flushErrors);
+    let hiddenAt = 0;
+    const revive = () => {
+      if (!socket.connected) { socket.connect(); return; }
+      if (hiddenAt && Date.now() - hiddenAt > 15000) socket.io.engine.close(); // Recovery stellt die Session wieder her
+    };
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) hiddenAt = Date.now();
+      else { revive(); hiddenAt = 0; }
+    });
+    window.addEventListener('online', () => { if (!socket.connected) socket.connect(); });
+    window.addEventListener('pageshow', e => { if (e.persisted) revive(); });
+    return socket;
+  };
+
+  // ---- Weiche Übergänge zwischen Spielphasen (View Transitions, wo verfügbar) ----
+  let lastTransitionKey = '';
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  window.pgTransition = function (key, fn) {
+    const changed = key !== lastTransitionKey;
+    const first = !lastTransitionKey;
+    lastTransitionKey = key;
+    if (!changed || first || !document.startViewTransition || reduceMotion.matches || document.hidden) return fn();
+    document.startViewTransition(fn);
+  };
+
+  // ---- Konfetti: zeitbasiert (gleich schnell auf 60/120 Hz), flatternde Papierschnipsel, DPR-scharf ----
+  let confettiRaf = 0;
+  const CONFETTI_COLS = ['#ffd33d', '#ff6b9d', '#7c4dff', '#26890c', '#1368ce', '#e21b3c'];
+  window.pgConfetti = function (count = 110) {
+    if (reduceMotion.matches || document.hidden) return;
+    const c = document.getElementById('confetti');
+    if (!c) return;
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    const W = innerWidth, H = innerHeight;
+    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+    const x = c.getContext('2d');
+    const pts = Array.from({ length: count }, () => ({
+      x: Math.random() * W,
+      y: -20 - Math.random() * H * 0.4,
+      vx: (Math.random() - 0.5) * 360,
+      vy: 180 + Math.random() * 300,
+      s: 6 + Math.random() * 8,
+      r: Math.random() * Math.PI * 2,
+      vr: (Math.random() - 0.5) * 15,
+      f: Math.random() * Math.PI * 2,
+      vf: 6 + Math.random() * 8,
+      col: CONFETTI_COLS[Math.floor(Math.random() * CONFETTI_COLS.length)],
+    }));
+    cancelAnimationFrame(confettiRaf);
+    const start = performance.now();
+    let last = start;
+    (function step(now) {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      x.setTransform(1, 0, 0, 1, 0, 0);
+      x.clearRect(0, 0, c.width, c.height);
+      const fade = Math.max(0, 1 - Math.max(0, now - start - 2200) / 900);
+      x.globalAlpha = fade;
+      let alive = false;
+      for (const p of pts) {
+        p.vy += 290 * dt; p.vx *= 1 - 0.6 * dt;
+        p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt; p.f += p.vf * dt;
+        if (p.y < H + 30) alive = true;
+        const cos = Math.cos(p.r), sin = Math.sin(p.r), fl = Math.cos(p.f);
+        x.setTransform(cos * dpr, sin * dpr, -sin * fl * dpr, cos * fl * dpr, p.x * dpr, p.y * dpr);
+        x.fillStyle = p.col;
+        x.fillRect(-p.s / 2, -p.s / 4, p.s, p.s * 0.55);
+      }
+      if (alive && fade > 0) confettiRaf = requestAnimationFrame(step);
+      else { x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, c.width, c.height); }
+    })(start);
+  };
 })();
