@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.5.2)
+# 🎉 PartyGame (Version 3.5.3)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -186,7 +186,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.5.2 (Aktueller Stand):** Performance für schwache Geräte & Mobilfunk: Rate-Limit nur noch auf `/api`, `/qr.png`, `/info` (Partygäste teilen sich eine NAT-IP); HTML wird per ETag revalidiert statt jedes Mal neu geladen; Socket.IO verbindet per WebSocket zuerst (`socket.io.min.js`); Handys laden den nächsten Song nur noch im Ohne-TV-Modus mit Ton und erst, wenn der aktuelle Song fertig gepuffert ist; Zeichnen sendet gebündelte Punkt-Chunks (~15–20/s statt einer Nachricht pro Fingerbewegung); Glücksrad wird offscreen gerendert und stoppt nach dem Auslaufen; Timer-Balken per `transform`; Glow-Animationen nur noch über `opacity`; Emoji-Reaktionen begrenzt; Lobby auf `/host` aktualisiert nur noch geänderte Teile; Bild-Quiz-Bilder komprimiert (12,6 MB → 5,4 MB).
+- **v3.5.3 (Aktueller Stand):** Fix: Handys mit gecachter alter `ux-helpers.js` blieben nach dem Update auf dem Lobby-Screen hängen, obwohl das Spiel (und die Musik) weiterlief. CSS/JS werden jetzt mit Inhalts-Hash (`?v=…`) eingebunden und dauerhaft gecacht; ohne Hash wird immer revalidiert.
+- **v3.5.2:** Performance für schwache Geräte & Mobilfunk: Rate-Limit nur noch auf `/api`, `/qr.png`, `/info` (Partygäste teilen sich eine NAT-IP); HTML wird per ETag revalidiert statt jedes Mal neu geladen; Socket.IO verbindet per WebSocket zuerst (`socket.io.min.js`); Handys laden den nächsten Song nur noch im Ohne-TV-Modus mit Ton und erst, wenn der aktuelle Song fertig gepuffert ist; Zeichnen sendet gebündelte Punkt-Chunks (~15–20/s statt einer Nachricht pro Fingerbewegung); Glücksrad wird offscreen gerendert und stoppt nach dem Auslaufen; Timer-Balken per `transform`; Glow-Animationen nur noch über `opacity`; Emoji-Reaktionen begrenzt; Lobby auf `/host` aktualisiert nur noch geänderte Teile; Bild-Quiz-Bilder komprimiert (12,6 MB → 5,4 MB).
 - **v3.5.1:** iPadOS `<audio>`-Element-Unlock über `/silent.mp3` & Ergebnis-Ducking im Song-Quiz, Render-Diffing & Reconnect-Banner in `/admin` und `/play`, 4s Reconnect-Grace-Period bei Netzrucklern, Pinselgröße + Undo beim Zeichnen, saubere Trennung von Test- und Produktions-Logs.
 - **v3.5.0:** PWA & iPad-Wake-Lock (inkl. Silent-Video-Fallback), lokale Album-Cover (`data/song-art/`) & bereinigte Original-Song-Previews, Render-Diffing & Performance-Optimierungen in `/play` und `/host`, Geheime Missionen auf `/play` & `/host` gefixt, Auto-Next für *Kennenlernen*, Mehrgeräte-`/admin` pro Raum.
 - **v3.4.0:** Modularisierte Security-/Logger-Helfer, isolierte Custom-Fragen, Haptik- & Reconnect-Basis.

@@ -122,11 +122,31 @@ const io = new Server(server, {
     origin: (origin, cb) => cb(null, !origin || ALLOWED_ORIGINS.has(origin)),
   },
 });
-app.use(express.static(__dirname + '/public', { etag: true, maxAge: '1h' }));
-// no-cache = immer revalidieren (ETag → 304), statt no-store, das jedes Mal die volle Seite lädt.
+// Cache-Busting: CSS/JS werden in den Seiten mit ?v=<Inhalts-Hash> referenziert und dann dauerhaft gecacht.
+// Ohne ?v (alte Seiten-Kopien) wird immer revalidiert, damit nie eine alte Helfer-Datei zu neuer Seite passt.
+const PUBLIC_DIR = path.join(__dirname, 'public');
+const VERSIONED_ASSETS = ['/style.css', '/js/ux-helpers.js'];
+const assetHashes = Object.fromEntries(VERSIONED_ASSETS.map(url => [
+  url,
+  crypto.createHash('sha1').update(fs.readFileSync(path.join(PUBLIC_DIR, url))).digest('hex').slice(0, 10),
+]));
+app.use((req, res, next) => {
+  if (VERSIONED_ASSETS.includes(req.path)) {
+    res.setHeader('Cache-Control', req.query.v === assetHashes[req.path] ? 'public, max-age=31536000, immutable' : 'no-cache');
+  }
+  next();
+});
+app.use(express.static(PUBLIC_DIR, { etag: true, maxAge: '1h' }));
+// Seiten einmal beim Start mit Asset-Hashes rendern; no-cache = immer revalidieren (ETag → 304).
+const PAGES = {};
+for (const file of ['play.html', 'host.html', 'admin.html', 'rooms.html']) {
+  let html = fs.readFileSync(path.join(PUBLIC_DIR, file), 'utf8');
+  for (const [url, hash] of Object.entries(assetHashes)) html = html.split(`"${url}"`).join(`"${url}?v=${hash}"`);
+  PAGES[file] = html;
+}
 const sendRevalidated = file => (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
-  res.sendFile(__dirname + '/public/' + file);
+  res.type('html').send(PAGES[file]);
 };
 app.get('/health', (_req, res) => {
   let totalPlayers = 0;

@@ -70,6 +70,18 @@ describe('PartyGame Server', () => {
     assert.equal(status, 304, 'HTML must revalidate via ETag instead of re-downloading');
   });
 
+  it('busts caches for CSS/JS so phones never combine a new page with a stale helper script', async () => {
+    const html = await (await fetch(`${baseUrl}/`)).text();
+    const m = html.match(/"\/js\/ux-helpers\.js\?v=([0-9a-f]{10})"/);
+    assert.ok(m, 'play page must reference ux-helpers.js with a content hash');
+    assert.match(html, /"\/style\.css\?v=[0-9a-f]{10}"/);
+    const versioned = await fetch(`${baseUrl}/js/ux-helpers.js?v=${m[1]}`);
+    assert.match(versioned.headers.get('cache-control') || '', /immutable/);
+    assert.ok((await versioned.text()).includes('pgSetBar'));
+    const unversioned = await fetch(`${baseUrl}/js/ux-helpers.js`);
+    assert.equal(unversioned.headers.get('cache-control'), 'no-cache');
+  });
+
   it('rejects missing or invalid asset paths with 404', async () => {
     const r1 = await fetch(`${baseUrl}/iq/does-not-exist.png`);
     assert.equal(r1.status, 404);
