@@ -204,7 +204,10 @@ describe('PartyGame Server', () => {
     assert.ok(playHtml.includes('renderMissionBanner()'), 'play.html must render mission banner in renderView');
     const renderViewBody = playHtml.slice(playHtml.indexOf('function renderView()'));
     assert.ok(renderViewBody.includes('renderMissionBanner()'), 'renderView must include mission banner');
-    assert.ok(hostHtml.includes('})();') && hostHtml.indexOf('})();') < hostHtml.indexOf('S.missionReveal'), 'host.html must render missionReveal after mode body');
+    assert.ok(
+      hostHtml.includes('})();') && hostHtml.lastIndexOf('})();') < hostHtml.indexOf("if (S.phase === 'result' && S.missionReveal)"),
+      'host.html must render missionReveal after mode body'
+    );
 
     const createRes = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
     const { code } = await createRes.json();
@@ -247,5 +250,65 @@ describe('PartyGame Server', () => {
       rooms.get(code)?.destroy();
       rooms.delete(code);
     }
+  });
+
+  it('serves local song-art covers and keepalive.mp4 with caching headers', async () => {
+    const ka = await fetch(`${baseUrl}/keepalive.mp4`);
+    assert.equal(ka.status, 200);
+    const art = await fetch(`${baseUrl}/song-art/0.jpg`);
+    assert.equal(art.status, 200);
+    assert.match(art.headers.get('cache-control') || '', /max-age=86400/);
+    const missing = await fetch(`${baseUrl}/song-art/0.txt`);
+    assert.equal(missing.status, 404);
+  });
+
+  it('starts songquiz instantly from local assets and sets auto-next timer on icebreaker', async () => {
+    const createRes = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
+    const { code } = await createRes.json();
+    const sid1 = await connectPollingClient(code);
+    const sidHost = await connectPollingClient(code);
+
+    try {
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, { method: 'POST', body: '42["join",{"name":"Tester","avatar":"😎"}]' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, {
+        method: 'POST',
+        body: '42["host:wheelEnabled",false]\x1e42["host:mode","songquiz"]',
+      });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`);
+
+      const t0 = Date.now();
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '42["host:start"]' });
+      const sqPoll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`)).text();
+      assert.ok(Date.now() - t0 < 500, 'songquiz round must start locally in <500ms without external API blocking');
+      assert.ok(sqPoll.includes('/song-audio/'), 'Expected local /song-audio/ preview');
+      assert.ok(sqPoll.includes('/song-art/'), 'Expected local /song-art/ artPreload');
+
+      // Switch to icebreaker and verify autoNextMs is 15000 (not 0 infinite freeze)
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '42["host:mode","icebreaker"]' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '42["host:start"]' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, { method: 'POST', body: '42["answer","Hallo Welt"]' });
+      const icePoll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`)).text();
+      assert.ok(icePoll.includes('"phase":"result"'), 'Expected icebreaker result phase');
+      assert.ok(icePoll.includes('"totalMs":15000'), `Expected 15000ms autoNextMs in ${icePoll}`);
+    } finally {
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, { method: 'POST', body: '41' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '41' });
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
+  it('includes performance, wake-lock fallback, and render-guard protections in client HTML', () => {
+    const playHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'play.html'), 'utf8');
+    const hostHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'host.html'), 'utf8');
+    const uxJs = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'ux-helpers.js'), 'utf8');
+    const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'style.css'), 'utf8');
+
+    assert.ok(playHtml.includes('if (phoneSig === lastPhoneSig) return;'), 'play.html must have render-diff guard');
+    assert.ok(playHtml.includes('if (r.myAnswer !== undefined) myAnswer = r.myAnswer;'), 'play.html reconnect must restore myAnswer');
+    assert.ok(hostHtml.includes('pgInitWakeLock({ videoFallback: true'), 'host.html must enable video fallback wake lock');
+    assert.ok(hostHtml.includes('id="hostNextBtn"'), 'host.html must provide touch Next button');
+    assert.ok(uxJs.includes('/keepalive.mp4') && !uxJs.includes('{ once: true'), 'ux-helpers.js must re-acquire wake lock and use keepalive.mp4 fallback');
+    assert.ok(!css.includes('background-attachment: fixed'), 'style.css must avoid background-attachment: fixed');
   });
 });

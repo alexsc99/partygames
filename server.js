@@ -117,7 +117,7 @@ const io = new Server(server, {
     origin: (origin, cb) => cb(null, !origin || ALLOWED_ORIGINS.has(origin)),
   },
 });
-app.use(express.static(__dirname + '/public', { etag: false, maxAge: 0 }));
+app.use(express.static(__dirname + '/public', { etag: true, maxAge: '1h' }));
 const sendNoCache = file => (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.sendFile(__dirname + '/public/' + file);
@@ -141,24 +141,42 @@ app.get('/host', sendNoCache('host.html'));
 app.get('/admin', sendNoCache('admin.html'));
 app.get('/rooms', sendNoCache('rooms.html'));
 app.get('/room', sendNoCache('rooms.html'));
+
+function serveCachedAssetDir(dir, allowedExts = null) {
+  return (req, res) => {
+    const safe = path.basename(String(req.params.file || ''));
+    if (!safe || safe.startsWith('.')) return res.status(404).end();
+    if (allowedExts && !allowedExts.some(ext => safe.endsWith(ext))) return res.status(404).end();
+    const full = path.join(dir, safe);
+    if (!fs.existsSync(full)) return res.status(404).end();
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(full);
+  };
+}
+
 const IQ_IMG_DIR = path.join(__dirname, 'data', 'iq-images');
-app.get('/iq/:file', (req, res) => {
-  const safe = path.basename(String(req.params.file || ''));
-  if (!safe || safe.startsWith('.')) return res.status(404).end();
-  const full = path.join(IQ_IMG_DIR, safe);
-  if (!fs.existsSync(full)) return res.status(404).end();
-  res.setHeader('Cache-Control', 'public, max-age=86400');
-  res.sendFile(full);
-});
 const SONG_AUDIO_DIR = path.join(__dirname, 'data', 'song-audio');
-app.get('/song-audio/:file', (req, res) => {
-  const safe = path.basename(String(req.params.file || ''));
-  if (!safe || safe.startsWith('.') || !safe.endsWith('.mp3')) return res.status(404).end();
-  const full = path.join(SONG_AUDIO_DIR, safe);
-  if (!fs.existsSync(full)) return res.status(404).end();
-  res.setHeader('Cache-Control', 'public, max-age=86400');
-  res.sendFile(full);
-});
+const SONG_ART_DIR = path.join(__dirname, 'data', 'song-art');
+app.get('/iq/:file', serveCachedAssetDir(IQ_IMG_DIR));
+app.get('/song-audio/:file', serveCachedAssetDir(SONG_AUDIO_DIR, ['.mp3']));
+app.get('/song-art/:file', serveCachedAssetDir(SONG_ART_DIR, ['.jpg', '.jpeg', '.png', '.webp']));
+
+function indexNumericAssets(dir, ext) {
+  const set = new Set();
+  try {
+    for (const f of fs.readdirSync(dir)) {
+      if (f.endsWith(ext)) {
+        const id = Number(f.slice(0, -ext.length));
+        if (Number.isInteger(id) && id >= 0) set.add(id);
+      }
+    }
+  } catch {}
+  return set;
+}
+const songAudioSet = indexNumericAssets(SONG_AUDIO_DIR, '.mp3');
+const songArtSet = indexNumericAssets(SONG_ART_DIR, '.jpg');
+const hasLocalSongAudio = (idx) => typeof idx === 'number' && songAudioSet.has(idx);
+const hasLocalSongArt = (idx) => typeof idx === 'number' && songArtSet.has(idx);
 
 const DEFAULT_URL_PLAY = (process.env.PUBLIC_URL || 'https://party.goldens.cloud').replace(/\/+$/, '');
 const USED_FILE = path.join(__dirname, 'data', 'used.json');
@@ -515,9 +533,44 @@ function currentQuestion() {
     case 'teams': return item ? { q: item.q, a: item.a } : null;
     case 'scale': return item ? { q: item.q, min: item.min, max: item.max } : null;
     case 'wordassoc': return item ? { w: item.w } : null;
-    case 'songquiz': return state.songQ ? { q: state.songQ.q, a: state.songQ.a, preview: state.songQ.preview } : null;
+    case 'songquiz': return state.songQ ? { q: state.songQ.q, a: state.songQ.a, preview: state.songQ.preview, artPreload: state.songQ.art } : null;
     default: return null;
   }
+}
+
+function getNextPreloadAssets(m) {
+  let nextImg = null;
+  let nextAudio = null;
+  let nextArt = null;
+  const nextIdx = state.phase === 'lobby' ? 0 : state.idx + 1;
+  if (state.phase === 'lobby') {
+    if (state.mode === 'songquiz' && state.order[0] !== undefined) {
+      const sIdx = state.order[0];
+      if (hasLocalSongAudio(sIdx)) nextAudio = `/song-audio/${sIdx}.mp3`;
+      if (hasLocalSongArt(sIdx)) nextArt = `/song-art/${sIdx}.jpg`;
+    }
+    return { nextImg, nextAudio, nextArt };
+  }
+  if ((state.phase === 'question' || state.phase === 'result') && nextIdx < totalRounds()) {
+    if (state.mode === 'imagequiz' && DATA.imagequiz[state.order[nextIdx]]) {
+      nextImg = '/iq/' + DATA.imagequiz[state.order[nextIdx]].img;
+    } else if (state.mode === 'songquiz') {
+      const sIdx = state.order[nextIdx];
+      if (hasLocalSongAudio(sIdx)) nextAudio = `/song-audio/${sIdx}.mp3`;
+      if (hasLocalSongArt(sIdx)) nextArt = `/song-art/${sIdx}.jpg`;
+    } else if (state.mode === 'mix') {
+      const nextSub = state.mixOrder[nextIdx];
+      if (nextSub === 'imagequiz') {
+        const iIdx = state.mixPools.imagequiz && state.mixPools.imagequiz[0];
+        if (typeof iIdx === 'number' && DATA.imagequiz[iIdx]) nextImg = '/iq/' + DATA.imagequiz[iIdx].img;
+      } else if (nextSub === 'songquiz') {
+        const sIdx = state.mixPools.songquiz && state.mixPools.songquiz[0];
+        if (hasLocalSongAudio(sIdx)) nextAudio = `/song-audio/${sIdx}.mp3`;
+        if (hasLocalSongArt(sIdx)) nextArt = `/song-art/${sIdx}.jpg`;
+      }
+    }
+  }
+  return { nextImg, nextAudio, nextArt };
 }
 
 const isFinalRound = () => finalDouble && state.phase !== 'lobby' && state.phase !== 'end' && totalRounds() > 1 && state.idx === totalRounds() - 1;
@@ -552,6 +605,7 @@ function computeAwards() {
 
 function pub() {
   const m = state.phase === 'lobby' || state.phase === 'end' ? state.mode : activeMode();
+  const { nextImg, nextAudio, nextArt } = getNextPreloadAssets(m);
   const teams = teamMode ? TEAMS.map(t => {
     const members = pVals().filter(p => p.team === t.id);
     const score = members.reduce((s, p) => s + p.score, 0);
@@ -579,8 +633,9 @@ function pub() {
     spin: state.phase === 'spin' ? state.spin : null,
     lobbyBanner: state.phase === 'lobby' ? state.lobbyBanner : null,
     q: currentQuestion(),
-    nextImg: (state.mode === 'imagequiz' && (state.phase === 'question' || state.phase === 'result') && state.idx + 1 < totalRounds() && DATA.imagequiz[state.order[state.idx + 1]]) ? ('/iq/' + DATA.imagequiz[state.order[state.idx + 1]].img) : null,
-    nextAudio: (m === 'songquiz' && (state.phase === 'question' || state.phase === 'result') && state.idx + 1 < totalRounds() && state.order[state.idx + 1] !== undefined && fs.existsSync(path.join(SONG_AUDIO_DIR, `${state.order[state.idx + 1]}.mp3`))) ? (`/song-audio/${state.order[state.idx + 1]}.mp3`) : null,
+    nextImg,
+    nextAudio,
+    nextArt,
     result: state.phase === 'result' ? state.result : null,
     skipVote: ['question', 'go', 'write', 'discuss', 'result'].includes(state.phase) && displayMode !== 'onedevice' ? (() => {
       const ps = pVals();
@@ -599,28 +654,40 @@ function pub() {
 
 function sendPrivate(socket, id) {
   const p = players[id];
-  if (!p) return socket.emit('private', null);
-  const mission = (state.mission && state.mission.playerId === id && state.phase !== 'result') ? state.mission.text : null;
   const m = activeMode();
-  if (m === 'imposter' && state.imposterWords && (state.phase === 'discuss' || state.phase === 'question')) {
-    const isImp = state.imposterIds.includes(id);
-    return socket.emit('private', { mode: 'imposter', word: isImp ? state.imposterWords[1] : state.imposterWords[0], mission });
+  let priv = null;
+  if (p) {
+    const mission = (state.mission && state.mission.playerId === id && state.phase !== 'result') ? state.mission.text : null;
+    if (m === 'imposter' && state.imposterWords && (state.phase === 'discuss' || state.phase === 'question')) {
+      const isImp = state.imposterIds.includes(id);
+      priv = { mode: 'imposter', word: isImp ? state.imposterWords[1] : state.imposterWords[0], mission };
+    } else if (m === 'draw' && state.phase === 'question') {
+      const isDrawer = p.name === state.drawerName;
+      priv = { mode: 'draw', drawer: isDrawer, word: isDrawer ? state.drawWord : null, guessed: state.guessedBy.includes(p.name), mission };
+    } else if (m === 'taboo' && state.phase === 'question') {
+      const isExplainer = p.name === state.explainerName;
+      priv = {
+        mode: 'taboo', explainer: isExplainer,
+        word: isExplainer ? state.tabooWord : null,
+        taboo: isExplainer ? state.tabooForbidden : [],
+        guessed: state.tabooGuessedBy.includes(p.name),
+        mission,
+      };
+    } else if (mission) {
+      priv = { mission };
+    }
   }
-  if (m === 'draw' && state.phase === 'question') {
-    const isDrawer = p.name === state.drawerName;
-    return socket.emit('private', { mode: 'draw', drawer: isDrawer, word: isDrawer ? state.drawWord : null, guessed: state.guessedBy.includes(p.name), mission });
+  if (!priv) {
+    if (!socket.data.hasPrivate) return;
+    socket.data.hasPrivate = false;
+    socket.data.lastPrivJson = '';
+    return socket.emit('private', null);
   }
-  if (m === 'taboo' && state.phase === 'question') {
-    const isExplainer = p.name === state.explainerName;
-    return socket.emit('private', {
-      mode: 'taboo', explainer: isExplainer,
-      word: isExplainer ? state.tabooWord : null,
-      taboo: isExplainer ? state.tabooForbidden : [],
-      guessed: state.tabooGuessedBy.includes(p.name),
-      mission,
-    });
-  }
-  socket.emit('private', mission ? { mission } : null);
+  const privJson = JSON.stringify(priv);
+  if (socket.data.lastPrivJson === privJson) return;
+  socket.data.hasPrivate = true;
+  socket.data.lastPrivJson = privJson;
+  socket.emit('private', priv);
 }
 
 function broadcast() {
@@ -698,47 +765,59 @@ const songCache = {};
 const songInFlight = {};
 async function fetchSongPreview(song) {
   if (!song) return { preview: null, art: null };
-  const localFile = typeof song._idx === 'number'
-    ? path.join(SONG_AUDIO_DIR, `${song._idx}.mp3`)
-    : null;
-  const localPreview = localFile && fs.existsSync(localFile) ? `/song-audio/${song._idx}.mp3` : null;
+  const idx = song._idx;
+  const localPreview = hasLocalSongAudio(idx) ? `/song-audio/${idx}.mp3` : null;
+  const localArt = hasLocalSongArt(idx) ? `/song-art/${idx}.jpg` : null;
+  if (localPreview && localArt) {
+    return { preview: localPreview, art: localArt };
+  }
   const key = `${song.artist} - ${song.title}`;
   if (songCache[key]) {
-    return localPreview ? { ...songCache[key], preview: localPreview } : songCache[key];
+    return {
+      preview: localPreview || songCache[key].preview,
+      art: localArt || songCache[key].art,
+    };
   }
   if (songInFlight[key]) {
     const res = await songInFlight[key];
-    return localPreview ? { ...res, preview: localPreview } : res;
+    return {
+      preview: localPreview || res.preview,
+      art: localArt || res.art,
+    };
   }
   songInFlight[key] = (async () => {
     const term = song.query || key;
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 4500);
-    const normTitle = norm(String(song.title || '').replace(/\(.*?\)/g, ''));
+    const stripP = s => String(s || '').replace(/\(.*?\)|\[.*?\]/g, '').trim();
+    const normTitleFull = norm(song.title);
+    const normTitle = norm(stripP(song.title));
     const primArtist = norm(String(song.artist || '').split(/[,&]|feat\.|vs\./i)[0]);
-    const allowRemix = /remix/i.test(song.title || '');
-    const bad = allowRemix
-      ? /karaoke|tribute|cover|instrumental|live|инструмент|originally performed|made famous|in the style of/i
-      : /karaoke|tribute|cover|instrumental|remix|live|инструмент|originally performed|made famous|in the style of/i;
+    const allowRemix = /remix/i.test(song.title || '') || /remix/i.test(song.artist || '');
+    const badBase = /\b(karaoke|tribute|cover|instrumental|live|demo|acoustic|sped\s*up|slowed|reverb|nightcore|lullaby|piano\s*version|8d|re-?recorded|taylor'?s\s*version|bootleg|mashup|parody|orchestral|symphonic|originally\s*performed|made\s*famous|in\s*the\s*style\s*of)\b|инструмент/i;
+    const isBadText = txt => badBase.test(txt || '') || (!allowRemix && /\bremix\b/i.test(txt || ''));
     const ruMap = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'kh',ц:'ts',ч:'ch',ш:'sh',щ:'shch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' };
-    const toLat = s => String(s || '').toLowerCase().replace(/[а-яё]/g, ch => ruMap[ch] ?? ch).replace(/[^\p{L}\p{N}]/gu, '');
+    const toLat = s => String(s || '').toLowerCase().replace(/[а-яё]/g, ch => ruMap[ch] ?? ch).replace(/j([auo])/g, 'y$1').replace(/j/g, 'y').replace(/[^\p{L}\p{N}]/gu, '');
     const qNorm = norm(song.query || '');
-    const latTitle = toLat(String(song.title || '').replace(/\(.*?\)/g, ''));
+    const qLat = toLat(song.query || '');
+    const latTitleFull = toLat(song.title);
+    const latTitle = toLat(stripP(song.title));
     const titleMatch = tr => {
-      const nt = norm(tr);
-      const lt = toLat(tr);
-      return (normTitle && (nt.includes(normTitle) || normTitle.includes(nt)))
-        || (latTitle && (lt.includes(latTitle) || latTitle.includes(lt)));
+      const nt = norm(tr), nts = norm(stripP(tr));
+      const lt = toLat(tr), lts = toLat(stripP(tr));
+      return [[normTitle, nts], [normTitleFull, nt], [latTitle, lts], [latTitleFull, lt]]
+        .some(([a, b]) => a && b && (b.includes(a) || a.includes(b)))
+        || (qLat && lts && lts.length >= 3 && qLat.includes(lts));
     };
     const artistMatch = ar => {
-      const na = norm(ar);
-      const la = toLat(ar);
-      if (!na) return false;
+      const na = norm(ar), la = toLat(ar);
+      if (!na && !la) return false;
       if (primArtist && (na.includes(primArtist) || primArtist.includes(na) || la.includes(primArtist) || primArtist.includes(la))) return true;
-      if (qNorm && na.length >= 3 && qNorm.includes(na)) return true;
+      if (qNorm && na && na.length >= 3 && qNorm.includes(na)) return true;
+      if (qLat && la && la.length >= 3 && qLat.includes(la)) return true;
       return false;
     };
-    const isGood = (ar, tr) => artistMatch(ar) && titleMatch(tr) && !bad.test(tr || '') && !bad.test(ar || '');
+    const isGood = (ar, tr) => artistMatch(ar) && titleMatch(tr) && !isBadText(tr) && !isBadText(ar);
     let results = [];
     try {
       const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=8&country=de`;
@@ -764,12 +843,8 @@ async function fetchSongPreview(song) {
         dzHits = (dzData.data || []).filter(r => r.preview);
       }
       const hit = dzHits.find(r => isGood(r.artist?.name, r.title))
-        || results.find(r => artistMatch(r.artistName) && !bad.test(r.trackName || '') && !bad.test(r.artistName || ''))
-        || dzHits.find(r => artistMatch(r.artist?.name) && !bad.test(r.title || '') && !bad.test(r.artist?.name || ''))
-        || results.find(r => titleMatch(r.trackName) && !bad.test(r.trackName || '') && !bad.test(r.artistName || ''))
-        || dzHits.find(r => titleMatch(r.title) && !bad.test(r.title || '') && !bad.test(r.artist?.name || ''))
-        || results.find(r => !bad.test(r.trackName || '') && !bad.test(r.artistName || ''))
-        || dzHits.find(r => !bad.test(r.title || '') && !bad.test(r.artist?.name || ''));
+        || results.find(r => artistMatch(r.artistName) && !isBadText(r.trackName) && !isBadText(r.artistName))
+        || dzHits.find(r => artistMatch(r.artist?.name) && !isBadText(r.title) && !isBadText(r.artist?.name));
       if (hit) {
         const isItunes = !!hit.previewUrl;
         songCache[key] = isItunes
@@ -781,10 +856,13 @@ async function fetchSongPreview(song) {
       clearTimeout(t);
       delete songInFlight[key];
     }
-    return { preview: localPreview, art: null };
+    return { preview: localPreview, art: localArt };
   })();
   const res = await songInFlight[key];
-  return localPreview ? { ...res, preview: localPreview } : res;
+  return {
+    preview: localPreview || res.preview,
+    art: localArt || res.art,
+  };
 }
 
 let songKindQueue = [];
@@ -1092,9 +1170,10 @@ function showResult() {
 
   if (m === 'quiz' || m === 'imagequiz') {
     const q = getPool(m)[qIdx];
+    const roundDur = Math.max(1000, state.totalMs || roundTimeMs(m));
     ps.forEach(p => {
       if (p.answer === q.c) {
-        const left = Math.max(0, state.deadline - p.answeredAt) / (TIME[m] * 1000);
+        const left = Math.max(0, state.deadline - p.answeredAt) / roundDur;
         p.score += (500 + Math.round(500 * left)) * mult;
       }
     });
@@ -1193,6 +1272,7 @@ function showResult() {
     state.result = { word: state.tabooWord, explainer: state.explainerName, guessedBy: state.tabooGuessedBy, drinkers };
   } else if (m === 'sort') {
     const item = DATA.sort[qIdx];
+    const roundDur = Math.max(1000, state.totalMs || roundTimeMs('sort'));
     const entries = ps.map(p => {
       let hits = 0;
       if (Array.isArray(p.answer) && p.answer.length === 4) {
@@ -1200,7 +1280,7 @@ function showResult() {
           if (state.sortOrder[p.answer[k]] === k) hits++;
         }
       }
-      const left = p.answeredAt ? Math.max(0, state.deadline - p.answeredAt) / (TIME.sort * 1000) : 0;
+      const left = p.answeredAt ? Math.max(0, state.deadline - p.answeredAt) / roundDur : 0;
       const pts = Array.isArray(p.answer) ? (hits * 200 + (hits === 4 ? 400 + Math.round(200 * left) : 0)) * mult : 0;
       p.score += pts;
       return { name: p.name, hits, pts, answered: Array.isArray(p.answer) };
@@ -1223,7 +1303,7 @@ function showResult() {
       else p.drinks++;
     });
     state.result = { entries, drinkers };
-    autoNextMs = 0;
+    autoNextMs = 15000;
   } else if (m === 'teams') {
     const item = DATA.teams[qIdx];
     const groups = item.a.map((_, i) => ps.filter(p => p.answer === i).map(p => p.name));
@@ -1280,17 +1360,23 @@ function showResult() {
     autoNextMs = 8000;
   } else if (m === 'songquiz') {
     const sq = state.songQ;
+    const roundDur = Math.max(1000, state.totalMs || roundTimeMs('songquiz'));
     ps.forEach(p => {
       if (p.answer === sq.c) {
-        const left = Math.max(0, state.deadline - p.answeredAt) / (TIME.songquiz * 1000);
+        const left = Math.max(0, state.deadline - p.answeredAt) / roundDur;
         p.score += (500 + Math.round(500 * left)) * mult;
       }
     });
     const counts = sq.a.map((_, i) => ps.filter(p => p.answer === i).length);
     state.result = { correct: sq.c, counts, artist: sq.artist, title: sq.title, year: sq.year, type: sq.type, art: sq.art };
     autoNextMs = 12000;
-    if (state.mode === 'songquiz' && state.idx + 1 < totalRounds() && DATA.songs[state.order[state.idx + 1]]) {
-      fetchSongPreview(DATA.songs[state.order[state.idx + 1]]).catch(() => {});
+    const nextSongIdx = state.idx + 1 < totalRounds()
+      ? (state.mode === 'songquiz'
+          ? state.order[state.idx + 1]
+          : (state.mode === 'mix' && state.mixOrder[state.idx + 1] === 'songquiz' ? state.mixPools.songquiz?.[0] : undefined))
+      : undefined;
+    if (typeof nextSongIdx === 'number' && DATA.songs[nextSongIdx]) {
+      fetchSongPreview(DATA.songs[nextSongIdx]).catch(() => {});
     }
   }
 
@@ -1373,7 +1459,19 @@ function attachSocket(socket, ip, allowEvent) {
     const name = String(rawName || '').trim().slice(0, 16);
     if (!name) return ack && ack({ ok: false, error: 'Name fehlt' });
     const existing = Object.entries(players).find(([, p]) => p.name.toLowerCase() === name.toLowerCase());
-    if (existing && existing[0] !== socket.id) return ack && ack({ ok: false, error: 'Name schon vergeben' });
+    if (existing && existing[0] !== socket.id) {
+      const [oldId, oldPlayer] = existing;
+      if (!clientToken || !oldPlayer.reconnectToken || clientToken !== oldPlayer.reconnectToken) {
+        return ack && ack({ ok: false, error: 'Name schon vergeben' });
+      }
+      players[socket.id] = { ...oldPlayer, name, avatar: rawAvatar };
+      delete players[oldId];
+      if (state.mission && state.mission.playerId === oldId) state.mission.playerId = socket.id;
+      const impPos = state.imposterIds.indexOf(oldId);
+      if (impPos !== -1) state.imposterIds[impPos] = socket.id;
+      io.sockets.sockets.get(oldId)?.disconnect(true);
+      writeLog('INFO', 'player_socket_replaced', { name, oldId, socketId: socket.id });
+    }
     if (Object.keys(players).length >= MAX_PLAYERS && !players[socket.id])
       return ack && ack({ ok: false, error: 'Spiel ist voll' });
     let token;
@@ -1501,14 +1599,6 @@ function attachSocket(socket, ip, allowEvent) {
     if (activeMode() !== 'songquiz' || state.phase !== 'question' || state.paused || state.songStarted) return;
     if (idx !== state.idx || displayMode === 'onedevice') return;
     state.songStarted = true;
-    const elapsed = Date.now() - state.roundStartedAt;
-    if (elapsed > 150 && elapsed < 4000) {
-      clearTimeout(timer);
-      state.totalMs = roundTimeMs('songquiz');
-      state.deadline = Date.now() + state.totalMs;
-      broadcast();
-      timer = setTimeout(showResult, state.totalMs);
-    }
   });
 
   socket.on('draw:stroke', seg => {

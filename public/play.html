@@ -74,7 +74,7 @@ const NAMES = {
   taboo: '🗣️ Erklär-Spiel (Tabu)', sort: '🔢 Sortier-Duell',
   icebreaker: '🫶 Kennenlernen', teams: '🏆 Team-Wahl',
   scale: '📊 Skala 1–10', truthlie: '🎭 2 Wahrheiten, 1 Lüge',
-  wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song', mix: '🎲 Party-Mix',
+  wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song', imagequiz: '🖼️ Bild-Quiz', mix: '🎲 Party-Mix',
 };
 const AVATARS = ['😎', '🦊', '🐼', '🐸', '🦁', '🦄', '🐙', '🐱', '🚀', '🌟', '🍕', '🔥', '🪅', '🤡', '🤪', '🥳', '👽', '👻', '💩', '🐵', '🦖', '🦩', '🦝', '🦆', '🦥', '🦫', '🍺', '🌮', '🪩', '🤖', '🧙', '🥷', '🧛', '🍌', '🧀', '🌵'];
 const WHEEL_COLS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#7c4dff', '#ff6b9d', '#00897b', '#e86c00'];
@@ -245,7 +245,8 @@ function startPhoneWheelAnim(spin) {
   pWheelRaf = requestAnimationFrame(frame);
 }
 const playSongAudio = document.getElementById('playSongAudio');
-let playAudioOn = localStorage.getItem('qAudio') === '1', playAudioBlocked = false, playAudioError = false, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000;
+playSongAudio.loop = true;
+let playAudioOn = localStorage.getItem('qAudio') === '1', playAudioBlocked = false, playAudioError = false, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000, lastPhoneSig = '';
 let playVol = Number(localStorage.getItem('qVol') ?? 0.5);
 if (!Number.isFinite(playVol) || playVol < 0 || playVol > 1) playVol = 0.5;
 playSongAudio.volume = playVol;
@@ -417,16 +418,20 @@ socket.on('state', s => {
   const rk = `${s.mode}:${s.idx}:${s.phase === 'lobby' ? 'l' : ''}`;
   if (rk !== lastRoundKey) {
     myAnswer = null;
+    P = null;
     sortPicks = [];
     localRevealed = false;
     localSecret = null;
     localImposterDone = [];
     lastRoundKey = rk;
+    lastPhoneSig = '';
     pctx.clearRect(0, 0, pad.width, pad.height);
     vctx.clearRect(0, 0, viewPad.width, viewPad.height);
   }
   S = s;
   if (s.nextAudio && s.nextAudio !== window._lastPreloadAudio) { window._lastPreloadAudio = s.nextAudio; fetch(s.nextAudio).catch(() => {}); }
+  const artPre = (s.q && s.q.artPreload) || s.nextArt;
+  if (artPre && artPre !== window._lastPreloadArt) { window._lastPreloadArt = artPre; const im = new Image(); im.src = artPre; }
   const leftMs = typeof s.leftMs === 'number' ? s.leftMs : (s.deadline ? Math.max(0, s.deadline - Date.now()) : 0);
   clientDeadline = leftMs > 0 ? performance.now() + leftMs : 0;
   clientTotalMs = s.totalMs > 0 ? s.totalMs : (s.phase === 'result' ? 5000 : (s.time || 15) * 1000);
@@ -437,7 +442,11 @@ socket.on('private', p => { P = p; render(); });
 socket.on('connect', () => {
   if (joined && name) {
     socket.emit('join', { name, avatar, reconnectToken }, r => {
-      if (r && r.ok && r.reconnectToken) { reconnectToken = r.reconnectToken; localStorage.setItem('qt', reconnectToken); }
+      if (r && r.ok) {
+        if (r.reconnectToken) { reconnectToken = r.reconnectToken; localStorage.setItem('qt', reconnectToken); }
+        if (r.myAnswer !== undefined) myAnswer = r.myAnswer;
+        render();
+      }
     });
   }
 });
@@ -804,6 +813,21 @@ function renderOneDevice() {
   }
 }
 
+function syncBox(id, show, marginTop, html) {
+  let el = document.getElementById(id);
+  if (!show) {
+    if (el) el.remove();
+    return;
+  }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = id;
+    el.style.marginTop = marginTop;
+    app.appendChild(el);
+  }
+  if (el.innerHTML !== html) el.innerHTML = html;
+}
+
 function render() {
   const activeEl = document.activeElement;
   if (S && (S.phase === 'question' || S.phase === 'write') && activeEl && activeEl.tagName === 'INPUT' && activeEl.type !== 'range' && app.contains(activeEl)) {
@@ -811,29 +835,29 @@ function render() {
     return;
   }
   renderView();
-  if (joined && S && S.displayMode !== 'onedevice' && S.phase === 'question' && myAnswer !== null && S.mode !== 'reaction' && !document.getElementById('editAnsBox')) {
-    const ebox = document.createElement('div');
-    ebox.id = 'editAnsBox';
-    ebox.style.marginTop = '10px';
-    ebox.innerHTML = `<button class="go" style="margin:6px auto;background:#ff9800;color:#111;font-size:15px;padding:10px 14px" onclick="editAnswer()">✏️ Antwort ändern</button>`;
-    app.appendChild(ebox);
-  }
-  if (joined && S && S.displayMode !== 'onedevice' && S.skipVote && !document.getElementById('skipVoteBox')) {
+  const showEdit = Boolean(joined && S && S.displayMode !== 'onedevice' && S.phase === 'question' && myAnswer !== null && S.mode !== 'reaction');
+  syncBox(
+    'editAnsBox',
+    showEdit,
+    '10px',
+    `<button class="go" style="margin:6px auto;background:#ff9800;color:#111;font-size:15px;padding:10px 14px" onclick="editAnswer()">✏️ Antwort ändern</button>`
+  );
+  const showSkip = Boolean(joined && S && S.displayMode !== 'onedevice' && S.skipVote);
+  let skipHtml = '';
+  if (showSkip) {
     const sv = S.skipVote;
     const iVoted = Array.isArray(sv.voters) && sv.voters.includes(name.toLowerCase());
     const label = iVoted ? '✅ Weiter-Stimme aktiv' : (S.phase === 'result' ? '⏭️ Sofort weiter' : '⏭️ Runde überspringen');
-    const box = document.createElement('div');
-    box.id = 'skipVoteBox';
-    box.style.marginTop = '12px';
-    box.innerHTML = `<button class="go" style="margin:6px auto;background:${iVoted ? '#26a69a' : '#5c43c7'};font-size:15px;padding:10px 14px" onclick="socket.emit('player:skipVote')">${label} (${sv.count}/${sv.needed})</button>`;
-    app.appendChild(box);
+    skipHtml = `<button class="go" style="margin:6px auto;background:${iVoted ? '#26a69a' : '#5c43c7'};font-size:15px;padding:10px 14px" onclick="socket.emit('player:skipVote')">${label} (${sv.count}/${sv.needed})</button>`;
   }
+  syncBox('skipVoteBox', showSkip, '12px', skipHtml);
   updatePhoneTimerUI();
   animatePhoneScores();
 }
 
 function renderView() {
   if (!ROOM_CODE || roomError) {
+    lastPhoneSig = '';
     padWrap.style.display = 'none';
     viewWrap.style.display = 'none';
     app.innerHTML = `
@@ -849,8 +873,9 @@ function renderView() {
       </div>`;
     return;
   }
-  if (S && S.displayMode === 'onedevice') return renderOneDevice();
+  if (S && S.displayMode === 'onedevice') { lastPhoneSig = ''; return renderOneDevice(); }
   if (!joined) {
+    lastPhoneSig = '';
     padWrap.style.display = 'none';
     viewWrap.style.display = 'none';
     const avs = AVATARS.map(a => `<button type="button" onclick="pickAv('${a}')" style="font-size:26px;padding:8px 10px;background:${a === avatar ? '#7c4dff' : '#2d2266'};border:2px solid ${a === avatar ? '#ffd33d' : 'transparent'}">${a}</button>`).join('');
@@ -866,6 +891,26 @@ function renderView() {
   const isDrawer = S.mode === 'draw' && S.phase === 'question' && P && P.drawer;
   padWrap.style.display = isDrawer ? 'flex' : 'none';
   viewWrap.style.display = (S.noTvMode && S.mode === 'draw' && S.phase === 'question' && !isDrawer && !S.paused) ? 'block' : 'none';
+  const mr = S.missionReveal;
+  const audioSig = (S.noTvMode && (S.phase === 'lobby' || S.mode === 'songquiz'))
+    ? `${playAudioOn}:${playAudioBlocked}:${playAudioError}:${Math.round(playVol * 100)}:${S.q && S.q.preview ? 1 : 0}`
+    : '';
+  const needPlayers = S.phase === 'lobby' || S.phase === 'result' || S.phase === 'end' || S.mode === 'mostlikely' || S.mode === 'imposter';
+  const playersSig = needPlayers ? (S.players || []).map(p => `${p.name}:${p.team || ''}:${p.score}`).join(',') : '';
+  const phoneSig = [
+    S.mode, S.idx, S.phase, S.paused, S.displayMode, S.teamMode, S.isFinalRound,
+    isDrawer ? 1 : 0,
+    JSON.stringify(myAnswer),
+    S.mode === 'sort' ? sortPicks.join(',') : '',
+    P ? JSON.stringify(P) : '',
+    audioSig,
+    mr ? `${mr.resolved}:${mr.success}` : '',
+    S.phase === 'lobby' ? `${S.lobbyBanner || ''}:${avatar}` : '',
+    S.phase === 'spin' && S.spin ? S.spin.id : '',
+    playersSig,
+  ].join('|');
+  if (phoneSig === lastPhoneSig) return;
+  lastPhoneSig = phoneSig;
   if (isDrawer) {
     document.getElementById('padWord').textContent = `🎨 Male: ${P.word}`;
     app.innerHTML = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b></div>${renderMissionBanner()}`;
@@ -1124,7 +1169,7 @@ function renderPhoneResult() {
   let body = '';
   if (m === 'quiz' || m === 'imagequiz' || m === 'songquiz') {
     const artDisc = m === 'songquiz'
-      ? `<div class="vinylDisc" style="width:58px;height:58px;min-width:58px;min-height:58px">${r.art && /^https:\/\//i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover">` : '<span style="font-size:20px">🎵</span>'}</div>`
+      ? `<div class="vinylDisc" style="width:58px;height:58px;min-width:58px;min-height:58px">${r.art && /^(https:\/\/|\/song-art\/)/i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover" decoding="sync" loading="eager">` : '<span style="font-size:20px">🎵</span>'}</div>`
       : '';
     const song = m === 'songquiz' && r.title ? `<div class="resRow" style="justify-content:center;text-align:left;gap:12px">${artDisc}<div><b>🎵 ${esc(r.title)}</b><br><small style="opacity:.8">${esc(r.artist)} · ${r.year}</small></div></div>` : '';
     const ansHtml = S.q && S.q.a ? S.q.a.map((a, i) => `<div class="resAns c${i} ${i === r.correct ? 'win' : 'dim'}"><span>${i === r.correct ? '✔ ' : ''}${esc(a)}</span><span>${(r.counts && r.counts[i]) || 0}</span></div>`).join('') : '';
@@ -1197,7 +1242,7 @@ function updatePhoneTimerUI() {
   if (!clientDeadline) {
     if (b) b.style.width = '100%';
     if (s) {
-      s.textContent = S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : '';
+      s.textContent = S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : S.phase === 'result' ? '⏸ Warte auf Weiter…' : '';
       s.classList.remove('urgent');
     }
     return;

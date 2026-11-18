@@ -88,6 +88,8 @@
   <div id="qrCorner" class="qr-corner"><img src="/qr.png" alt="QR-Code"><div id="qrUrl" class="url"></div></div>
   <button id="muteBtn" onclick="toggleMute()" style="background:#2d2266;padding:clamp(6px,.8vh,12px) clamp(10px,1.4vw,20px);font-size:clamp(13px,2vmin,22px);opacity:.8">🔊 Ton an</button>
   <input id="hostVol" type="range" min="0" max="100" value="50" oninput="setHostVol(this.value)" title="Lautstärke" style="width:clamp(80px,10vw,140px);accent-color:#ffd33d;cursor:pointer">
+  <button id="wakeBtn" onclick="activateHostDevice()" title="Display wach halten &amp; Ton freigeben" style="background:#4b3a9e;padding:clamp(6px,.8vh,12px) clamp(10px,1.4vw,20px);font-size:clamp(13px,2vmin,22px)">🔆 Display wach halten</button>
+  <button id="hostNextBtn" onclick="hostAdvance()" style="display:none;background:#26890c;padding:clamp(6px,.8vh,12px) clamp(12px,1.6vw,22px);font-size:clamp(13px,2vmin,22px);font-weight:700">▶ Weiter</button>
   <a id="lobbyPlayBtn" class="lobby-play-btn" href="/" title="Zur Spieler-Ansicht (/) wechseln">🎮 Als Spieler beitreten (/)</a>
 </div>
 <canvas id="confetti" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999"></canvas>
@@ -96,7 +98,35 @@
 <script src="/js/ux-helpers.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-pgInitWakeLock();
+function updateWakeBtnUi(st) {
+  const wb = document.getElementById('wakeBtn');
+  if (!wb) return;
+  if (st.mode === 'wakelock+video' || st.mode === 'video') {
+    wb.textContent = '🟢 Display bleibt wach';
+    wb.style.background = '#26890c';
+    wb.style.color = '#fff';
+    wb.style.opacity = '.85';
+  } else if (st.mode === 'wakelock') {
+    wb.textContent = '🔆 WakeLock (für iPad antippen)';
+    wb.style.background = '#4b3a9e';
+    wb.style.color = '#fff';
+    wb.style.opacity = '1';
+  } else {
+    wb.textContent = '🔆 Wach-Modus aktivieren';
+    wb.style.background = '#d89e00';
+    wb.style.color = '#111';
+    wb.style.opacity = '1';
+  }
+}
+pgInitWakeLock({ videoFallback: true, onChange: updateWakeBtnUi });
+function activateHostDevice() {
+  pgEnsureWakeLock();
+  unlockAudio();
+}
+function hostAdvance() {
+  if (!S) return;
+  socket.emit(S.phase === 'lobby' || S.phase === 'end' ? 'host:start' : 'host:next');
+}
 const TITLES = {
   quiz: '🎉 Party-Quiz', mostlikely: '🍻 Wer würde am ehesten?',
   wouldyourather: '⚖️ Entweder-Oder', estimate: '🎯 Schätz-Duell',
@@ -105,7 +135,8 @@ const TITLES = {
   taboo: '🗣️ Erklär-Spiel (Tabu)', sort: '🔢 Sortier-Duell',
   icebreaker: '🫶 Kennenlernen', teams: '🏆 Team-Wahl',
   scale: '📊 Skala 1–10', truthlie: '🎭 2 Wahrheiten, 1 Lüge',
-  wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song', mix: '🎲 Party-Mix',
+  wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song',
+  imagequiz: '🖼️ Bild-Quiz', mix: '🎲 Party-Mix',
 };
 const MODES = Object.keys(TITLES);
 const ROOM_CODE = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
@@ -165,6 +196,7 @@ function launchConfetti(count = 110) {
   })(start);
 }
 const songAudio = document.getElementById('songAudio');
+songAudio.loop = true;
 let audioBlocked = false, audioError = false;
 let hostVol = Number(localStorage.getItem('hostVol') ?? 0.5);
 if (!Number.isFinite(hostVol) || hostVol < 0 || hostVol > 1) hostVol = 0.5;
@@ -295,9 +327,18 @@ socket.on('info', i => {
   if (img) img.src = '/qr.png?room=' + encodeURIComponent(ROOM_CODE) + '&v=' + encodeURIComponent(url);
   render();
 });
+let lastPreloadArt = '';
+function preloadImgUrl(u) {
+  if (!u) return;
+  const im = new Image();
+  im.src = u;
+}
 socket.on('state', s => {
   S = s;
-  if (s.nextImg && s.nextImg !== lastPreloadImg) { lastPreloadImg = s.nextImg; const im = new Image(); im.src = s.nextImg; }
+  if (s.nextImg && s.nextImg !== lastPreloadImg) { lastPreloadImg = s.nextImg; preloadImgUrl(s.nextImg); }
+  const artToPreload = (s.q && s.q.artPreload) || s.nextArt;
+  if (artToPreload && artToPreload !== lastPreloadArt) { lastPreloadArt = artToPreload; preloadImgUrl(artToPreload); }
+  if (s.nextArt && s.nextArt !== lastPreloadArt && s.nextArt !== artToPreload) { preloadImgUrl(s.nextArt); }
   if (s.nextAudio && s.nextAudio !== window._lastPreloadAudio) { window._lastPreloadAudio = s.nextAudio; fetch(s.nextAudio).catch(() => {}); }
   const leftMs = typeof s.leftMs === 'number' ? s.leftMs : (s.deadline ? Math.max(0, s.deadline - Date.now()) : 0);
   clientDeadline = leftMs > 0 ? performance.now() + leftMs : 0;
@@ -492,8 +533,6 @@ function startWheelAnim(spin) {
       wctx.fillStyle = '#fff';
       const fSize = N > 12 ? 17 : N > 8 ? 20 : N > 5 ? 23 : 26;
       wctx.font = `800 ${fSize}px system-ui, sans-serif`;
-      wctx.shadowColor = 'rgba(0,0,0,0.65)';
-      wctx.shadowBlur = 4;
       const rawTxt = String(items[i] || '');
       const lbl = rawTxt.length > 18 ? rawTxt.slice(0, 17) + '…' : rawTxt;
       wctx.fillText(lbl, R - 18, 0);
@@ -576,6 +615,12 @@ function renderView() {
   if (!S) return;
   qrCorner.style.display = S.phase === 'lobby' ? 'none' : 'flex';
   if (lobbyPlayBtn) lobbyPlayBtn.style.display = S.phase === 'lobby' ? 'inline-block' : 'none';
+  const hostNextBtn = document.getElementById('hostNextBtn');
+  if (hostNextBtn) {
+    const showNext = ['lobby', 'result', 'discuss', 'end'].includes(S.phase);
+    hostNextBtn.style.display = showNext ? 'inline-block' : 'none';
+    hostNextBtn.textContent = S.phase === 'lobby' ? '▶ Spiel starten' : S.phase === 'end' ? '🔄 Nochmal' : '▶ Weiter';
+  }
   qrUrl.textContent = url;
   drawWrap.style.display = (S.mode === 'draw' && S.phase === 'question') ? 'flex' : 'none';
   const title = S.isMix && S.phase !== 'lobby' && S.phase !== 'end'
@@ -642,13 +687,16 @@ function renderView() {
   const header = `<div class="bar"><div id="bar" style="width:100%"></div></div>
     <div>${title} &nbsp;|&nbsp; Runde ${S.idx + 1} / ${S.total} &nbsp;|&nbsp; <span id="doneCnt">${done}/${S.players.length} fertig</span>${finalTag}<span id="sec" style="float:right;font-weight:700"></span></div>${liveBarHtml}`;
 
-  // In-place update when only player answer status changed during active round
-  const sig = `${S.mode}:${S.idx}:${S.phase}:${S.paused}:${audioBlocked}:${audioError}:${(S.q && S.q.guessed ? S.q.guessed.join(',') : '')}`;
-  if (!res && !S.paused && sig === lastRenderSig && document.getElementById('doneCnt')) {
+  // In-place update when only player answer status or skipVote changed
+  const mr = S.missionReveal;
+  const sig = `${S.mode}:${S.idx}:${S.phase}:${S.paused}:${audioBlocked}:${audioError}:${(S.q && S.q.guessed ? S.q.guessed.join(',') : '')}:${mr ? `${mr.resolved}:${mr.success}` : ''}:${res ? (S.players || []).map(p => `${p.name}:${p.score}`).join(',') : ''}`;
+  if (!S.paused && sig === lastRenderSig && document.getElementById('doneCnt')) {
     document.getElementById('doneCnt').textContent = `${done}/${S.players.length} fertig`;
-    const avEl = document.getElementById('liveAvBar');
-    if (avEl) avEl.innerHTML = renderLiveAvBar(justAnswered);
-    if (S.mode === 'draw') renderDrawSide();
+    if (!res) {
+      const avEl = document.getElementById('liveAvBar');
+      if (avEl) avEl.innerHTML = renderLiveAvBar(justAnswered);
+      if (S.mode === 'draw') renderDrawSide();
+    }
     return;
   }
   lastRenderSig = sig;
@@ -905,7 +953,7 @@ function renderView() {
       : '';
     const songBanner = res
       ? `<div class="card" style="display:flex;align-items:center;gap:2.5vw;margin-bottom:2vh">
-          <div class="vinylDisc">${r.art && /^https:\/\//i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover">` : '<span style="font-size:4.5vh">🎵</span>'}</div>
+          <div class="vinylDisc">${r.art && /^(https:\/\/|\/song-art\/)/i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover" decoding="sync" loading="eager">` : '<span style="font-size:4.5vh">🎵</span>'}</div>
           <div><div style="font-size:4.2vh;font-weight:900;color:#ffd33d">🎵 ${esc(r.title)}</div>
           <div style="font-size:3vh">${esc(r.artist)} · ${r.year} · ${r.type === 'solo' ? 'Solo' : 'Band / Gruppe'}</div></div>
         </div>`
@@ -937,7 +985,7 @@ function updateTimerUI() {
   if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return;
   if (!clientDeadline) {
     if (b) b.style.width = '100%';
-    if (sec) sec.textContent = S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : S.phase === 'result' ? 'Weiter mit Leertaste' : '';
+    if (sec) sec.textContent = S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : S.phase === 'result' ? 'Tippe „▶ Weiter“' : '';
     return;
   }
   const left = Math.max(0, clientDeadline - performance.now());

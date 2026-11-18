@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.4.0)
+# 🎉 PartyGame (Version 3.5.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -82,8 +82,10 @@ partygame/
 ├── package.json         # Projekt-Metadaten & npm-Abhängigkeiten
 ├── public/
 │   ├── play.html        # Handy-Client (/ und /play) inkl. One-Device-Modus
-│   ├── host.html        # TV-Ansicht (/host) mit QR-Code, Konfetti & Web-Audio-SFX
-│   ├── admin.html       # Admin-Fernbedienung (/admin)
+│   ├── host.html        # TV-Ansicht (/host) mit QR-Code, Konfetti, Web-Audio-SFX & iPad-Wach-Modus
+│   ├── admin.html       # Admin-Fernbedienung (/admin, mehrgerätefähig pro Raum)
+│   ├── js/ux-helpers.js # Wake-Lock (+ iOS Silent-Video-Fallback), Haptik, Escaping
+│   ├── keepalive.mp4    # Stilles 1×1-Loop-Video für iPadOS Display-Wachhaltung
 │   └── style.css        # Gemeinsames Styling
 ├── data/
 │   ├── questions.json   # Party-Quiz
@@ -99,7 +101,9 @@ partygame/
 │   ├── teams.json       # Team-Wahl
 │   ├── scale.json       # Skala 1–10
 │   ├── wordassoc.json   # Wort-Assoziation
-│   ├── songs.json       # Erkenne den Song (93 EN, 14 DE, 109 RU = 216 Songs)
+│   ├── songs.json       # Erkenne den Song (227 EN, 30 DE, 116 RU = 373 Songs)
+│   ├── song-audio/      # Lokale Song-Vorschau-MP3s (0.mp3–372.mp3)
+│   ├── song-art/        # Lokale Album-Cover (0.jpg–372.jpg)
 │   ├── imagequiz.json   # Bild-Quiz (161 Fragen: Logos, Sehenswürdigkeiten, Flaggen, Automarken)
 │   ├── iq-images/       # Lokale Bilder für das Bild-Quiz (neutrale Dateinamen)
 │   ├── used.json        # Automatisch verwaltet: bereits gespielte Indizes
@@ -182,7 +186,9 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.3.0 (Aktueller Stand):** 1.708 Einträge (Fragenpools +230 aufgestockt), 36 Avatare, Schnell-Presets, Timer-Tempo, Alkoholfrei-Modus, Party-Mix-Rundenwahl (8/12/16) sowie neue Animationen (Wortwolke, Sortier-Snap, Reaktions-Schockwelle).
+- **v3.5.0 (Aktueller Stand):** PWA & iPad-Wake-Lock (inkl. Silent-Video-Fallback), lokale Album-Cover (`data/song-art/`) & bereinigte Original-Song-Previews, Render-Diffing & Performance-Optimierungen in `/play` und `/host`, Geheime Missionen auf `/play` & `/host` gefixt, Auto-Next für *Kennenlernen*, Mehrgeräte-`/admin` pro Raum.
+- **v3.4.0:** Modularisierte Security-/Logger-Helfer, isolierte Custom-Fragen, Haptik- & Reconnect-Basis.
+- **v3.3.0:** 1.708 Einträge (Fragenpools +230 aufgestockt), 36 Avatare, Schnell-Presets, Timer-Tempo, Alkoholfrei-Modus, Party-Mix-Rundenwahl (8/12/16) sowie neue Animationen (Wortwolke, Sortier-Snap, Reaktions-Schockwelle).
 - **v3.2.0:** 373 Songs, 161 Bilderquiz-Einträge, 944 Fragen/Modi (1.478 Einträge gesamt), `install.sh` für einfache Linux-Installation.
 - **v3.1.0:** Gesichert unter `/opt/partygame/backups/partygame-v3.1.0.tar.gz` (Multi-Room, Bild-Quiz mit 90 Bildern, kontextabhängiges `/admin`, Preloading & Lobby-Komfort).
 - **v2.2.0 (Single-Lobby-Stand):** Gesichert unter `/opt/partygame/backups/partygame-v2.2.0.tar.gz` (5 Kategorien, Song-Sprach-Slider, Geheime Missionen, aufgestockte Fragenpools). Wiederherstellung bei Bedarf mit:
