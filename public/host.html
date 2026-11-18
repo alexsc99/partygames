@@ -197,7 +197,7 @@ function launchConfetti(count = 110) {
 }
 const songAudio = document.getElementById('songAudio');
 songAudio.loop = true;
-let audioBlocked = false, audioError = false;
+let audioBlocked = false, audioError = false, audioElUnlocked = false;
 let hostVol = Number(localStorage.getItem('hostVol') ?? 0.5);
 if (!Number.isFinite(hostVol) || hostVol < 0 || hostVol > 1) hostVol = 0.5;
 songAudio.volume = hostVol;
@@ -206,19 +206,45 @@ if (hostVolEl) hostVolEl.value = Math.round(hostVol * 100);
 function setHostVol(v) {
   hostVol = Math.max(0, Math.min(1, Number(v) / 100));
   localStorage.setItem('hostVol', String(hostVol));
-  songAudio.volume = hostVol;
+  songAudio.volume = (S && S.mode === 'songquiz' && S.phase === 'result') ? hostVol * 0.25 : hostVol;
 }
 function unlockAudio() {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
   } catch {}
+  if (!audioElUnlocked && !songAudio.getAttribute('src')) {
+    audioElUnlocked = true;
+    const prevMuted = songAudio.muted;
+    songAudio.loop = false;
+    songAudio.muted = true;
+    songAudio.src = '/silent.mp3';
+    const pr = songAudio.play();
+    if (pr && pr.then) {
+      pr.then(() => {
+        if ((songAudio.getAttribute('src') || '').includes('/silent.mp3')) {
+          songAudio.pause();
+          songAudio.removeAttribute('src');
+          songAudio.load();
+          songAudio.loop = true;
+          songAudio.muted = prevMuted;
+        }
+      }).catch(() => {
+        audioElUnlocked = false;
+        songAudio.loop = true;
+        songAudio.muted = prevMuted;
+      });
+    }
+  }
   if (audioBlocked && songAudio.src) {
     songAudio.play().then(() => { audioBlocked = false; audioError = false; render(); }).catch(() => {});
   }
 }
 addEventListener('pointerdown', unlockAudio);
-songAudio.addEventListener('error', () => { audioError = true; audioBlocked = false; render(); });
+songAudio.addEventListener('error', () => {
+  if ((songAudio.getAttribute('src') || '').includes('/silent.mp3')) return;
+  audioError = true; audioBlocked = false; render();
+});
 songAudio.addEventListener('playing', () => {
   if (S && S.mode === 'songquiz' && S.phase === 'question') {
     const sk = `${S.mode}:${S.idx}`;
@@ -360,6 +386,8 @@ socket.on('state', s => {
       lastSongKey = songKey;
       audioBlocked = false;
       audioError = false;
+      audioElUnlocked = true;
+      songAudio.loop = true;
       songAudio.pause();
       songAudio.src = s.q.preview;
       songAudio.load();
@@ -367,9 +395,14 @@ socket.on('state', s => {
       songAudio.volume = hostVol;
       const pr = songAudio.play();
       if (pr && pr.catch) pr.catch(() => { if (!audioError) audioBlocked = true; render(); });
-    } else if (songAudio.paused && !audioBlocked && !audioError) {
-      songAudio.play().catch(() => {});
+    } else {
+      songAudio.volume = hostVol;
+      if (songAudio.paused && !audioBlocked && !audioError) {
+        songAudio.play().catch(() => {});
+      }
     }
+  } else if (s.mode === 'songquiz' && s.phase === 'result') {
+    songAudio.volume = hostVol * 0.25;
   } else if (s.mode !== 'songquiz' || s.phase === 'lobby' || s.phase === 'end') {
     lastSongKey = '';
     audioBlocked = false;

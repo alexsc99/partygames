@@ -25,8 +25,10 @@
  .prow { display: flex; justify-content: space-between; align-items: center; background: #1b1340; padding: 9px 12px; border-radius: 10px; font-size: 15px; }
  .kick { background: #e21b3c; padding: 5px 10px; font-size: 13px; border-radius: 8px; margin-left: 8px; }
  .badge { font-size: 12px; background: #4b3a9e; padding: 4px 10px; border-radius: 20px; }
+ #adminConnBanner { display: none; position: sticky; top: 8px; z-index: 90; background: rgba(226,27,60,.94); color: #fff; font-weight: 700; font-size: 13px; padding: 9px 12px; border-radius: 10px; margin-bottom: 10px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
 </style></head>
 <body>
+ <div id="adminConnBanner">🔄 Verbindung unterbrochen — verbinde neu…</div>
  <div id="app"></div>
  <div class="card" id="qrCard">
    <div class="label">🔗 QR-Code / Spieler-URL</div>
@@ -110,13 +112,23 @@ async function createAndOpenAdmin() {
 if (!ROOM_CODE) { createAndOpenAdmin(); }
 const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE } }) : { on(){}, emit(){} };
 if (ROOM_CODE) {
+  const connBanner = document.getElementById('adminConnBanner');
   socket.on('connect', () => {
+    if (connBanner) connBanner.style.display = 'none';
     const tok = localStorage.getItem('pg_host_' + ROOM_CODE);
     if (tok) socket.emit('host:auth', tok);
   });
+  socket.on('disconnect', () => {
+    if (connBanner) connBanner.style.display = 'block';
+  });
+  if (socket.io) {
+    socket.io.on('reconnect_attempt', () => {
+      if (connBanner) connBanner.style.display = 'block';
+    });
+  }
   socket.on('room:error', () => createAndOpenAdmin());
 }
-let S = null; let qrInited = false;
+let S = null; let qrInited = false; let lastAdminSig = '';
 function copyRoomLink() {
   const link = location.origin + '/?room=' + encodeURIComponent(ROOM_CODE);
   navigator.clipboard?.writeText(link).catch(() => {});
@@ -197,6 +209,10 @@ function kick(i) {
 }
 function render() {
   if (!S) return;
+  const activeEl = document.activeElement;
+  if (activeEl && activeEl.tagName === 'INPUT' && activeEl.type === 'range' && app.contains(activeEl)) {
+    return;
+  }
   const done = S.players.filter(p => p.answered).length;
   let mainBtn = '';
   if (S.phase === 'lobby') mainBtn = `<button class="go" onclick="socket.emit('host:start')">▶ Spiel starten</button>`;
@@ -212,6 +228,34 @@ function render() {
     : S.phase === 'lobby' ? 'Lobby'
     : S.phase === 'end' ? 'Spiel vorbei'
     : `Runde ${S.idx + 1}/${S.total} (${S.phase})`;
+
+  const mr = S.missionReveal;
+  const adminSig = [
+    ROOM_CODE, S.mode, S.phase, S.idx, S.total, S.paused,
+    (S.categories || []).join(','),
+    (S.mixModes || []).join(','), S.mixRounds,
+    (S.imageQuizThemes || []).join(','),
+    S.songLangs?.en !== false, S.songLangs?.de !== false,
+    S.effectiveRussianShare ?? S.russianShare ?? 0, S.songOnlyArtistTitle,
+    S.roundLimit, S.teamMode, S.displayMode || (S.noTvMode ? 'notv' : 'tv'),
+    S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree,
+    S.lobbyBanner || '', S.spin?.id || '',
+    S.q?.q || '', S.q?.drawer || '', S.q?.guessed ? S.q.guessed.length : '',
+    mr ? `${mr.playerName}:${mr.resolved}:${mr.success}` : '',
+    S.players.map(p => `${p.name}:${p.avatar}:${p.team || ''}:${p.score}`).join(','),
+  ].join('|');
+
+  if (adminSig === lastAdminSig && document.getElementById('adminMainBtn') && document.getElementById('adminStatus')) {
+    document.getElementById('adminStatus').textContent = statusTxt;
+    document.getElementById('adminMainBtn').innerHTML = mainBtn;
+    document.querySelectorAll('#adminPlist .ansMark').forEach((el, i) => {
+      const want = S.players[i]?.answered ? ' ✓' : '';
+      if (el.textContent !== want) el.textContent = want;
+    });
+    return;
+  }
+  lastAdminSig = adminSig;
+
   const canPause = ['question', 'go', 'result'].includes(S.phase);
   const pauseBtn = canPause
     ? `<button class="go" style="background:${S.paused ? '#26890c' : '#4b3a9e'}" onclick="socket.emit('host:pause')">${S.paused ? '▶ Weiter' : '⏸ Pause'}</button>`
@@ -221,7 +265,7 @@ function render() {
   const allActive = CATS.every(([id]) => activeCats.includes(id));
 
   app.innerHTML = `
-    <h1><span>🎛️ Admin · Raum <b>${esc(ROOM_CODE)}</b></span><span class="badge">${statusTxt}</span></h1>
+    <h1><span>🎛️ Admin · Raum <b>${esc(ROOM_CODE)}</b></span><span id="adminStatus" class="badge">${statusTxt}</span></h1>
     <div class="card cats" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
       <button id="copyLinkBtn" class="active" onclick="copyRoomLink()">📋 Einladungs-Link kopieren</button>
       <a href="/host?room=${encodeURIComponent(ROOM_CODE)}" target="_blank" style="text-decoration:none"><button type="button">📺 TV öffnen (/host)</button></a>
@@ -352,15 +396,15 @@ function render() {
       ${S.phase === 'lobby' && S.lobbyBanner ? `<div class="q" style="color:#ffd33d">${esc(S.lobbyBanner)}</div>` : ''}
       ${S.q && S.q.q ? `<div class="q">${esc(S.q.q)}</div>` : ''}
       ${S.mode === 'draw' && S.q && S.q.drawer ? `<div class="q">Maler: ${esc(S.q.drawer)} (${S.q.guessed.length} erraten)</div>` : ''}
-      ${mainBtn}
+      <div id="adminMainBtn">${mainBtn}</div>
       ${pauseBtn}
       <button class="warn" onclick="socket.emit('host:reset')">🏠 Reset (zur Lobby)</button>
     </div>
     <div class="card">
       <div class="label">Spieler (${S.players.length})</div>
-      <div class="plist">${S.players.length ? S.players.map((p, i) => `
+      <div id="adminPlist" class="plist">${S.players.length ? S.players.map((p, i) => `
         <div class="prow">
-          <span>${S.teamMode && p.team ? ({ red: '🔴', blue: '🔵', yellow: '🟡', green: '🟢', purple: '🟣', orange: '🟠', pink: '🩷', teal: '🩵' }[p.team] || '⚪') + ' ' : ''}${p.avatar ? esc(p.avatar) + ' ' : ''}${esc(p.name)} ${p.answered ? '✓' : ''}</span>
+          <span>${S.teamMode && p.team ? ({ red: '🔴', blue: '🔵', yellow: '🟡', green: '🟢', purple: '🟣', orange: '🟠', pink: '🩷', teal: '🩵' }[p.team] || '⚪') + ' ' : ''}${p.avatar ? esc(p.avatar) + ' ' : ''}${esc(p.name)}<span class="ansMark">${p.answered ? ' ✓' : ''}</span></span>
           <span><b>${p.score} Pkt</b><button class="kick" onclick="kick(${i})">✕</button></span>
         </div>`).join('') : '<div style="opacity:.6">Noch keine Spieler</div>'}
       </div>

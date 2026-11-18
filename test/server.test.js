@@ -306,9 +306,49 @@ describe('PartyGame Server', () => {
 
     assert.ok(playHtml.includes('if (phoneSig === lastPhoneSig) return;'), 'play.html must have render-diff guard');
     assert.ok(playHtml.includes('if (r.myAnswer !== undefined) myAnswer = r.myAnswer;'), 'play.html reconnect must restore myAnswer');
+    assert.ok(playHtml.includes('id="connBanner"') && playHtml.includes('undoPad()'), 'play.html must provide offline banner and draw undo');
     assert.ok(hostHtml.includes('pgInitWakeLock({ videoFallback: true'), 'host.html must enable video fallback wake lock');
     assert.ok(hostHtml.includes('id="hostNextBtn"'), 'host.html must provide touch Next button');
+    assert.ok(hostHtml.includes('/silent.mp3') && hostHtml.includes('hostVol * 0.25'), 'host.html must unlock HTMLAudio with /silent.mp3 and duck audio in result');
     assert.ok(uxJs.includes('/keepalive.mp4') && !uxJs.includes('{ once: true'), 'ux-helpers.js must re-acquire wake lock and use keepalive.mp4 fallback');
     assert.ok(!css.includes('background-attachment: fixed'), 'style.css must avoid background-attachment: fixed');
+    const adminHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'admin.html'), 'utf8');
+    assert.ok(adminHtml.includes('if (adminSig === lastAdminSig') && adminHtml.includes('id="adminConnBanner"'), 'admin.html must guard renders and show connection banner');
+  });
+
+  it('serves /silent.mp3 and supports draw:undo by stroke sid', async () => {
+    const sRes = await fetch(`${baseUrl}/silent.mp3`);
+    assert.equal(sRes.status, 200);
+
+    const createRes = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
+    const { code } = await createRes.json();
+    const sidDrawer = await connectPollingClient(code);
+    const sidHost = await connectPollingClient(code);
+
+    try {
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidDrawer}`, { method: 'POST', body: '42["join",{"name":"Maler","avatar":"🎨"}]' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, {
+        method: 'POST',
+        body: '42["host:wheelEnabled",false]\x1e42["host:mode","draw"]',
+      });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '42["host:start"]' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`); // drain start state
+
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidDrawer}`, {
+        method: 'POST',
+        body: '42["draw:stroke",{"x0":0.1,"y0":0.1,"x1":0.2,"y1":0.2,"c":"#111","w":6,"sid":1}]\x1e42["draw:stroke",{"x0":0.2,"y0":0.2,"x1":0.3,"y1":0.3,"c":"#e21b3c","w":11,"sid":2}]\x1e42["draw:stroke",{"x0":0.3,"y0":0.3,"x1":0.4,"y1":0.4,"c":"#e21b3c","w":11,"sid":2}]',
+      });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`); // drain strokes
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidDrawer}`, { method: 'POST', body: '42["draw:undo"]' });
+
+      const histPoll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`)).text();
+      assert.ok(histPoll.includes('"draw:history"'), `Expected draw:history in ${histPoll}`);
+      assert.ok(histPoll.includes('"sid":1') && !histPoll.includes('"sid":2'), `Expected sid 1 kept and sid 2 removed in ${histPoll}`);
+    } finally {
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidDrawer}`, { method: 'POST', body: '41' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '41' });
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
   });
 });

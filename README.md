@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.5.0)
+# 🎉 PartyGame (Version 3.5.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -186,7 +186,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.5.0 (Aktueller Stand):** PWA & iPad-Wake-Lock (inkl. Silent-Video-Fallback), lokale Album-Cover (`data/song-art/`) & bereinigte Original-Song-Previews, Render-Diffing & Performance-Optimierungen in `/play` und `/host`, Geheime Missionen auf `/play` & `/host` gefixt, Auto-Next für *Kennenlernen*, Mehrgeräte-`/admin` pro Raum.
+- **v3.5.1 (Aktueller Stand):** iPadOS `<audio>`-Element-Unlock über `/silent.mp3` & Ergebnis-Ducking im Song-Quiz, Render-Diffing & Reconnect-Banner in `/admin` und `/play`, 4s Reconnect-Grace-Period bei Netzrucklern, Pinselgröße + Undo beim Zeichnen, saubere Trennung von Test- und Produktions-Logs.
+- **v3.5.0:** PWA & iPad-Wake-Lock (inkl. Silent-Video-Fallback), lokale Album-Cover (`data/song-art/`) & bereinigte Original-Song-Previews, Render-Diffing & Performance-Optimierungen in `/play` und `/host`, Geheime Missionen auf `/play` & `/host` gefixt, Auto-Next für *Kennenlernen*, Mehrgeräte-`/admin` pro Raum.
 - **v3.4.0:** Modularisierte Security-/Logger-Helfer, isolierte Custom-Fragen, Haptik- & Reconnect-Basis.
 - **v3.3.0:** 1.708 Einträge (Fragenpools +230 aufgestockt), 36 Avatare, Schnell-Presets, Timer-Tempo, Alkoholfrei-Modus, Party-Mix-Rundenwahl (8/12/16) sowie neue Animationen (Wortwolke, Sortier-Snap, Reaktions-Schockwelle).
 - **v3.2.0:** 373 Songs, 161 Bilderquiz-Einträge, 944 Fragen/Modi (1.478 Einträge gesamt), `install.sh` für einfache Linux-Installation.

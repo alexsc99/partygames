@@ -25,10 +25,13 @@
  .wordBox { background: #2d2266; border: 2px solid #ffd33d; border-radius: 16px; padding: 24px 16px; font-size: 32px; font-weight: 800; margin: 18px 0; animation: popIn .3s ease-out both; }
  #padWrap { display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
  #pad { background: #fff; border-radius: 14px; width: 100%; height: 48vh; touch-action: none; display: block; }
- .tools { display: flex; gap: 8px; justify-content: center; align-items: center; }
- .col { width: 38px; height: 38px; border-radius: 50%; border: 3px solid #fff3; }
+ .tools { display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; }
+ .col { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #fff3; padding: 0; }
  .col.on { border-color: #ffd33d; transform: scale(1.1); }
- .clr { background: #e21b3c; padding: 10px 16px; font-size: 16px; font-weight: 700; }
+ .sz { min-width: 34px; height: 34px; padding: 0 8px; border-radius: 10px; background: #2d2266; color: #fff; font-size: 13px; font-weight: 800; border: 2px solid transparent; }
+ .sz.on { border-color: #ffd33d; background: #4b3a9e; }
+ .clr { background: #e21b3c; padding: 8px 12px; font-size: 14px; font-weight: 700; border-radius: 10px; }
+ #connBanner { display: none; position: sticky; top: 6px; z-index: 95; background: rgba(226,27,60,.94); color: #fff; font-weight: 700; font-size: 14px; padding: 9px 12px; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
  h1 { margin: 10px 0; } .msg { font-size: 25px; margin-top: 14vh; animation: popIn .28s ease-out both; }
  .qtxt { font-size: 20px; font-weight: 700; margin: 12px 0; animation: fadeSlideUp .25s ease-out both; }
  .err { color: #ff8a8a; min-height: 24px; }
@@ -47,6 +50,7 @@
  .resChip { background: #ffffff1a; padding: 5px 10px; border-radius: 999px; font-size: 14px; }
 </style></head>
 <body>
+<div id="connBanner">🔄 Verbindung unterbrochen — verbinde neu…</div>
 <div id="viewWrap"><canvas id="viewPad" width="500" height="420"></canvas></div>
 <div id="app"></div>
 <div id="padWrap">
@@ -57,7 +61,11 @@
     <button class="col" style="background:#e21b3c" onclick="setCol('#e21b3c',this)"></button>
     <button class="col" style="background:#1368ce" onclick="setCol('#1368ce',this)"></button>
     <button class="col" style="background:#26890c" onclick="setCol('#26890c',this)"></button>
-    <button class="clr" onclick="clearPad()">Löschen</button>
+    <button class="sz" onclick="setBrush(4,this)">S</button>
+    <button class="sz on" onclick="setBrush(6,this)">M</button>
+    <button class="sz" onclick="setBrush(11,this)">L</button>
+    <button class="clr" style="background:#4b3a9e" onclick="undoPad()">↩️ Undo</button>
+    <button class="clr" onclick="clearPad()">🗑️</button>
   </div>
 </div>
 <div id="emojiLayer"></div>
@@ -246,11 +254,14 @@ function startPhoneWheelAnim(spin) {
 }
 const playSongAudio = document.getElementById('playSongAudio');
 playSongAudio.loop = true;
-let playAudioOn = localStorage.getItem('qAudio') === '1', playAudioBlocked = false, playAudioError = false, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000, lastPhoneSig = '';
+let playAudioOn = localStorage.getItem('qAudio') === '1', playAudioBlocked = false, playAudioError = false, playAudioElUnlocked = false, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000, lastPhoneSig = '';
 let playVol = Number(localStorage.getItem('qVol') ?? 0.5);
 if (!Number.isFinite(playVol) || playVol < 0 || playVol > 1) playVol = 0.5;
 playSongAudio.volume = playVol;
-playSongAudio.addEventListener('error', () => { playAudioError = true; playAudioBlocked = false; render(); });
+playSongAudio.addEventListener('error', () => {
+  if ((playSongAudio.getAttribute('src') || '').includes('/silent.mp3')) return;
+  playAudioError = true; playAudioBlocked = false; render();
+});
 playSongAudio.addEventListener('playing', () => {
   if (S && S.mode === 'songquiz' && S.phase === 'question') {
     const sk = `${S.mode}:${S.idx}`;
@@ -263,7 +274,7 @@ playSongAudio.addEventListener('playing', () => {
 function setPlayVol(v) {
   playVol = Math.max(0, Math.min(1, Number(v) / 100));
   localStorage.setItem('qVol', String(playVol));
-  playSongAudio.volume = playVol;
+  playSongAudio.volume = (S && S.mode === 'songquiz' && S.phase === 'result') ? playVol * 0.25 : playVol;
 }
 const app = document.getElementById('app');
 const viewWrap = document.getElementById('viewWrap');
@@ -272,22 +283,30 @@ const vctx = viewPad.getContext('2d');
 const padWrap = document.getElementById('padWrap');
 const pad = document.getElementById('pad');
 const pctx = pad.getContext('2d');
-let penColor = '#111', drawing = false, lastPt = null;
+let penColor = '#111', penWidth = 6, drawing = false, lastPt = null, strokeSeq = 0, curStrokeId = 0, localDrawStack = [];
 // esc() is provided by /js/ux-helpers.js
 let lastVibKey = '';
 
 function drawSeg(ctx, cvs, seg) {
   ctx.strokeStyle = seg.c || '#111';
-  ctx.lineWidth = seg.w || 6;
+  ctx.lineWidth = Math.max(2, Math.round((seg.w || 6) * 0.7));
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(seg.x0 * cvs.width, seg.y0 * cvs.height);
   ctx.lineTo(seg.x1 * cvs.width, seg.y1 * cvs.height);
   ctx.stroke();
 }
-socket.on('draw:clear', () => vctx.clearRect(0, 0, viewPad.width, viewPad.height));
+socket.on('draw:clear', () => {
+  vctx.clearRect(0, 0, viewPad.width, viewPad.height);
+  pctx.clearRect(0, 0, pad.width, pad.height);
+  localDrawStack = [];
+});
 socket.on('draw:stroke', seg => drawSeg(vctx, viewPad, seg));
-socket.on('draw:history', list => { vctx.clearRect(0, 0, viewPad.width, viewPad.height); list.forEach(s => drawSeg(vctx, viewPad, s)); });
+socket.on('draw:history', list => {
+  vctx.clearRect(0, 0, viewPad.width, viewPad.height);
+  pctx.clearRect(0, 0, pad.width, pad.height);
+  list.forEach(s => { drawSeg(vctx, viewPad, s); drawSeg(pctx, pad, s); });
+});
 socket.on('react', r => {
   if (!r || !r.emoji) return;
   const layer = document.getElementById('emojiLayer');
@@ -362,15 +381,22 @@ function syncPlayAudio(s) {
       lastSongKey = songKey;
       playAudioBlocked = false;
       playAudioError = false;
+      playAudioElUnlocked = true;
+      playSongAudio.loop = true;
       playSongAudio.pause();
       playSongAudio.src = s.q.preview;
       playSongAudio.load();
       playSongAudio.volume = playVol;
       const pr = playSongAudio.play();
       if (pr && pr.catch) pr.catch(() => { if (!playAudioError) playAudioBlocked = true; render(); });
-    } else if (playSongAudio.paused && !playAudioBlocked && !playAudioError) {
-      playSongAudio.play().catch(() => { if (!playAudioError) playAudioBlocked = true; render(); });
+    } else {
+      playSongAudio.volume = playVol;
+      if (playSongAudio.paused && !playAudioBlocked && !playAudioError) {
+        playSongAudio.play().catch(() => { if (!playAudioError) playAudioBlocked = true; render(); });
+      }
     }
+  } else if (s.mode === 'songquiz' && s.phase === 'result') {
+    playSongAudio.volume = playVol * 0.25;
   } else if (s.mode !== 'songquiz' || s.phase === 'lobby' || s.phase === 'end') {
     lastSongKey = '';
     playAudioBlocked = false;
@@ -387,6 +413,28 @@ function togglePlayAudio(retryOnly = false) {
   playAudioBlocked = false;
   playAudioError = false;
   lastSongKey = '';
+  if (playAudioOn && !playAudioElUnlocked && !playSongAudio.getAttribute('src')) {
+    playAudioElUnlocked = true;
+    playSongAudio.loop = false;
+    playSongAudio.muted = true;
+    playSongAudio.src = '/silent.mp3';
+    const pr = playSongAudio.play();
+    if (pr && pr.then) {
+      pr.then(() => {
+        if ((playSongAudio.getAttribute('src') || '').includes('/silent.mp3')) {
+          playSongAudio.pause();
+          playSongAudio.removeAttribute('src');
+          playSongAudio.load();
+          playSongAudio.loop = true;
+          playSongAudio.muted = false;
+        }
+      }).catch(() => {
+        playAudioElUnlocked = false;
+        playSongAudio.loop = true;
+        playSongAudio.muted = false;
+      });
+    }
+  }
   if (!playAudioOn && !playSongAudio.paused) playSongAudio.pause();
   if (S) syncPlayAudio(S);
   render();
@@ -427,6 +475,7 @@ socket.on('state', s => {
     lastPhoneSig = '';
     pctx.clearRect(0, 0, pad.width, pad.height);
     vctx.clearRect(0, 0, viewPad.width, viewPad.height);
+    localDrawStack = [];
   }
   S = s;
   if (s.nextAudio && s.nextAudio !== window._lastPreloadAudio) { window._lastPreloadAudio = s.nextAudio; fetch(s.nextAudio).catch(() => {}); }
@@ -439,7 +488,17 @@ socket.on('state', s => {
   render();
 });
 socket.on('private', p => { P = p; render(); });
+const connBanner = document.getElementById('connBanner');
+socket.on('disconnect', () => {
+  if (connBanner) connBanner.style.display = 'block';
+});
+if (socket.io) {
+  socket.io.on('reconnect_attempt', () => {
+    if (connBanner) connBanner.style.display = 'block';
+  });
+}
 socket.on('connect', () => {
+  if (connBanner) connBanner.style.display = 'none';
   if (joined && name) {
     socket.emit('join', { name, avatar, reconnectToken }, r => {
       if (r && r.ok) {
@@ -533,22 +592,60 @@ function setCol(c, btn) {
   document.querySelectorAll('.col').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
 }
-function clearPad() { pctx.clearRect(0, 0, pad.width, pad.height); socket.emit('draw:clear'); }
+function setBrush(w, btn) {
+  penWidth = w;
+  document.querySelectorAll('.sz').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function redrawLocalPad() {
+  pctx.clearRect(0, 0, pad.width, pad.height);
+  for (const stroke of localDrawStack) {
+    for (const seg of stroke) drawSeg(pctx, pad, seg);
+  }
+}
+function undoPad() {
+  if (S && S.displayMode === 'onedevice') {
+    if (localDrawStack.length) {
+      localDrawStack.pop();
+      redrawLocalPad();
+    }
+    return;
+  }
+  socket.emit('draw:undo');
+}
+function clearPad() {
+  localDrawStack = [];
+  pctx.clearRect(0, 0, pad.width, pad.height);
+  socket.emit('draw:clear');
+}
 function pt(e) {
   const r = pad.getBoundingClientRect();
   return { x: Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)) };
 }
-pad.addEventListener('pointerdown', e => { drawing = true; lastPt = pt(e); pad.setPointerCapture(e.pointerId); });
+pad.addEventListener('pointerdown', e => {
+  drawing = true;
+  lastPt = pt(e);
+  curStrokeId = ++strokeSeq;
+  localDrawStack.push([]);
+  pad.setPointerCapture(e.pointerId);
+});
 pad.addEventListener('pointermove', e => {
   if (!drawing || !lastPt) return;
   const cur = pt(e);
-  pctx.strokeStyle = penColor; pctx.lineWidth = 4; pctx.lineCap = 'round';
-  pctx.beginPath(); pctx.moveTo(lastPt.x * pad.width, lastPt.y * pad.height); pctx.lineTo(cur.x * pad.width, cur.y * pad.height); pctx.stroke();
-  socket.emit('draw:stroke', { x0: lastPt.x, y0: lastPt.y, x1: cur.x, y1: cur.y, c: penColor, w: 6 });
+  const seg = { x0: lastPt.x, y0: lastPt.y, x1: cur.x, y1: cur.y, c: penColor, w: penWidth, sid: curStrokeId };
+  drawSeg(pctx, pad, seg);
+  if (localDrawStack.length) localDrawStack[localDrawStack.length - 1].push(seg);
+  if (!S || S.displayMode !== 'onedevice') socket.emit('draw:stroke', seg);
   lastPt = cur;
 });
-pad.addEventListener('pointerup', () => { drawing = false; lastPt = null; });
-pad.addEventListener('pointercancel', () => { drawing = false; lastPt = null; });
+pad.addEventListener('pointerup', () => {
+  drawing = false; lastPt = null;
+  if (localDrawStack.length && !localDrawStack[localDrawStack.length - 1].length) localDrawStack.pop();
+});
+pad.addEventListener('pointercancel', () => {
+  drawing = false; lastPt = null;
+  if (localDrawStack.length && !localDrawStack[localDrawStack.length - 1].length) localDrawStack.pop();
+});
 
 function addLocalPlayer() {
   const el = document.getElementById('localName');

@@ -106,8 +106,8 @@ app.use(createRateLimiter({ windowMs: 60_000, max: 180 }));
 const server = http.createServer(app);
 const io = new Server(server, {
   maxHttpBufferSize: 1e4,
-  pingInterval: 25000,
-  pingTimeout: 30000,
+  pingInterval: 15000,
+  pingTimeout: 20000,
   connectionStateRecovery: {
     maxDisconnectionDuration: 2 * 60 * 1000,
     skipMiddlewares: true,
@@ -361,8 +361,32 @@ const TEAMS = [
   { id: 'teal', label: '🩵 Team Türkis', icon: '🩵' },
 ];
 const players = {}; // id -> { name, avatar, team, score, drinks, answer, answeredAt, stats }
-const disconnectedPlayers = new Map();
-const skipVotes = new Set(); // name.toLowerCase() -> { data, timer }
+const disconnectedPlayers = new Map(); // name.toLowerCase() -> { data, timer }
+const pendingDisconnects = new Map(); // socketId -> timer
+const RECONNECT_GRACE_MS = 4000;
+const skipVotes = new Set();
+
+function finalizePlayerDisconnect(socketId, reason, recovered) {
+  const gt = pendingDisconnects.get(socketId);
+  if (gt) {
+    clearTimeout(gt);
+    pendingDisconnects.delete(socketId);
+  }
+  const p = players[socketId];
+  if (!p) return;
+  const key = p.name.toLowerCase();
+  const prev = disconnectedPlayers.get(key);
+  if (prev) clearTimeout(prev.timer);
+  const t = setTimeout(() => disconnectedPlayers.delete(key), 900_000);
+  if (t.unref) t.unref();
+  disconnectedPlayers.set(key, {
+    data: { avatar: p.avatar, team: p.team, score: p.score, drinks: p.drinks, stats: p.stats, reconnectToken: p.reconnectToken, answer: p.answer, answeredAt: p.answeredAt, roundSeq },
+    timer: t,
+  });
+  writeLog('INFO', 'player_disconnected', { name: p.name, socketId, reason, recovered });
+  delete players[socketId];
+  broadcast();
+}
 let timer = null;
 
 function freshState(mode) {
@@ -1464,6 +1488,11 @@ function attachSocket(socket, ip, allowEvent) {
       if (!clientToken || !oldPlayer.reconnectToken || clientToken !== oldPlayer.reconnectToken) {
         return ack && ack({ ok: false, error: 'Name schon vergeben' });
       }
+      const oldGrace = pendingDisconnects.get(oldId);
+      if (oldGrace) {
+        clearTimeout(oldGrace);
+        pendingDisconnects.delete(oldId);
+      }
       players[socket.id] = { ...oldPlayer, name, avatar: rawAvatar };
       delete players[oldId];
       if (state.mission && state.mission.playerId === oldId) state.mission.playerId = socket.id;
@@ -1606,16 +1635,33 @@ function attachSocket(socket, ip, allowEvent) {
     const p = players[socket.id];
     if (!p || state.mode !== 'draw' || state.phase !== 'question' || p.name !== state.drawerName) return;
     if (!seg || typeof seg !== 'object') return;
-    const { x0, y0, x1, y1, c, w } = seg;
+    const { x0, y0, x1, y1, c, w, sid } = seg;
     if (![x0, y0, x1, y1].every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 1)) return;
     const cleanSeg = {
       x0, y0, x1, y1,
       c: STROKE_COLORS.has(c) ? c : '#111',
       w: typeof w === 'number' && Number.isFinite(w) ? Math.min(12, Math.max(1, w)) : 6,
     };
+    if (Number.isInteger(sid) && sid >= 0) cleanSeg.sid = sid;
     state.strokes.push(cleanSeg);
     if (state.strokes.length > 4000) state.strokes.shift();
     socket.to(ROOM_CHAN).emit('draw:stroke', cleanSeg);
+  });
+
+  socket.on('draw:undo', () => {
+    if (!allowEvent('clear', 5_000, 15)) return;
+    const p = players[socket.id];
+    if (!p || state.mode !== 'draw' || state.phase !== 'question' || p.name !== state.drawerName) return;
+    if (!state.strokes.length) return;
+    const lastSid = state.strokes[state.strokes.length - 1]?.sid;
+    if (typeof lastSid === 'number') {
+      while (state.strokes.length && state.strokes[state.strokes.length - 1]?.sid === lastSid) {
+        state.strokes.pop();
+      }
+    } else {
+      state.strokes.splice(Math.max(0, state.strokes.length - 8));
+    }
+    io.to(ROOM_CHAN).emit('draw:history', state.strokes);
   });
 
   socket.on('draw:clear', () => {
@@ -2102,7 +2148,12 @@ function attachSocket(socket, ip, allowEvent) {
       if (saved) { clearTimeout(saved.timer); disconnectedPlayers.delete(String(name).toLowerCase()); }
     }
     for (const [id, p] of Object.entries(players)) {
-      if (p.name === name) { delete players[id]; io.sockets.sockets.get(id)?.disconnect(true); }
+      if (p.name === name) {
+        const gt = pendingDisconnects.get(id);
+        if (gt) { clearTimeout(gt); pendingDisconnects.delete(id); }
+        delete players[id];
+        io.sockets.sockets.get(id)?.disconnect(true);
+      }
     }
     broadcast();
   });
@@ -2112,17 +2163,16 @@ function attachSocket(socket, ip, allowEvent) {
     lastActivity = Date.now();
     const p = players[socket.id];
     if (p) {
-      const key = p.name.toLowerCase();
-      const prev = disconnectedPlayers.get(key);
-      if (prev) clearTimeout(prev.timer);
-      const t = setTimeout(() => disconnectedPlayers.delete(key), 900_000);
-      disconnectedPlayers.set(key, {
-        data: { avatar: p.avatar, team: p.team, score: p.score, drinks: p.drinks, stats: p.stats, reconnectToken: p.reconnectToken, answer: p.answer, answeredAt: p.answeredAt, roundSeq },
-        timer: t,
-      });
-      writeLog('INFO', 'player_disconnected', { name: p.name, socketId: socket.id, reason, recovered: socket.recovered });
-      delete players[socket.id];
-      broadcast();
+      const immediate = reason === 'client namespace disconnect' || reason === 'server namespace disconnect';
+      if (immediate) {
+        finalizePlayerDisconnect(socket.id, reason, socket.recovered);
+      } else {
+        const prevGt = pendingDisconnects.get(socket.id);
+        if (prevGt) clearTimeout(prevGt);
+        const gt = setTimeout(() => finalizePlayerDisconnect(socket.id, reason, socket.recovered), RECONNECT_GRACE_MS);
+        if (gt.unref) gt.unref();
+        pendingDisconnects.set(socket.id, gt);
+      }
     } else {
       writeLog('INFO', 'socket_disconnected', { socketId: socket.id, reason });
     }
@@ -2147,6 +2197,8 @@ return {
   attachSocket,
   destroy: () => {
     clearTimeout(timer);
+    for (const gt of pendingDisconnects.values()) clearTimeout(gt);
+    pendingDisconnects.clear();
     for (const d of disconnectedPlayers.values()) clearTimeout(d.timer);
     disconnectedPlayers.clear();
   },
