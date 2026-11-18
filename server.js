@@ -91,6 +91,7 @@ function writeLog(level, event, meta = {}) {
 const PORT = Number(process.env.PORT) || 3002;
 const HOST = process.env.HOST || '0.0.0.0';
 const MAX_PLAYERS = 12;
+const MAX_ROOMS = Number(process.env.MAX_ROOMS) || 50;
 const ALLOWED_ORIGINS = new Set(
   (process.env.ALLOWED_ORIGINS || 'https://party.goldens.cloud,http://palworld:3002,http://localhost:3002,http://127.0.0.1:3002')
     .split(',')
@@ -118,9 +119,37 @@ function getClientIp(req) {
 }
 
 function getSocketIp(socket) {
-  const xff = socket.handshake.headers['x-forwarded-for'];
-  if (typeof xff === 'string' && xff.trim()) return xff.split(',')[0].trim();
-  return socket.handshake.address || 'unknown';
+  const peerAddr = socket.handshake.address || '';
+  const fromTrustedProxy = isLocalDirectSocket({ socket: { remoteAddress: peerAddr }, headers: {} });
+  if (fromTrustedProxy) {
+    const xff = socket.handshake.headers['x-forwarded-for'];
+    if (typeof xff === 'string' && xff.trim()) return xff.split(',')[0].trim();
+  }
+  return peerAddr || 'unknown';
+}
+
+function checkHostAuth(ip, secret, extraValidFn = null) {
+  const now = Date.now();
+  let fail = hostAuthFails.get(ip);
+  if (fail && now > fail.resetAt) {
+    hostAuthFails.delete(ip);
+    fail = null;
+  }
+  if (fail && fail.count >= 5) {
+    return { ok: false, locked: true, error: 'Zu viele Fehlversuche' };
+  }
+  const isValid = validHostSecret(secret) || (typeof extraValidFn === 'function' && extraValidFn(secret));
+  if (!isValid) {
+    fail = fail || { count: 0, resetAt: now + 60_000 };
+    fail.count++;
+    hostAuthFails.set(ip, fail);
+    if (hostAuthFails.size > 2000) {
+      for (const [k, v] of hostAuthFails) { if (now > v.resetAt) hostAuthFails.delete(k); }
+    }
+    return { ok: false, locked: false, error: 'Ungültiger Host-PIN' };
+  }
+  hostAuthFails.delete(ip);
+  return { ok: true, locked: false };
 }
 
 function isAllowedOrigin(req) {
@@ -281,6 +310,9 @@ function getRoom(raw) {
 }
 
 app.post('/api/rooms', (req, res) => {
+  if (rooms.size >= MAX_ROOMS) {
+    return res.status(429).json({ ok: false, error: 'Maximale Anzahl aktiver Räume erreicht' });
+  }
   const code = generateRoomCode();
   const hostToken = crypto.randomBytes(8).toString('hex');
   const room = createRoom(code, hostToken);
@@ -291,7 +323,8 @@ app.post('/api/rooms', (req, res) => {
 
 app.get('/api/rooms', (req, res) => {
   const secret = String(req.headers['x-host-secret'] || '');
-  if (!validHostSecret(secret)) return res.status(401).json({ ok: false, error: 'Ungültiger Host-PIN' });
+  const auth = checkHostAuth(getClientIp(req), secret);
+  if (!auth.ok) return res.status(auth.locked ? 429 : 401).json({ ok: false, error: auth.error });
   const now = Date.now();
   const list = [...rooms.values()].map(r => r.getSummary(now));
   res.json({ ok: true, rooms: list });
@@ -299,7 +332,8 @@ app.get('/api/rooms', (req, res) => {
 
 app.delete('/api/rooms/:code', (req, res) => {
   const secret = String(req.headers['x-host-secret'] || '');
-  if (!validHostSecret(secret)) return res.status(401).json({ ok: false, error: 'Ungültiger Host-PIN' });
+  const auth = checkHostAuth(getClientIp(req), secret);
+  if (!auth.ok) return res.status(auth.locked ? 429 : 401).json({ ok: false, error: auth.error });
   const room = getRoom(req.params.code);
   if (!room) return res.status(404).json({ ok: false, error: 'Raum nicht gefunden' });
   room.destroy();
@@ -1483,7 +1517,7 @@ function attachSocket(socket, ip, allowEvent) {
     const allowed = ['😂', '🔥', '💀', '🤡', '🍻', '🎉', '❤️'];
     if (!allowed.includes(emoji)) return;
     const p = players[socket.id];
-    io.emit('react', {
+    io.to(ROOM_CHAN).emit('react', {
       name: p ? p.name : '',
       avatar: p ? (p.avatar || '😎') : '🎉',
       emoji,
@@ -1561,7 +1595,7 @@ function attachSocket(socket, ip, allowEvent) {
     };
     state.strokes.push(cleanSeg);
     if (state.strokes.length > 4000) state.strokes.shift();
-    socket.broadcast.emit('draw:stroke', cleanSeg);
+    socket.to(ROOM_CHAN).emit('draw:stroke', cleanSeg);
   });
 
   socket.on('draw:clear', () => {
@@ -1569,7 +1603,7 @@ function attachSocket(socket, ip, allowEvent) {
     const p = players[socket.id];
     if (!p || state.mode !== 'draw' || state.phase !== 'question' || p.name !== state.drawerName) return;
     state.strokes = [];
-    io.emit('draw:clear');
+    io.to(ROOM_CHAN).emit('draw:clear');
   });
 
   socket.on('draw:guess', (txt, ack) => {
@@ -1592,7 +1626,7 @@ function attachSocket(socket, ip, allowEvent) {
       const nonDrawers = pVals().filter(x => x.name !== state.drawerName);
       if (nonDrawers.length > 0 && nonDrawers.every(x => state.guessedBy.includes(x.name))) showResult();
     } else {
-      io.emit('draw:msg', { name: p.name, text: String(txt || '').slice(0, 30) });
+      io.to(ROOM_CHAN).emit('draw:msg', { name: p.name, text: String(txt || '').slice(0, 30) });
       ack && ack({ ok: false });
     }
   });
@@ -1712,24 +1746,29 @@ function attachSocket(socket, ip, allowEvent) {
   });
 
   socket.on('host:auth', (secret, ack) => {
-    const now = Date.now();
-    let fail = hostAuthFails.get(ip);
-    if (fail && now > fail.resetAt) { hostAuthFails.delete(ip); fail = null; }
-    if (fail && fail.count >= 5) return ack && ack({ ok: false, error: 'Zu viele Fehlversuche' });
-    if (!validHostSecret(secret) && !validRoomToken(secret)) {
-      fail = fail || { count: 0, resetAt: now + 60_000 };
-      fail.count++;
-      hostAuthFails.set(ip, fail);
-      writeLog('WARN', 'host_auth_failed', { ip, socketId: socket.id });
-      return ack && ack({ ok: false, error: 'Ungültiger Host-PIN' });
+    const auth = checkHostAuth(ip, secret, validRoomToken);
+    if (!auth.ok) {
+      if (!auth.locked) writeLog('WARN', 'host_auth_failed', { ip, socketId: socket.id });
+      return ack && ack({ ok: false, error: auth.error });
     }
-    hostAuthFails.delete(ip);
     socket.data.isHost = true;
     writeLog('INFO', 'host_authenticated', { ip, socketId: socket.id });
     ack && ack({ ok: true });
   });
 
   const requireHost = () => socket.data.isHost || displayMode === 'onedevice';
+
+  socket.use(([event, ...args], next) => {
+    if (typeof event === 'string' && event.startsWith('host:') && event !== 'host:auth') {
+      if (!requireHost()) {
+        writeLog('WARN', 'host_action_unauthorized', { event, ip, socketId: socket.id, room: code });
+        const maybeAck = args[args.length - 1];
+        if (typeof maybeAck === 'function') maybeAck({ ok: false, error: 'Nicht autorisiert (Host-PIN erforderlich)' });
+        return;
+      }
+    }
+    next();
+  });
 
   // Host / Admin Steuerung
   socket.on('host:mode', m => {
@@ -1953,7 +1992,7 @@ function attachSocket(socket, ip, allowEvent) {
     const trimmed = String(rawUrl || '').trim().slice(0, 200);
     if (!trimmed) {
       publicUrl = DEFAULT_URL_PLAY;
-      io.emit('info', { url: publicUrl });
+      io.to(ROOM_CHAN).emit('info', { url: publicUrl });
       broadcast();
       return ack && ack({ ok: true, url: publicUrl });
     }
@@ -1961,7 +2000,7 @@ function attachSocket(socket, ip, allowEvent) {
       const u = new URL(trimmed);
       if (u.protocol !== 'http:' && u.protocol !== 'https:') return ack && ack({ ok: false, error: 'Nur http:// oder https://' });
       publicUrl = u.toString();
-      io.emit('info', { url: publicUrl });
+      io.to(ROOM_CHAN).emit('info', { url: publicUrl });
       broadcast();
       ack && ack({ ok: true, url: publicUrl });
     } catch {
@@ -2167,7 +2206,11 @@ module.exports = {
   server,
   io,
   APP_VERSION,
+  MAX_ROOMS,
   validHostSecret,
+  checkHostAuth,
+  hostAuthFails,
+  getSocketIp,
   createRateLimiter,
   createRoom,
   getRoom,

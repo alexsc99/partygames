@@ -7,8 +7,13 @@ const {
   server,
   io,
   APP_VERSION,
+  MAX_ROOMS,
   validHostSecret,
+  checkHostAuth,
+  hostAuthFails,
+  getSocketIp,
   createRateLimiter,
+  createRoom,
   rooms,
 } = require('../server.js');
 
@@ -105,5 +110,52 @@ describe('PartyGame Server', () => {
     mw(req, makeRes(), () => { nextCalls++; });
     assert.equal(nextCalls, 2);
     assert.deepEqual(statuses, [429]);
+  });
+
+  it('checkHostAuth locks out after 5 failed attempts and resets on success', () => {
+    const testIp = '198.51.100.42';
+    hostAuthFails.delete(testIp);
+    for (let i = 0; i < 5; i++) {
+      const r = checkHostAuth(testIp, 'wrong');
+      assert.equal(r.ok, false);
+      assert.equal(r.locked, false);
+    }
+    const locked = checkHostAuth(testIp, HOST_SECRET);
+    assert.equal(locked.ok, false);
+    assert.equal(locked.locked, true);
+
+    hostAuthFails.delete(testIp);
+    const ok = checkHostAuth(testIp, HOST_SECRET);
+    assert.equal(ok.ok, true);
+  });
+
+  it('POST /api/rooms enforces MAX_ROOMS limit with 429', async () => {
+    const dummyCodes = [];
+    for (let i = rooms.size; i < MAX_ROOMS; i++) {
+      const c = `T${String(i).padStart(3, '0')}`;
+      rooms.set(c, createRoom(c, 'tok'));
+      dummyCodes.push(c);
+    }
+    try {
+      const res = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
+      assert.equal(res.status, 429);
+    } finally {
+      for (const c of dummyCodes) {
+        rooms.get(c)?.destroy();
+        rooms.delete(c);
+      }
+    }
+  });
+
+  it('getSocketIp only trusts x-forwarded-for from local/private proxy addresses', () => {
+    const fromProxy = getSocketIp({
+      handshake: { address: '10.0.5.11', headers: { 'x-forwarded-for': '203.0.113.9, 10.0.5.11' } },
+    });
+    assert.equal(fromProxy, '203.0.113.9');
+
+    const fromPublic = getSocketIp({
+      handshake: { address: '203.0.113.50', headers: { 'x-forwarded-for': '127.0.0.1' } },
+    });
+    assert.equal(fromPublic, '203.0.113.50');
   });
 });
