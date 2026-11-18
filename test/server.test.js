@@ -159,22 +159,22 @@ describe('PartyGame Server', () => {
     assert.equal(fromPublic, '203.0.113.50');
   });
 
+  async function connectPollingClient(code) {
+    const r1 = await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&room=${code}`);
+    const t1 = await r1.text();
+    const { sid } = JSON.parse(t1.slice(t1.indexOf('{')));
+    await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid}`, { method: 'POST', body: '40' });
+    await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid}`); // drain initial connect/state
+    return sid;
+  }
+
   it('allows multiple devices to control a room via /admin host events', async () => {
     const createRes = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
     const created = await createRes.json();
     const code = created.code;
 
-    async function connectPollingClient() {
-      const r1 = await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&room=${code}`);
-      const t1 = await r1.text();
-      const { sid } = JSON.parse(t1.slice(t1.indexOf('{')));
-      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid}`, { method: 'POST', body: '40' });
-      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid}`); // drain initial connect/state
-      return sid;
-    }
-
-    const sid1 = await connectPollingClient();
-    const sid2 = await connectPollingClient();
+    const sid1 = await connectPollingClient(code);
+    const sid2 = await connectPollingClient(code);
 
     try {
       // First device authenticates via hostToken, second device does not (simulating /admin?room=CODE)
@@ -193,6 +193,57 @@ describe('PartyGame Server', () => {
     } finally {
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, { method: 'POST', body: '41' });
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid2}`, { method: 'POST', body: '41' });
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
+  it('delivers and resolves secret missions across play.html and host.html', async () => {
+    const playHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'play.html'), 'utf8');
+    const hostHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'host.html'), 'utf8');
+    assert.ok(playHtml.includes('renderMissionBanner()'), 'play.html must render mission banner in renderView');
+    const renderViewBody = playHtml.slice(playHtml.indexOf('function renderView()'));
+    assert.ok(renderViewBody.includes('renderMissionBanner()'), 'renderView must include mission banner');
+    assert.ok(hostHtml.includes('})();') && hostHtml.indexOf('})();') < hostHtml.indexOf('S.missionReveal'), 'host.html must render missionReveal after mode body');
+
+    const createRes = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
+    const { code } = await createRes.json();
+    const sid1 = await connectPollingClient(code);
+    const sid2 = await connectPollingClient(code);
+    const sidHost = await connectPollingClient(code);
+
+    const origRandom = Math.random;
+    try {
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, { method: 'POST', body: '42["join",{"name":"Alice","avatar":"😎"}]' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid2}`, { method: 'POST', body: '42["join",{"name":"Bob","avatar":"🦊"}]' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '42["host:wheelEnabled",false]\x1e42["host:secretMissions",true]' });
+      // Drain pre-start state packets
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`);
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid2}`);
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`);
+
+      Math.random = () => 0.1; // ensure < 0.45 triggers a mission deterministically
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '42["host:start"]' });
+      Math.random = origRandom;
+
+      const p1Poll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`)).text();
+      const p2Poll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid2}`)).text();
+      assert.ok(p1Poll.includes('"mission":') || p2Poll.includes('"mission":'), 'Expected one player to receive private mission');
+
+      // Both players answer -> enters result with missionReveal
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, { method: 'POST', body: '42["answer",0]' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid2}`, { method: 'POST', body: '42["answer",0]' });
+      const resPoll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`)).text();
+      assert.ok(resPoll.includes('"missionReveal":{"playerName":'), `Expected missionReveal in ${resPoll}`);
+
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '42["host:resolveMission",true]' });
+      const resolvedPoll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`)).text();
+      assert.ok(resolvedPoll.includes('"resolved":true,"success":true'), `Expected resolved mission in ${resolvedPoll}`);
+    } finally {
+      Math.random = origRandom;
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, { method: 'POST', body: '41' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid2}`, { method: 'POST', body: '41' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '41' });
       rooms.get(code)?.destroy();
       rooms.delete(code);
     }

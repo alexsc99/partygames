@@ -658,6 +658,7 @@ function renderView() {
     return;
   }
 
+  (() => {
   if (S.mode === 'draw' && !res) {
     app.innerHTML = header;
     renderDrawSide();
@@ -917,16 +918,17 @@ function renderView() {
       `<div class="answers">${S.q.a.map((a, i) => `<div class="ans c${i} ${res ? (i === r.correct ? 'winner' : 'dim') : ''}" style="${res ? '' : `animation-delay:${i * 65}ms`}">${res && i === r.correct ? '✔ ' : ''}${esc(a)}${res ? `<span class="n">${r.counts[i]}</span>` : ''}</div>`).join('')}</div>` +
       (res ? '<div style="text-align:center"><div class="nextBanner">⏭️ Es geht weiter…</div></div><h2>Rangliste</h2>' + lb() : '');
   }
+  })();
   if (S.phase === 'result' && S.missionReveal) {
     const mr = S.missionReveal;
     const status = mr.resolved
       ? (mr.success ? '<span style="color:#3dd68c">✅ Geschafft! (+150 Pkt)</span>' : '<span style="color:#ff6b81">❌ Aufgeflogen!</span>')
       : '<span style="color:#ffd33d">⏳ Host bewertet im Admin…</span>';
-    app.innerHTML += `<div class="card" style="margin-top:2vh;border:2px solid #ffd33d;background:rgba(255,211,61,0.12);text-align:center">
+    app.insertAdjacentHTML('beforeend', `<div class="card" style="margin-top:2vh;border:2px solid #ffd33d;background:rgba(255,211,61,0.12);text-align:center">
       <div style="font-size:2.8vh;font-weight:800;color:#ffd33d">🕵️ Geheime Mission · ${esc(mr.playerName)}</div>
       <div style="font-size:3vh;margin:.6vh 0">„${esc(mr.text)}“</div>
       <div style="font-size:2.8vh;font-weight:700">${status}</div>
-    </div>`;
+    </div>`);
   }
 }
 

@@ -1399,6 +1399,9 @@ function attachSocket(socket, ip, allowEvent) {
           answer: sameRound ? (saved.data.answer ?? null) : null,
           answeredAt: sameRound ? (saved.data.answeredAt || 0) : 0,
         };
+        if (state.mission && state.mission.playerName.toLowerCase() === name.toLowerCase()) {
+          state.mission.playerId = socket.id;
+        }
         writeLog('INFO', 'player_rejoined', { name, socketId: socket.id, score: players[socket.id].score });
       } else {
         token = crypto.randomBytes(16).toString('base64url');
@@ -1829,8 +1832,11 @@ function attachSocket(socket, ip, allowEvent) {
     if (!state.mission || state.mission.resolved) return;
     state.mission.resolved = true;
     state.mission.success = !!ok;
-    if (ok && players[state.mission.playerId]) {
-      players[state.mission.playerId].score += 150;
+    const missionTarget = players[state.mission.playerId]
+      || pVals().find(p => p.name.toLowerCase() === String(state.mission.playerName || '').toLowerCase());
+    if (ok && missionTarget) {
+      missionTarget.score += 150;
+      missionTarget.lastGain = (missionTarget.lastGain || 0) + 150;
     }
     if (state.phase === 'result') {
       clearTimeout(timer);

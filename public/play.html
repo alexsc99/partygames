@@ -602,6 +602,17 @@ function doneImposterRead() {
   localSecret = null;
   render();
 }
+function renderMissionBanner() {
+  if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return '';
+  if (P && P.mission && S.phase !== 'result') {
+    return `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#ffd33d;font-weight:700;font-size:13px;padding:7px 10px;border-radius:10px;margin:6px 0;text-align:left">🕵️ <b>Geheime Mission (+150 Pkt):</b> ${esc(P.mission)}</div>`;
+  }
+  if (S.phase === 'result' && S.missionReveal) {
+    return `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#fff;font-size:13px;padding:8px 10px;border-radius:10px;margin:6px 0;text-align:left"><b style="color:#ffd33d">🕵️ Geheime Mission (${esc(S.missionReveal.playerName)}):</b> „${esc(S.missionReveal.text)}“<br><b>${S.missionReveal.resolved ? (S.missionReveal.success ? '✅ Geschafft (+150 Pkt)' : '❌ Aufgeflogen (0 Pkt)') : '⏳ Host bewertet…'}</b></div>`;
+  }
+  return '';
+}
+
 function renderOneDevice() {
   viewWrap.style.display = 'none';
   const showPad = S.mode === 'draw' && S.phase === 'question' && localRevealed;
@@ -677,8 +688,7 @@ function renderOneDevice() {
 
   const top = `${ctrlBar}<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b></div>` +
     (S.isFinalRound ? `<div style="background:#e21b3c;color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px;display:inline-block;margin:4px 0">🔥 FINALRUNDE · 2× PUNKTE</div>` : '') +
-    (P && P.mission && S.phase !== 'result' ? `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#ffd33d;font-weight:700;font-size:13px;padding:7px 10px;border-radius:10px;margin:6px 0;text-align:left">🕵️ <b>Geheime Mission (+150 Pkt):</b> ${esc(P.mission)}</div>` : '') +
-    (S.phase === 'result' && S.missionReveal ? `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#fff;font-size:13px;padding:8px 10px;border-radius:10px;margin:6px 0;text-align:left"><b style="color:#ffd33d">🕵️ Geheime Mission (${esc(S.missionReveal.playerName)}):</b> „${esc(S.missionReveal.text)}“<br><b>${S.missionReveal.resolved ? (S.missionReveal.success ? '✅ Geschafft (+150 Pkt)' : '❌ Aufgeflogen (0 Pkt)') : '⏳ Host bewertet…'}</b></div>` : '');
+    renderMissionBanner();
 
   if (S.phase === 'result') {
     app.innerHTML = `${top}${renderPhoneResult()}<button class="go" onclick="socket.emit('host:next')">▶ Nächste Runde</button>`;
@@ -858,13 +868,14 @@ function renderView() {
   viewWrap.style.display = (S.noTvMode && S.mode === 'draw' && S.phase === 'question' && !isDrawer && !S.paused) ? 'block' : 'none';
   if (isDrawer) {
     document.getElementById('padWord').textContent = `🎨 Male: ${P.word}`;
-    app.innerHTML = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b></div>`;
+    app.innerHTML = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b></div>${renderMissionBanner()}`;
     return;
   }
 
   const me = S.players.find(p => p.name === name);
   const top = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b>${me ? pStreakTag(me) : ''}</div>` +
-    (S.isFinalRound ? `<div style="background:#e21b3c;color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px;display:inline-block;margin:4px 0">🔥 FINALRUNDE · 2× PUNKTE</div>` : '');
+    (S.isFinalRound ? `<div style="background:#e21b3c;color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px;display:inline-block;margin:4px 0">🔥 FINALRUNDE · 2× PUNKTE</div>` : '') +
+    renderMissionBanner();
 
   if (S.phase !== 'spin') {
     pActiveSpinId = -1;
