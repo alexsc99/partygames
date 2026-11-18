@@ -366,7 +366,7 @@ describe('PartyGame Server', () => {
     assert.ok(playHtml.includes('id="connBanner"') && playHtml.includes('undoPad()'), 'play.html must provide offline banner and draw undo');
     assert.ok(hostHtml.includes('pgInitWakeLock({ videoFallback: true'), 'host.html must enable video fallback wake lock');
     assert.ok(hostHtml.includes('id="hostNextBtn"'), 'host.html must provide touch Next button');
-    assert.ok(hostHtml.includes('/silent.mp3') && hostHtml.includes('hostVol * 0.25'), 'host.html must unlock HTMLAudio with /silent.mp3 and duck audio in result');
+    assert.ok(hostHtml.includes('/silent.mp3'), 'host.html must unlock HTMLAudio with /silent.mp3');
     assert.ok(uxJs.includes('/keepalive.mp4') && !uxJs.includes('{ once: true'), 'ux-helpers.js must re-acquire wake lock and use keepalive.mp4 fallback');
     assert.ok(!css.includes('background-attachment: fixed'), 'style.css must avoid background-attachment: fixed');
     const adminHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'admin.html'), 'utf8');

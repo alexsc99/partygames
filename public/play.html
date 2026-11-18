@@ -227,7 +227,7 @@ for (const ev of ['progress', 'suspend']) playSongAudio.addEventListener(ev, () 
 function setPlayVol(v) {
   playVol = Math.max(0, Math.min(1, Number(v) / 100));
   localStorage.setItem('qVol', String(playVol));
-  playSongAudio.volume = (S && S.mode === 'songquiz' && S.phase === 'result') ? playVol * 0.25 : playVol;
+  playSongAudio.volume = playVol;
 }
 const app = document.getElementById('app');
 const viewWrap = document.getElementById('viewWrap');
@@ -352,7 +352,7 @@ function syncPlayAudio(s) {
       }
     }
   } else if (s.mode === 'songquiz' && s.phase === 'result') {
-    playSongAudio.volume = playVol * 0.25;
+    playSongAudio.volume = playVol; // Song läuft in der Auflösung mit unveränderter Lautstärke weiter
   } else if (s.mode !== 'songquiz' || s.phase === 'lobby' || s.phase === 'end') {
     lastSongKey = '';
     playAudioBlocked = false;

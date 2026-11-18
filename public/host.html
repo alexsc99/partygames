@@ -274,7 +274,7 @@ if (hostVolEl) hostVolEl.value = Math.round(hostVol * 100);
 function setHostVol(v) {
   hostVol = Math.max(0, Math.min(1, Number(v) / 100));
   localStorage.setItem('hostVol', String(hostVol));
-  songAudio.volume = (S && S.mode === 'songquiz' && S.phase === 'result') ? hostVol * 0.25 : hostVol;
+  songAudio.volume = hostVol;
 }
 function unlockAudio() {
   try {
@@ -487,7 +487,7 @@ socket.on('state', s => {
       }
     }
   } else if (s.mode === 'songquiz' && s.phase === 'result') {
-    songAudio.volume = hostVol * 0.25;
+    songAudio.volume = hostVol; // Song läuft in der Auflösung mit unveränderter Lautstärke weiter
   } else if (s.mode !== 'songquiz' || s.phase === 'lobby' || s.phase === 'end') {
     lastSongKey = '';
     audioBlocked = false;
