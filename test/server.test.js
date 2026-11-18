@@ -158,4 +158,43 @@ describe('PartyGame Server', () => {
     });
     assert.equal(fromPublic, '203.0.113.50');
   });
+
+  it('allows multiple devices to control a room via /admin host events', async () => {
+    const createRes = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
+    const created = await createRes.json();
+    const code = created.code;
+
+    async function connectPollingClient() {
+      const r1 = await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&room=${code}`);
+      const t1 = await r1.text();
+      const { sid } = JSON.parse(t1.slice(t1.indexOf('{')));
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid}`, { method: 'POST', body: '40' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid}`); // drain initial connect/state
+      return sid;
+    }
+
+    const sid1 = await connectPollingClient();
+    const sid2 = await connectPollingClient();
+
+    try {
+      // First device authenticates via hostToken, second device does not (simulating /admin?room=CODE)
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, {
+        method: 'POST',
+        body: `42["host:auth",${JSON.stringify(created.hostToken)}]`,
+      });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid2}`, {
+        method: 'POST',
+        body: '42["host:mode","songquiz"]',
+      });
+      // Drain state broadcast on sid1 and confirm mode changed by sid2
+      const pollRes = await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`);
+      const pollBody = await pollRes.text();
+      assert.ok(pollBody.includes('"mode":"songquiz"'), `Expected mode songquiz in ${pollBody}`);
+    } finally {
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid1}`, { method: 'POST', body: '41' });
+      await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid2}`, { method: 'POST', body: '41' });
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
 });

@@ -1683,21 +1683,7 @@ function attachSocket(socket, ip, allowEvent) {
     ack && ack({ ok: true });
   });
 
-  const requireHost = () => socket.data.isHost || displayMode === 'onedevice';
-
-  socket.use(([event, ...args], next) => {
-    if (typeof event === 'string' && event.startsWith('host:') && event !== 'host:auth') {
-      if (!requireHost()) {
-        writeLog('WARN', 'host_action_unauthorized', { event, ip, socketId: socket.id, room: code });
-        const maybeAck = args[args.length - 1];
-        if (typeof maybeAck === 'function') maybeAck({ ok: false, error: 'Nicht autorisiert (Host-PIN erforderlich)' });
-        return;
-      }
-    }
-    next();
-  });
-
-  // Host / Admin Steuerung
+  // Host / Admin Steuerung (mehrere Geräte im selben Raum erlaubt)
   socket.on('host:mode', m => {
     if (!MODES.includes(m)) return;
     clearTimeout(timer);
