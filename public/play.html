@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><title>PartyGame</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1b1340">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css">
 <style>
  body { padding: 18px; max-width: 560px; width: 100%; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; text-align: center; }
@@ -57,8 +62,10 @@
 </div>
 <div id="emojiLayer"></div>
 <audio id="playSongAudio"></audio>
+<script src="/js/ux-helpers.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+pgInitWakeLock();
 const NAMES = {
   quiz: '🎉 Party-Quiz', mostlikely: '🍻 Wer würde am ehesten?',
   wouldyourather: '⚖️ Entweder-Oder', estimate: '🎯 Schätz-Duell',
@@ -446,7 +453,7 @@ function join() {
     } else document.getElementById('e').textContent = (r && r.error) || 'Fehler';
   });
 }
-function ans(v) { myAnswer = v; socket.emit('answer', v); render(); }
+function ans(v) { myAnswer = v; pgVibrate(25); socket.emit('answer', v); render(); }
 function editAnswer() { myAnswer = null; sortPicks = []; render(); }
 function vote(i) { const t = S.players[i]?.name; if (t) ans(t); }
 function sendEst() {

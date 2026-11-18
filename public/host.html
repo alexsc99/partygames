@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1b1340">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
 <title>PartyGame Host</title>
 <link rel="stylesheet" href="/style.css">
 <style>
@@ -90,8 +93,10 @@
 <canvas id="confetti" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999"></canvas>
 <div id="emojiLayer"></div>
 <audio id="songAudio"></audio>
+<script src="/js/ux-helpers.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+pgInitWakeLock();
 const TITLES = {
   quiz: '🎉 Party-Quiz', mostlikely: '🍻 Wer würde am ehesten?',
   wouldyourather: '⚖️ Entweder-Oder', estimate: '🎯 Schätz-Duell',

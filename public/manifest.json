@@ -1,0 +1,18 @@
+{
+  "name": "PartyGame",
+  "short_name": "PartyGame",
+  "description": "Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1b1340",
+  "theme_color": "#1b1340",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

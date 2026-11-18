@@ -6,6 +6,7 @@ const http = require('http');
 const os = require('os');
 const QRCode = require('qrcode');
 const { Server } = require('socket.io');
+const { version: APP_VERSION } = require('./package.json');
 
 const DATA = {
   quiz: require('./data/questions.json'),
@@ -192,7 +193,7 @@ app.get('/health', (_req, res) => {
   res.json({
     ok: true,
     service: 'partygame',
-    version: '3.2.0',
+    version: APP_VERSION,
     rooms: rooms.size,
     players: totalPlayers,
     uptimeSec: Math.round(process.uptime())
@@ -236,7 +237,9 @@ try {
       }
     }
   }
-} catch {}
+} catch (err) {
+  writeLog('WARN', 'used_json_load_failed', { error: err?.message || String(err) });
+}
 
 let saveUsedTimer = null;
 function saveUsedIndices() {
@@ -244,8 +247,10 @@ function saveUsedIndices() {
   saveUsedTimer = setTimeout(() => {
     const out = {};
     for (const [k, set] of Object.entries(usedIndices)) out[k] = [...set];
-    fs.writeFile(USED_FILE, JSON.stringify(out), () => {});
-  }, 300);
+    fs.writeFile(USED_FILE, JSON.stringify(out), (err) => {
+      if (err) writeLog('WARN', 'used_json_save_failed', { error: err?.message || String(err) });
+    });
+  }, 300).unref();
 }
 
 function shuffle(arr) {
@@ -2133,24 +2138,38 @@ io.on('connection', socket => {
   room.attachSocket(socket, ip, allowEvent);
 });
 
-server.listen(PORT, HOST, () => console.log(`PartyGame v3.2.0 läuft auf http://${HOST}:${PORT} (Multi-Room)`));
+if (require.main === module) {
+  server.listen(PORT, HOST, () => console.log(`PartyGame v${APP_VERSION} läuft auf http://${HOST}:${PORT} (Multi-Room)`));
 
-process.on('uncaughtException', (err) => {
-  writeLog('ERROR', 'uncaught_exception', { message: err?.message, stack: err?.stack });
-});
-
-process.on('unhandledRejection', (reason) => {
-  writeLog('ERROR', 'unhandled_rejection', { reason: String(reason) });
-});
-
-function gracefulShutdown(signal) {
-  let totalP = 0; for (const r of rooms.values()) totalP += r.getPlayerCount();
-  writeLog('INFO', 'server_stopping', { signal, rooms: rooms.size, players: totalP });
-  io.close(() => {
-    server.close(() => process.exit(0));
+  process.on('uncaughtException', (err) => {
+    writeLog('ERROR', 'uncaught_exception', { message: err?.message, stack: err?.stack });
   });
-  setTimeout(() => process.exit(0), 5000).unref();
+
+  process.on('unhandledRejection', (reason) => {
+    writeLog('ERROR', 'unhandled_rejection', { reason: String(reason) });
+  });
+
+  function gracefulShutdown(signal) {
+    let totalP = 0; for (const r of rooms.values()) totalP += r.getPlayerCount();
+    writeLog('INFO', 'server_stopping', { signal, rooms: rooms.size, players: totalP });
+    io.close(() => {
+      server.close(() => process.exit(0));
+    });
+    setTimeout(() => process.exit(0), 5000).unref();
+  }
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+module.exports = {
+  app,
+  server,
+  io,
+  APP_VERSION,
+  validHostSecret,
+  createRateLimiter,
+  createRoom,
+  getRoom,
+  rooms,
+};
