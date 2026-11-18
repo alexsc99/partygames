@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.7.1)
+# 🎉 PartyGame (Version 3.7.2)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -195,7 +195,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.7.1 (Aktueller Stand):** Erkenne den Song: Die Musik wird in der Auflösung (nachdem alle abgestimmt haben) nicht mehr leiser gedreht, die Lautstärke bleibt gleich – auf TV und Handy.
+- **v3.7.2 (Aktueller Stand):** TV/Tablet: Bei 5–6 Antwortmöglichkeiten (z. B. „Von wem ist dieser Song?“) passt die Auflösung jetzt komplett ins Bild – Frage in 3 Spalten, Auflösung in 2 Spalten mit flacheren Kacheln, Zeilen werden nicht mehr auf die höchste Kachel gestreckt, lange Namen werden sauber umbrochen. Geprüft auf 1024×768, 1180×820, 820×1180, 1366×1024 und 1920×1080.
+- **v3.7.1:** Erkenne den Song: Die Musik wird in der Auflösung (nachdem alle abgestimmt haben) nicht mehr leiser gedreht, die Lautstärke bleibt gleich – auf TV und Handy.
 - **v3.7.0:** UI-Überarbeitung. **TV:** falsche Antworten werden in der Auflösung wirklich abgedunkelt, Antwortfelder mit ▲◆●■ (Zuordnung zum Handy ohne Farbe), Avatare zeigen, wer was gewählt/wen gewählt hat, „Keine Stimmen“-Karte statt leerem Bild, größere Schrift & Antwortfelder für Sofa-Abstand, Bedienleiste blendet sich nach ein paar Sekunden aus, Lobby mit großem Raumcode, Avatar-Karten und „So geht's“-Regel. **Handy:** Name zuerst + Avatar-Leiste zum Wischen beim Beitreten, Lobby mit Mitspielern, Spielregel und „Avatar ändern“, Hinweis „Frage steht auf dem TV“, Antwortstatus als klare Rückmeldung, Avatare beim Abstimmen. **Admin:** feste Aktionsleiste unten (Start/Weiter/Pause/Reset), Einstellungen in einklappbaren Gruppen. **Server:** Standard-Rundenlimit 10 (Party-Mix behält eigene Rundenzahl), Ergebnis enthält, wer welche Antwort gewählt hat.
 - **v3.6.0:** Besseres Handling für Handys & Mobilfunk: automatischer Wiedereinstieg nach Neuladen/verworfenem Tab; sofortiger Reconnect nach Bildschirmsperre/App-Wechsel (statt bis zu 35 s Ping-Timeout) mit Session-Wiederherstellung; Antworten mit Empfangsbestätigung („⏳ wird gesendet“ → „✅ angekommen“), unbestätigte Antworten werden nach Reconnect nachgesendet; Haptik-Countdown in den letzten 3 s und Feedback bei richtig/falsch; Konfetti auch am Handy (richtige Antwort, Podium); weiche Phasenübergänge (View Transitions) auf TV & Handy; Konfetti zeitbasiert (gleich schnell auf 120-Hz-Displays); Safe-Area für iPhone-Homescreen-App; JS-Fehler der Clients und Verbindungsart werden im Server-Log protokolliert; `scripts/deploy.sh` (startet nur neu, wenn niemand verbunden ist) und Log-Rotation.
 - **v3.5.3:** Fix: Handys mit gecachter alter `ux-helpers.js` blieben nach dem Update auf dem Lobby-Screen hängen, obwohl das Spiel (und die Musik) weiterlief. CSS/JS werden jetzt mit Inhalts-Hash (`?v=…`) eingebunden und dauerhaft gecacht; ohne Hash wird immer revalidiert.

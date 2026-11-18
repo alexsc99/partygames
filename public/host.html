@@ -63,13 +63,19 @@
  @keyframes ansDimIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: .25; transform: scale(.97); } }
  .ans.dim { opacity: .25; transform: scale(.97); animation: ansDimIn .3s ease-out both; } .ans .n { float: right; margin-left: 12px; }
  .ans.tile { display: flex; align-items: center; gap: clamp(10px, 1.2vw, 22px); min-height: clamp(64px, 14vh, 200px); font-size: clamp(18px, 4.6vmin, 60px); line-height: 1.15; padding: clamp(10px, 2vh, 30px) clamp(14px, 1.8vw, 32px); box-shadow: 0 8px 22px rgba(0,0,0,.28); }
- .ans.tile .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+ .ans.tile .txt { flex: 1; min-width: 0; overflow-wrap: break-word; hyphens: auto; }
  .ans.tile .n { float: none; margin-left: auto; flex-shrink: 0; background: rgba(0,0,0,.25); border-radius: 99px; padding: .1em .55em; font-size: .8em; font-variant-numeric: tabular-nums; }
  .ans .shape { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 1.5em; height: 1.5em; border-radius: 50%; background: rgba(0,0,0,.22); font-size: .85em; line-height: 1; text-shadow: 0 2px 6px rgba(0,0,0,.35); }
  .answers.compact .ans.tile { min-height: clamp(52px, 9vh, 130px); font-size: clamp(16px, 3.8vmin, 48px); }
  #app.game:not(.res) > .answers.compact { max-height: 40vh; }
  .answers.tl { grid-template-columns: 1fr; }
  .answers.tl .ans.tile { min-height: clamp(52px, 10vh, 150px); font-size: clamp(16px, 3.8vmin, 48px); }
+ /* 5–6 Antworten (z. B. Song-Quiz „Von wem?“): Frage 3 Spalten; im Ergebnis 2 Spalten mit flachen Kacheln,
+    damit neben Song-Banner + Rangliste alles ins Bild passt (Tablet). Zeilen nicht auf die höchste Kachel strecken. */
+ .answers.many { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: auto; }
+ .answers.many .ans.tile { min-height: clamp(48px, 9vh, 120px); font-size: clamp(15px, 3.2vmin, 42px); }
+ #app.game.res .answers.many { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(8px, 1.2vmin, 16px); }
+ #app.game.res .answers.many .ans.tile { min-height: clamp(40px, 6vh, 90px); font-size: clamp(14px, 2.7vmin, 36px); padding-top: clamp(6px, 1vh, 14px); padding-bottom: clamp(6px, 1vh, 14px); }
  .ansCell { display: flex; flex-direction: column; gap: clamp(4px, .8vh, 10px); min-width: 0; }
  .ansCell > .ans { flex: 1; }
  /* Wer hat was gewählt: kleine Avatar-Badges */
@@ -148,7 +154,7 @@
   #tvCanvas { width: 100%; max-height: 44vh; }
  }
  @media (max-width: 640px) {
-  .answers, .cols { grid-template-columns: 1fr; }
+  .answers, .answers.many, .cols { grid-template-columns: 1fr; }
   #app.game:not(.res) > .answers, #app.game:not(.res) > .answers.compact { max-height: none; }
  }
 </style></head>
@@ -586,13 +592,13 @@ function pickerBadges(list, delay0 = 0) {
 // Eine Antwort-Kachel; im Ergebnis mit Zähler und Pickern darunter.
 // o: { res, state ('winner'|'dim'|''), cls, shape, prefix (HTML), count, pickers, style }
 function ansTile(i, label, o = {}) {
-  const shape = o.shape ? `<span class="shape" aria-hidden="true">${ANS_SHAPES[i] || ''}</span>` : '';
+  const shape = o.shape && ANS_SHAPES[i] ? `<span class="shape" aria-hidden="true">${ANS_SHAPES[i]}</span>` : '';
   const style = o.style || (o.res ? '' : `animation-delay:${i * 65}ms`);
   return `<div class="ansCell"><div class="ans tile ${o.cls || `c${i}`} ${o.state || ''}"${style ? ` style="${style}"` : ''}>${shape}<span class="txt">${o.prefix || ''}${esc(label)}</span>${o.res ? `<span class="n">${o.count || 0}</span>` : ''}</div>${o.res ? pickerBadges(o.pickers, 300 + i * 140) : ''}</div>`;
 }
 // Index-basierte Antworten (Quiz, Bild-Quiz, Song-Quiz): Formen + Ergebnis mit Pickern
 function indexAnswers(labels, r, res, compact) {
-  return `<div class="answers${compact ? ' compact' : ''}">${labels.map((a, i) => ansTile(i, a, {
+  return `<div class="answers${compact ? ' compact' : ''}${labels.length > 4 ? ' many' : ''}">${labels.map((a, i) => ansTile(i, a, {
     res, shape: true,
     state: res ? (i === r.correct ? 'winner' : 'dim') : '',
     prefix: res && i === r.correct ? '✔ ' : '',
