@@ -36,7 +36,7 @@
  .qtxt { font-size: 20px; font-weight: 700; margin: 12px 0; animation: fadeSlideUp .25s ease-out both; }
  .err { color: #ff8a8a; min-height: 24px; }
  .bar { height: 10px; background: #fff3; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
- .bar div { height: 100%; background: #ffd33d; transition: width .15s linear; }
+ .bar div { height: 100%; background: #ffd33d; transform-origin: left center; transition: transform .1s linear; will-change: transform; }
  #viewWrap { display: none; margin: 8px 0 6px; }
  #viewPad { background: #fff; border-radius: 14px; width: 100%; max-height: 36vh; object-fit: contain; display: block; }
  .resBox { background: #261b59; border: 1px solid #ffffff1a; border-radius: 16px; padding: 14px; margin-top: 14px; text-align: left; animation: fadeSlideUp .25s ease-out both; }
@@ -71,7 +71,7 @@
 <div id="emojiLayer"></div>
 <audio id="playSongAudio"></audio>
 <script src="/js/ux-helpers.js"></script>
-<script src="/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.min.js"></script>
 <script>
 pgInitWakeLock();
 const NAMES = {
@@ -85,10 +85,10 @@ const NAMES = {
   wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song', imagequiz: '🖼️ Bild-Quiz', mix: '🎲 Party-Mix',
 };
 const AVATARS = ['😎', '🦊', '🐼', '🐸', '🦁', '🦄', '🐙', '🐱', '🚀', '🌟', '🍕', '🔥', '🪅', '🤡', '🤪', '🥳', '👽', '👻', '💩', '🐵', '🦖', '🦩', '🦝', '🦆', '🦥', '🦫', '🍺', '🌮', '🪩', '🤖', '🧙', '🥷', '🧛', '🍌', '🧀', '🌵'];
-const WHEEL_COLS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#7c4dff', '#ff6b9d', '#00897b', '#e86c00'];
 const ROOM_CODE = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 let roomError = '';
-const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE } }) : { on(){}, emit(){} };
+// WebSocket zuerst (spart auf Mobilfunk 2–3 Roundtrips beim (Re-)Connect), Polling nur als Fallback
+const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE }, transports: ['websocket', 'polling'], tryAllTransports: true }) : { on(){}, emit(){} };
 if (ROOM_CODE) {
   socket.on('room:error', (e) => {
     roomError = (e && e.error) || 'Raum nicht gefunden oder abgelaufen.';
@@ -137,120 +137,23 @@ async function createRoomFromHome(target) {
 }
 let S = null, P = null, joined = false, myAnswer = null, sortPicks = [], lastRoundKey = '', name = localStorage.getItem('qn') || '', avatar = localStorage.getItem('qa') || '😎', reconnectToken = localStorage.getItem('qt') || '';
 let localRevealed = false, localSecret = null, localImposterDone = [], localNameDraft = '', localActiveName = '';
-let pWheelRaf = 0, pActiveSpinId = -1;
+let pWheelStop = () => {}, pActiveSpinId = -1;
 
 function startPhoneWheelAnim(spin) {
   const cvs = document.getElementById('phoneWheelCanvas');
   if (!cvs || !spin || !Array.isArray(spin.items) || !spin.items.length) return;
-  cancelAnimationFrame(pWheelRaf);
-  const wctx = cvs.getContext('2d');
-  const items = spin.items;
-  const N = items.length;
-  const slice = (Math.PI * 2) / N;
-  const winIdx = Math.max(0, Math.min(N - 1, Number(spin.winnerIdx) || 0));
-  const jitter = N > 1 ? (((spin.id * 37) % 41 - 20) / 100) * slice * 0.42 : 0;
-  const targetRot = (Math.PI * 2 * 5) - (winIdx + 0.5) * slice - Math.PI / 2 + jitter;
-  const spinDur = 3000;
-  const start = performance.now();
-  let lastTickIdx = -1, flapper = 0, winShown = false;
-
-  function frame(now) {
-    const elapsed = now - start;
-    const t = Math.min(1, elapsed / spinDur);
-    const ease = 1 - Math.pow(1 - t, 4);
-    const rot = targetRot * ease;
-
-    if (N > 1 && t < 1) {
-      const pointerRel = ((-Math.PI / 2 - rot) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-      const curIdx = Math.floor(pointerRel / slice) + Math.floor(rot / (Math.PI * 2)) * N;
-      if (lastTickIdx !== -1 && curIdx !== lastTickIdx) flapper = 1;
-      lastTickIdx = curIdx;
-    }
-    flapper *= 0.84;
-
-    if (t >= 1 && !winShown) {
-      winShown = true;
+  pWheelStop();
+  pWheelStop = pgRunWheel(cvs, spin, {
+    R: 0.42, cyOff: 8, rimPad: 9, rimLine: 3, sliceLine: 2, winLine: 5,
+    font: N => (N > 12 ? 13 : N > 8 ? 15 : N > 5 ? 17 : 19), labelMax: 16, labelInset: 12,
+    hubLine: 4, hubFont: 20, pins: false, shadow: false,
+    ptr: { w: 13, h: 10, tip: 20, top: 12, line: 2.5 },
+    onWin: label => {
       const wb = document.getElementById('phoneWheelWinner');
-      if (wb) wb.innerHTML = `<div style="background:#26890c;border:2px solid #ffd33d;border-radius:14px;padding:10px 18px;font-size:22px;font-weight:900;display:inline-block;animation:popIn .3s ease-out both">🎉 ${esc(spin.winnerLabel || items[winIdx])}</div>`;
-    }
-
-    const W = cvs.width, H = cvs.height, cx = W / 2, cy = H / 2 + 8, R = Math.min(W, H) * 0.42;
-    wctx.clearRect(0, 0, W, H);
-
-    wctx.save();
-    wctx.beginPath();
-    wctx.arc(cx, cy, R + 9, 0, Math.PI * 2);
-    wctx.fillStyle = '#ffd33d';
-    wctx.fill();
-    wctx.lineWidth = 3;
-    wctx.strokeStyle = '#1b1340';
-    wctx.stroke();
-    wctx.restore();
-
-    for (let i = 0; i < N; i++) {
-      const a0 = rot + i * slice;
-      const a1 = a0 + slice;
-      let colIdx = i % WHEEL_COLS.length;
-      if (i === N - 1 && N > 1 && colIdx === 0) colIdx = 1;
-      wctx.save();
-      wctx.beginPath();
-      wctx.moveTo(cx, cy);
-      wctx.arc(cx, cy, R, a0, a1);
-      wctx.closePath();
-      wctx.fillStyle = WHEEL_COLS[colIdx];
-      wctx.fill();
-      wctx.lineWidth = winShown && i === winIdx ? 5 : 2;
-      wctx.strokeStyle = winShown && i === winIdx ? '#ffd33d' : 'rgba(27,19,64,0.85)';
-      wctx.stroke();
-
-      const mid = a0 + slice / 2;
-      wctx.translate(cx, cy);
-      wctx.rotate(mid);
-      wctx.textAlign = 'right';
-      wctx.textBaseline = 'middle';
-      wctx.fillStyle = '#fff';
-      const fSize = N > 12 ? 13 : N > 8 ? 15 : N > 5 ? 17 : 19;
-      wctx.font = `800 ${fSize}px system-ui, sans-serif`;
-      const rawTxt = String(items[i] || '');
-      const lbl = rawTxt.length > 16 ? rawTxt.slice(0, 15) + '…' : rawTxt;
-      wctx.fillText(lbl, R - 12, 0);
-      wctx.restore();
-    }
-
-    wctx.save();
-    wctx.beginPath();
-    wctx.arc(cx, cy, R * 0.17, 0, Math.PI * 2);
-    wctx.fillStyle = '#1b1340';
-    wctx.fill();
-    wctx.lineWidth = 4;
-    wctx.strokeStyle = '#ffd33d';
-    wctx.stroke();
-    wctx.font = '20px system-ui, sans-serif';
-    wctx.textAlign = 'center';
-    wctx.textBaseline = 'middle';
-    wctx.fillText('🎡', cx, cy + 1);
-    wctx.restore();
-
-    wctx.save();
-    wctx.translate(cx, cy - R - 12);
-    wctx.rotate(-flapper * 0.42);
-    wctx.beginPath();
-    wctx.moveTo(-13, -10);
-    wctx.lineTo(13, -10);
-    wctx.lineTo(0, 20);
-    wctx.closePath();
-    wctx.fillStyle = '#ffd33d';
-    wctx.fill();
-    wctx.lineWidth = 2.5;
-    wctx.strokeStyle = '#1b1340';
-    wctx.stroke();
-    wctx.restore();
-
-    if (S && S.phase === 'spin' && S.spin && S.spin.id === spin.id) {
-      pWheelRaf = requestAnimationFrame(frame);
-    }
-  }
-  pWheelRaf = requestAnimationFrame(frame);
+      if (wb) wb.innerHTML = `<div style="background:#26890c;border:2px solid #ffd33d;border-radius:14px;padding:10px 18px;font-size:22px;font-weight:900;display:inline-block;animation:popIn .3s ease-out both">🎉 ${esc(label)}</div>`;
+    },
+    isActive: () => !!(S && S.phase === 'spin' && S.spin && S.spin.id === spin.id),
+  });
 }
 const playSongAudio = document.getElementById('playSongAudio');
 playSongAudio.loop = true;
@@ -271,6 +174,7 @@ playSongAudio.addEventListener('playing', () => {
     }
   }
 });
+for (const ev of ['progress', 'suspend']) playSongAudio.addEventListener(ev, () => { if (S && S.noTvMode && playAudioOn) pgPreloadNextAudio(S, playSongAudio); });
 function setPlayVol(v) {
   playVol = Math.max(0, Math.min(1, Number(v) / 100));
   localStorage.setItem('qVol', String(playVol));
@@ -284,6 +188,9 @@ const padWrap = document.getElementById('padWrap');
 const pad = document.getElementById('pad');
 const pctx = pad.getContext('2d');
 let penColor = '#111', penWidth = 6, drawing = false, lastPt = null, strokeSeq = 0, curStrokeId = 0, localDrawStack = [];
+let padRect = null, pendingChunk = null, chunkTimer = 0;
+const CHUNK_MS = 50, CHUNK_MAX_PTS = 60;
+const phoneLineWidth = w => Math.max(2, Math.round((w || 6) * 0.7));
 // esc() is provided by /js/ux-helpers.js
 let lastVibKey = '';
 
@@ -301,23 +208,23 @@ socket.on('draw:clear', () => {
   pctx.clearRect(0, 0, pad.width, pad.height);
   localDrawStack = [];
 });
-socket.on('draw:stroke', seg => drawSeg(vctx, viewPad, seg));
+socket.on('draw:stroke', ch => pgDrawChunk(vctx, viewPad, ch, phoneLineWidth(ch.w)));
 socket.on('draw:history', list => {
   vctx.clearRect(0, 0, viewPad.width, viewPad.height);
   pctx.clearRect(0, 0, pad.width, pad.height);
-  list.forEach(s => { drawSeg(vctx, viewPad, s); drawSeg(pctx, pad, s); });
+  list.forEach(ch => { pgDrawChunk(vctx, viewPad, ch, phoneLineWidth(ch.w)); pgDrawChunk(pctx, pad, ch, phoneLineWidth(ch.w)); });
 });
 socket.on('react', r => {
   if (!r || !r.emoji) return;
-  const layer = document.getElementById('emojiLayer');
-  if (!layer) return;
-  const el = document.createElement('div');
-  el.className = 'floatEmoji';
-  el.style.left = (10 + Math.random() * 76) + '%';
-  el.innerHTML = `<span class="emIcon" style="font-size:34px">${esc(r.emoji)}</span>${r.name ? `<small style="font-size:11px">${esc(r.avatar || '😎')} ${esc(r.name)}</small>` : ''}`;
-  layer.appendChild(el);
-  setTimeout(() => el.remove(), 3100);
+  pgFloatEmoji(`<span class="emIcon" style="font-size:34px">${esc(r.emoji)}</span>${r.name ? `<small style="font-size:11px">${esc(r.avatar || '😎')} ${esc(r.name)}</small>` : ''}`, 10, 76);
 });
+let lastReactAt = 0;
+function sendReact(em) {
+  const now = Date.now();
+  if (now - lastReactAt < 300) return;
+  lastReactAt = now;
+  socket.emit('player:react', em);
+}
 
 const pStreakTag = p => (p && p.streak >= 2)
   ? `<span class="streakBadge ${p.streak >= 3 ? 'hot' : ''}" style="font-size:12px;padding:1px 7px">🔥 ${p.streak}×</span>`
@@ -325,7 +232,7 @@ const pStreakTag = p => (p && p.streak >= 2)
 
 function renderEmojiBar() {
   const emojis = ['😂', '🔥', '💀', '🤡', '🍻', '❤️'];
-  return `<div class="emojiBar">${emojis.map(em => `<button type="button" onclick="socket.emit('player:react','${em}')">${em}</button>`).join('')}</div>`;
+  return `<div class="emojiBar">${emojis.map(em => `<button type="button" onclick="sendReact('${em}')">${em}</button>`).join('')}</div>`;
 }
 
 let pLastScoreAnimKey = '', pScoreRaf = 0;
@@ -478,13 +385,13 @@ socket.on('state', s => {
     localDrawStack = [];
   }
   S = s;
-  if (s.nextAudio && s.nextAudio !== window._lastPreloadAudio) { window._lastPreloadAudio = s.nextAudio; fetch(s.nextAudio).catch(() => {}); }
   const artPre = (s.q && s.q.artPreload) || s.nextArt;
   if (artPre && artPre !== window._lastPreloadArt) { window._lastPreloadArt = artPre; const im = new Image(); im.src = artPre; }
   const leftMs = typeof s.leftMs === 'number' ? s.leftMs : (s.deadline ? Math.max(0, s.deadline - Date.now()) : 0);
   clientDeadline = leftMs > 0 ? performance.now() + leftMs : 0;
   clientTotalMs = s.totalMs > 0 ? s.totalMs : (s.phase === 'result' ? 5000 : (s.time || 15) * 1000);
   syncPlayAudio(s);
+  if (s.noTvMode && playAudioOn) pgPreloadNextAudio(s, playSongAudio);
   render();
 });
 socket.on('private', p => { P = p; render(); });
@@ -619,14 +526,34 @@ function clearPad() {
   socket.emit('draw:clear');
 }
 function pt(e) {
-  const r = pad.getBoundingClientRect();
+  const r = padRect || pad.getBoundingClientRect();
   return { x: Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)) };
+}
+const q1000 = v => Math.round(v * 1000);
+function flushChunk() {
+  clearTimeout(chunkTimer);
+  chunkTimer = 0;
+  if (!pendingChunk || pendingChunk.p.length < 4) return;
+  socket.emit('draw:stroke', pendingChunk);
+  const p = pendingChunk.p;
+  // Nächster Chunk startet am letzten Punkt, damit die Linie lückenlos bleibt
+  pendingChunk = { sid: pendingChunk.sid, c: pendingChunk.c, w: pendingChunk.w, p: [p[p.length - 2], p[p.length - 1]] };
+}
+function endStroke() {
+  drawing = false; lastPt = null; padRect = null;
+  flushChunk();
+  pendingChunk = null;
+  if (localDrawStack.length && !localDrawStack[localDrawStack.length - 1].length) localDrawStack.pop();
 }
 pad.addEventListener('pointerdown', e => {
   drawing = true;
+  padRect = pad.getBoundingClientRect();
   lastPt = pt(e);
   curStrokeId = ++strokeSeq;
   localDrawStack.push([]);
+  pendingChunk = (!S || S.displayMode !== 'onedevice')
+    ? { sid: curStrokeId, c: penColor, w: penWidth, p: [q1000(lastPt.x), q1000(lastPt.y)] }
+    : null;
   pad.setPointerCapture(e.pointerId);
 });
 pad.addEventListener('pointermove', e => {
@@ -635,17 +562,16 @@ pad.addEventListener('pointermove', e => {
   const seg = { x0: lastPt.x, y0: lastPt.y, x1: cur.x, y1: cur.y, c: penColor, w: penWidth, sid: curStrokeId };
   drawSeg(pctx, pad, seg);
   if (localDrawStack.length) localDrawStack[localDrawStack.length - 1].push(seg);
-  if (!S || S.displayMode !== 'onedevice') socket.emit('draw:stroke', seg);
   lastPt = cur;
+  if (!pendingChunk) return;
+  const p = pendingChunk.p, qx = q1000(cur.x), qy = q1000(cur.y);
+  if (p[p.length - 2] === qx && p[p.length - 1] === qy) return;
+  p.push(qx, qy);
+  if (p.length >= CHUNK_MAX_PTS * 2) flushChunk();
+  else if (!chunkTimer) chunkTimer = setTimeout(flushChunk, CHUNK_MS);
 });
-pad.addEventListener('pointerup', () => {
-  drawing = false; lastPt = null;
-  if (localDrawStack.length && !localDrawStack[localDrawStack.length - 1].length) localDrawStack.pop();
-});
-pad.addEventListener('pointercancel', () => {
-  drawing = false; lastPt = null;
-  if (localDrawStack.length && !localDrawStack[localDrawStack.length - 1].length) localDrawStack.pop();
-});
+pad.addEventListener('pointerup', endStroke);
+pad.addEventListener('pointercancel', endStroke);
 
 function addLocalPlayer() {
   const el = document.getElementById('localName');
@@ -730,7 +656,7 @@ function renderOneDevice() {
 
   if (S.phase !== 'spin') {
     pActiveSpinId = -1;
-    cancelAnimationFrame(pWheelRaf);
+    pWheelStop();
   }
   if (S.phase === 'spin' && S.spin) {
     if (pActiveSpinId === S.spin.id && document.getElementById('phoneWheelCanvas')) return;
@@ -1021,7 +947,7 @@ function renderView() {
 
   if (S.phase !== 'spin') {
     pActiveSpinId = -1;
-    cancelAnimationFrame(pWheelRaf);
+    pWheelStop();
   }
   if (S.phase === 'spin' && S.spin) {
     padWrap.style.display = 'none';
@@ -1337,19 +1263,19 @@ function updatePhoneTimerUI() {
   const b = document.getElementById('pbar'), s = document.getElementById('psec');
   if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return;
   if (!clientDeadline) {
-    if (b) b.style.width = '100%';
+    pgSetBar(b, 1);
     if (s) {
-      s.textContent = S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : S.phase === 'result' ? '⏸ Warte auf Weiter…' : '';
+      pgSetText(s, S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : S.phase === 'result' ? '⏸ Warte auf Weiter…' : '');
       s.classList.remove('urgent');
     }
     return;
   }
   const left = Math.max(0, clientDeadline - performance.now());
   const dur = Math.max(1000, clientTotalMs);
-  if (b) b.style.width = Math.min(100, (left / dur) * 100) + '%';
+  pgSetBar(b, left / dur);
   const sLeft = Math.ceil(left / 1000);
   if (s) {
-    s.textContent = S.phase === 'result' ? `Weiter in ${sLeft}s…` : `⏱ ${sLeft}s`;
+    pgSetText(s, S.phase === 'result' ? `Weiter in ${sLeft}s…` : `⏱ ${sLeft}s`);
     s.classList.toggle('urgent', (S.phase === 'question' || S.phase === 'go') && sLeft >= 1 && sLeft <= 3);
   }
 }

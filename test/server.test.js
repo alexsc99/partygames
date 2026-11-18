@@ -53,6 +53,23 @@ describe('PartyGame Server', () => {
     }
   });
 
+  it('does not rate-limit static/media assets (party guests share one NAT IP)', async () => {
+    for (let i = 0; i < 200; i++) {
+      const res = await fetch(`${baseUrl}/style.css`);
+      await res.arrayBuffer();
+      assert.equal(res.status, 200, `request ${i} to /style.css was limited`);
+    }
+    const html = await fetch(`${baseUrl}/`);
+    assert.equal(html.headers.get('cache-control'), 'no-cache');
+    const etag = html.headers.get('etag');
+    await html.arrayBuffer();
+    // undici-fetch manipuliert Cache-Header bei bedingten Requests, daher roh über node:http
+    const status = await new Promise((resolve, reject) => {
+      require('node:http').get(`${baseUrl}/`, { headers: { 'If-None-Match': etag } }, r => { r.resume(); resolve(r.statusCode); }).on('error', reject);
+    });
+    assert.equal(status, 304, 'HTML must revalidate via ETag instead of re-downloading');
+  });
+
   it('rejects missing or invalid asset paths with 404', async () => {
     const r1 = await fetch(`${baseUrl}/iq/does-not-exist.png`);
     assert.equal(r1.status, 404);
@@ -336,7 +353,7 @@ describe('PartyGame Server', () => {
 
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidDrawer}`, {
         method: 'POST',
-        body: '42["draw:stroke",{"x0":0.1,"y0":0.1,"x1":0.2,"y1":0.2,"c":"#111","w":6,"sid":1}]\x1e42["draw:stroke",{"x0":0.2,"y0":0.2,"x1":0.3,"y1":0.3,"c":"#e21b3c","w":11,"sid":2}]\x1e42["draw:stroke",{"x0":0.3,"y0":0.3,"x1":0.4,"y1":0.4,"c":"#e21b3c","w":11,"sid":2}]',
+        body: '42["draw:stroke",{"p":[100,100,200,200],"c":"#111","w":6,"sid":1}]\x1e42["draw:stroke",{"p":[200,200,300,300],"c":"#e21b3c","w":11,"sid":2}]\x1e42["draw:stroke",{"p":[300,300,400,400],"c":"#e21b3c","w":11,"sid":2}]\x1e42["draw:stroke",{"p":[1,2,3],"c":"#111","w":6,"sid":3}]\x1e42["draw:stroke",{"p":[0.5,0.5,1,1],"c":"#111","w":6,"sid":4}]',
       });
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`); // drain strokes
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidDrawer}`, { method: 'POST', body: '42["draw:undo"]' });
@@ -344,6 +361,7 @@ describe('PartyGame Server', () => {
       const histPoll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`)).text();
       assert.ok(histPoll.includes('"draw:history"'), `Expected draw:history in ${histPoll}`);
       assert.ok(histPoll.includes('"sid":1') && !histPoll.includes('"sid":2'), `Expected sid 1 kept and sid 2 removed in ${histPoll}`);
+      assert.ok(!histPoll.includes('"sid":3') && !histPoll.includes('"sid":4'), `Expected malformed chunks (odd length, non-integer) rejected in ${histPoll}`);
     } finally {
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidDrawer}`, { method: 'POST', body: '41' });
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '41' });

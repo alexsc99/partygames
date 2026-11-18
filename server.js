@@ -86,6 +86,8 @@ const HOST = process.env.HOST || '0.0.0.0';
 const MAX_PLAYERS = 12;
 const MAX_ROOMS = Number(process.env.MAX_ROOMS) || 50;
 const STROKE_COLORS = new Set(['#111', '#e21b3c', '#1368ce', '#26890c']);
+const STROKE_MAX_COORDS = 128; // max. 64 Punkte pro Chunk
+const STROKE_HISTORY_MAX = 3000; // Chunks pro Runde
 
 const app = express();
 app.set('trust proxy', 1);
@@ -101,7 +103,10 @@ app.use((req, res, next) => {
   );
   next();
 });
-app.use(createRateLimiter({ windowMs: 60_000, max: 180 }));
+// Nur API/QR limitieren: Auf Partys teilen sich alle Handys eine öffentliche IP (NAT),
+// statische Dateien und Song-/Bild-Assets dürfen deshalb nicht mitgezählt werden.
+const apiLimiter = createRateLimiter({ windowMs: 60_000, max: 180 });
+app.use(['/api', '/qr.png', '/info'], apiLimiter);
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -118,8 +123,9 @@ const io = new Server(server, {
   },
 });
 app.use(express.static(__dirname + '/public', { etag: true, maxAge: '1h' }));
-const sendNoCache = file => (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+// no-cache = immer revalidieren (ETag → 304), statt no-store, das jedes Mal die volle Seite lädt.
+const sendRevalidated = file => (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(__dirname + '/public/' + file);
 };
 app.get('/health', (_req, res) => {
@@ -135,12 +141,12 @@ app.get('/health', (_req, res) => {
   });
 });
 
-app.get('/', sendNoCache('play.html'));
-app.get('/play', sendNoCache('play.html'));
-app.get('/host', sendNoCache('host.html'));
-app.get('/admin', sendNoCache('admin.html'));
-app.get('/rooms', sendNoCache('rooms.html'));
-app.get('/room', sendNoCache('rooms.html'));
+app.get('/', sendRevalidated('play.html'));
+app.get('/play', sendRevalidated('play.html'));
+app.get('/host', sendRevalidated('host.html'));
+app.get('/admin', sendRevalidated('admin.html'));
+app.get('/rooms', sendRevalidated('rooms.html'));
+app.get('/room', sendRevalidated('rooms.html'));
 
 function serveCachedAssetDir(dir, allowedExts = null) {
   return (req, res) => {
@@ -273,7 +279,7 @@ app.get('/api/rooms/:code', (req, res) => {
 
 const qrCacheMap = new Map();
 app.get('/qr.png', async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Cache-Control', 'no-cache');
   const room = getRoom(req.query.room);
   const targetUrl = room ? room.getJoinUrl() : DEFAULT_URL_PLAY;
   let buf = qrCacheMap.get(targetUrl);
@@ -1630,22 +1636,26 @@ function attachSocket(socket, ip, allowEvent) {
     state.songStarted = true;
   });
 
-  socket.on('draw:stroke', seg => {
-    if (!allowEvent('stroke', 2_000, 150)) return;
+  // Zeichnen: Der Client bündelt Punkte (~20 Chunks/s) statt einer Nachricht pro pointermove.
+  // Format: { sid, c, w, p: [x0,y0,x1,y1,…] } mit ganzzahligen Koordinaten 0..1000.
+  socket.on('draw:stroke', ch => {
+    if (!allowEvent('stroke', 2_000, 80)) return;
     const p = players[socket.id];
     if (!p || state.mode !== 'draw' || state.phase !== 'question' || p.name !== state.drawerName) return;
-    if (!seg || typeof seg !== 'object') return;
-    const { x0, y0, x1, y1, c, w, sid } = seg;
-    if (![x0, y0, x1, y1].every(n => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 1)) return;
-    const cleanSeg = {
-      x0, y0, x1, y1,
+    if (!ch || typeof ch !== 'object' || !Array.isArray(ch.p)) return;
+    const pts = ch.p;
+    if (pts.length < 4 || pts.length > STROKE_MAX_COORDS || pts.length % 2) return;
+    if (!pts.every(n => Number.isInteger(n) && n >= 0 && n <= 1000)) return;
+    const { c, w, sid } = ch;
+    const clean = {
       c: STROKE_COLORS.has(c) ? c : '#111',
       w: typeof w === 'number' && Number.isFinite(w) ? Math.min(12, Math.max(1, w)) : 6,
+      p: pts.slice(),
     };
-    if (Number.isInteger(sid) && sid >= 0) cleanSeg.sid = sid;
-    state.strokes.push(cleanSeg);
-    if (state.strokes.length > 4000) state.strokes.shift();
-    socket.to(ROOM_CHAN).emit('draw:stroke', cleanSeg);
+    if (Number.isInteger(sid) && sid >= 0) clean.sid = sid;
+    state.strokes.push(clean);
+    if (state.strokes.length > STROKE_HISTORY_MAX) state.strokes.shift();
+    socket.to(ROOM_CHAN).emit('draw:stroke', clean);
   });
 
   socket.on('draw:undo', () => {

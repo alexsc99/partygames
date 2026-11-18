@@ -54,7 +54,7 @@
    <div id="cFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
  </div>
 <script src="/js/ux-helpers.js"></script>
-<script src="/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.min.js"></script>
 <script>
 const GAMES = [
   ['quiz', '🎉 Party-Quiz'],
@@ -110,7 +110,7 @@ async function createAndOpenAdmin() {
   } catch {}
 }
 if (!ROOM_CODE) { createAndOpenAdmin(); }
-const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE } }) : { on(){}, emit(){} };
+const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE }, transports: ['websocket', 'polling'], tryAllTransports: true }) : { on(){}, emit(){} };
 if (ROOM_CODE) {
   const connBanner = document.getElementById('adminConnBanner');
   socket.on('connect', () => {

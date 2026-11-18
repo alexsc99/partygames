@@ -18,6 +18,7 @@
  .url { font-size: clamp(13px, 2.4vmin, 30px); opacity: .8; margin-top: 1vh; overflow-wrap: anywhere; text-align: center; }
  .chips { display: flex; flex-wrap: wrap; gap: .6vh .6vw; }
  .chips span { display: inline-block; background: #4b3a9e; border-radius: 30px; padding: clamp(5px, .8vh, 12px) clamp(12px, 1.6vw, 24px); font-size: clamp(14px, 2.5vmin, 30px); animation: popIn .25s ease-out both; }
+ .chips span.seen { animation: none; }
  .q { font-size: clamp(20px, 4.8vmin, 62px); font-weight: 700; margin: 1.5vh 0 2.2vh; line-height: 1.2; animation: fadeSlideUp .3s ease-out both; }
  .iqWrap { display: flex; justify-content: center; margin: .8vh 0 2vh; animation: popIn .3s ease-out both; }
  .iqImg { max-height: 30vh; max-width: 72vw; border-radius: 16px; object-fit: contain; box-shadow: 0 10px 28px rgba(0,0,0,.45); }
@@ -26,7 +27,7 @@
  .ans { padding: clamp(14px, 3.6vh, 48px) clamp(14px, 2vw, 30px); border-radius: 14px; font-size: clamp(16px, 3.6vmin, 44px); font-weight: 700; position: relative; animation: fadeSlideUp .28s ease-out both; transition: opacity .35s ease, transform .25s ease; }
  .ans.dim { opacity: .25; transform: scale(.97); } .ans .n { float: right; margin-left: 12px; }
  .bar { height: clamp(8px, 1.4vh, 16px); background: #fff3; border-radius: 10px; margin-bottom: 1.8vh; overflow: hidden; }
- .bar div { height: 100%; background: #ffd33d; transition: width .15s linear; }
+ .bar div { height: 100%; background: #ffd33d; transform-origin: left center; transition: transform .1s linear; will-change: transform; }
  .lb div { display: flex; justify-content: space-between; gap: 12px; background: #2d2266; border-radius: 12px; padding: clamp(8px, 1.2vh, 16px) clamp(12px, 1.8vw, 24px); margin: .7vh 0; font-size: clamp(15px, 2.8vmin, 34px); animation: fadeSlideUp .28s ease-out both; }
  .drink { background: #e21b3c; border-radius: 18px; padding: clamp(14px, 2.5vh, 32px) clamp(16px, 3vw, 40px); font-size: clamp(20px, 4.5vmin, 56px); font-weight: 800; margin: 1.8vh 0 2vh; text-align: center; animation: popIn .35s ease-out both; }
  .drink.good { background: #26890c; }
@@ -60,7 +61,7 @@
  .wheelStage { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 1vh; animation: popIn .3s ease-out both; }
  .wheelTitle { font-size: clamp(22px, 4.4vmin, 54px); font-weight: 900; margin: .5vh 0 1.5vh; color: #ffd33d; text-shadow: 0 4px 18px rgba(0,0,0,.45); }
  .wheelSub { font-size: clamp(14px, 2.2vmin, 26px); opacity: .8; font-weight: 600; }
- #wheelCanvas { width: min(48vh, 72vw); height: min(48vh, 72vw); filter: drop-shadow(0 12px 28px rgba(0,0,0,.55)); }
+ #wheelCanvas { width: min(48vh, 72vw); height: min(48vh, 72vw); }
  .wheelWinner { min-height: 7.5vh; margin-top: 1.5vh; display: flex; align-items: center; justify-content: center; }
  .wheelWinnerBadge { background: linear-gradient(135deg, #26890c, #1b6b08); border: 3px solid #ffd33d; border-radius: 18px; padding: clamp(8px, 1.4vh, 18px) clamp(16px, 3.5vw, 42px); font-size: clamp(18px, 3.6vmin, 44px); font-weight: 900; color: #fff; animation: popIn .3s ease-out both, winnerGlow 1.2s ease-in-out infinite; }
  @media (max-width: 820px), (max-aspect-ratio: 1/1) {
@@ -96,7 +97,7 @@
 <div id="emojiLayer"></div>
 <audio id="songAudio"></audio>
 <script src="/js/ux-helpers.js"></script>
-<script src="/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.min.js"></script>
 <script>
 function updateWakeBtnUi(st) {
   const wb = document.getElementById('wakeBtn');
@@ -151,7 +152,7 @@ async function createAndOpenRoom(basePath) {
   } catch {}
 }
 if (!ROOM_CODE) { createAndOpenRoom('/host'); }
-const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE } }) : { on(){}, emit(){} };
+const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE }, transports: ['websocket', 'polling'], tryAllTransports: true }) : { on(){}, emit(){} };
 if (ROOM_CODE) {
   socket.on('connect', () => {
     const tok = localStorage.getItem('pg_host_' + ROOM_CODE);
@@ -201,6 +202,7 @@ let audioBlocked = false, audioError = false, audioElUnlocked = false;
 let hostVol = Number(localStorage.getItem('hostVol') ?? 0.5);
 if (!Number.isFinite(hostVol) || hostVol < 0 || hostVol > 1) hostVol = 0.5;
 songAudio.volume = hostVol;
+for (const ev of ['progress', 'suspend']) songAudio.addEventListener(ev, () => pgPreloadNextAudio(S, songAudio));
 const hostVolEl = document.getElementById('hostVol');
 if (hostVolEl) hostVolEl.value = Math.round(hostVol * 100);
 function setHostVol(v) {
@@ -322,29 +324,13 @@ const canvas = document.getElementById('tvCanvas');
 const ctx = canvas.getContext('2d');
 // esc() is provided by /js/ux-helpers.js
 
-function drawSeg(seg) {
-  ctx.strokeStyle = seg.c || '#111';
-  ctx.lineWidth = seg.w || 6;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(seg.x0 * canvas.width, seg.y0 * canvas.height);
-  ctx.lineTo(seg.x1 * canvas.width, seg.y1 * canvas.height);
-  ctx.stroke();
-}
 socket.on('draw:clear', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); feed = []; renderDrawSide(); });
-socket.on('draw:stroke', seg => drawSeg(seg));
-socket.on('draw:history', list => { ctx.clearRect(0, 0, canvas.width, canvas.height); list.forEach(drawSeg); });
+socket.on('draw:stroke', ch => pgDrawChunk(ctx, canvas, ch, ch.w || 6));
+socket.on('draw:history', list => { ctx.clearRect(0, 0, canvas.width, canvas.height); list.forEach(ch => pgDrawChunk(ctx, canvas, ch, ch.w || 6)); });
 socket.on('draw:msg', m => { feed.unshift(`${esc(m.name)}: ${esc(m.text)}`); feed = feed.slice(0, 8); renderDrawSide(); });
 socket.on('react', r => {
   if (!r || !r.emoji) return;
-  const layer = document.getElementById('emojiLayer');
-  if (!layer) return;
-  const el = document.createElement('div');
-  el.className = 'floatEmoji';
-  el.style.left = (10 + Math.random() * 78) + '%';
-  el.innerHTML = `<span class="emIcon">${esc(r.emoji)}</span>${r.name ? `<small>${esc(r.avatar || '😎')} ${esc(r.name)}</small>` : ''}`;
-  layer.appendChild(el);
-  setTimeout(() => el.remove(), 3200);
+  pgFloatEmoji(`<span class="emIcon">${esc(r.emoji)}</span>${r.name ? `<small>${esc(r.avatar || '😎')} ${esc(r.name)}</small>` : ''}`, 10, 78);
 });
 
 socket.on('info', i => {
@@ -365,7 +351,6 @@ socket.on('state', s => {
   const artToPreload = (s.q && s.q.artPreload) || s.nextArt;
   if (artToPreload && artToPreload !== lastPreloadArt) { lastPreloadArt = artToPreload; preloadImgUrl(artToPreload); }
   if (s.nextArt && s.nextArt !== lastPreloadArt && s.nextArt !== artToPreload) { preloadImgUrl(s.nextArt); }
-  if (s.nextAudio && s.nextAudio !== window._lastPreloadAudio) { window._lastPreloadAudio = s.nextAudio; fetch(s.nextAudio).catch(() => {}); }
   const leftMs = typeof s.leftMs === 'number' ? s.leftMs : (s.deadline ? Math.max(0, s.deadline - Date.now()) : 0);
   clientDeadline = leftMs > 0 ? performance.now() + leftMs : 0;
   clientTotalMs = s.totalMs > 0 ? s.totalMs : (s.phase === 'result' ? 5000 : (s.time || 15) * 1000);
@@ -409,6 +394,7 @@ socket.on('state', s => {
     audioError = false;
     if (!songAudio.paused) songAudio.pause();
   }
+  pgPreloadNextAudio(s, songAudio);
   render();
 });
 
@@ -484,144 +470,51 @@ const infoBanner = (title, sub = '', good = true) => title
   ? `<div class="drink ${good ? 'good' : ''}">${title}${sub ? `<small>${sub}</small>` : ''}</div>`
   : '';
 
-const WHEEL_COLS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#7c4dff', '#ff6b9d', '#00897b', '#e86c00'];
-let wheelRaf = 0, activeSpinId = -1;
+let wheelStop = () => {}, activeSpinId = -1;
 
 function startWheelAnim(spin) {
   const cvs = document.getElementById('wheelCanvas');
   if (!cvs || !spin || !Array.isArray(spin.items) || !spin.items.length) return;
-  cancelAnimationFrame(wheelRaf);
-  const wctx = cvs.getContext('2d');
-  const items = spin.items;
-  const N = items.length;
-  const slice = (Math.PI * 2) / N;
-  const winIdx = Math.max(0, Math.min(N - 1, Number(spin.winnerIdx) || 0));
-  const jitter = N > 1 ? (((spin.id * 37) % 41 - 20) / 100) * slice * 0.42 : 0;
-  const targetRot = (Math.PI * 2 * 5) - (winIdx + 0.5) * slice - Math.PI / 2 + jitter;
-  const spinDur = 3000;
-  const start = performance.now();
-  let lastTickIdx = -1, flapper = 0, winShown = false;
-
-  function frame(now) {
-    const elapsed = now - start;
-    const t = Math.min(1, elapsed / spinDur);
-    const ease = 1 - Math.pow(1 - t, 4);
-    const rot = targetRot * ease;
-
-    if (N > 1 && t < 1) {
-      const pointerRel = ((-Math.PI / 2 - rot) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-      const curIdx = Math.floor(pointerRel / slice) + Math.floor(rot / (Math.PI * 2)) * N;
-      if (lastTickIdx !== -1 && curIdx !== lastTickIdx) {
-        flapper = 1;
-        sfx('wheelTick');
-      }
-      lastTickIdx = curIdx;
-    }
-    flapper *= 0.84;
-
-    if (t >= 1 && !winShown) {
-      winShown = true;
+  wheelStop();
+  wheelStop = pgRunWheel(cvs, spin, {
+    R: 0.43, cyOff: 10, rimPad: 12, rimLine: 4, sliceLine: 2.5, winLine: 6,
+    font: N => (N > 12 ? 17 : N > 8 ? 20 : N > 5 ? 23 : 26), labelMax: 18, labelInset: 18,
+    hubLine: 6, hubFont: 28, pins: true, shadow: true,
+    ptr: { w: 18, h: 14, tip: 26, top: 16, line: 3.5 },
+    onTick: () => sfx('wheelTick'),
+    onWin: label => {
       sfx('wheelWin');
       launchConfetti(65);
       const wb = document.getElementById('wheelWinner');
-      if (wb) wb.innerHTML = `<div class="wheelWinnerBadge">🎉 ${esc(spin.winnerLabel || items[winIdx])}</div>`;
-    }
+      if (wb) wb.innerHTML = `<div class="wheelWinnerBadge">🎉 ${esc(label)}</div>`;
+    },
+    isActive: () => !!(S && S.phase === 'spin' && S.spin && S.spin.id === spin.id),
+  });
+}
 
-    const W = cvs.width, H = cvs.height, cx = W / 2, cy = H / 2 + 10, R = Math.min(W, H) * 0.43;
-    wctx.clearRect(0, 0, W, H);
-
-    // Outer glow & gold rim
-    wctx.save();
-    wctx.beginPath();
-    wctx.arc(cx, cy, R + 12, 0, Math.PI * 2);
-    wctx.fillStyle = '#ffd33d';
-    wctx.fill();
-    wctx.lineWidth = 4;
-    wctx.strokeStyle = '#1b1340';
-    wctx.stroke();
-    wctx.restore();
-
-    for (let i = 0; i < N; i++) {
-      const a0 = rot + i * slice;
-      const a1 = a0 + slice;
-      let colIdx = i % WHEEL_COLS.length;
-      if (i === N - 1 && N > 1 && colIdx === 0) colIdx = 1;
-      wctx.save();
-      wctx.beginPath();
-      wctx.moveTo(cx, cy);
-      wctx.arc(cx, cy, R, a0, a1);
-      wctx.closePath();
-      wctx.fillStyle = WHEEL_COLS[colIdx];
-      wctx.fill();
-      wctx.lineWidth = winShown && i === winIdx ? 6 : 2.5;
-      wctx.strokeStyle = winShown && i === winIdx ? '#ffd33d' : 'rgba(27,19,64,0.85)';
-      wctx.stroke();
-
-      // Label
-      const mid = a0 + slice / 2;
-      wctx.translate(cx, cy);
-      wctx.rotate(mid);
-      wctx.textAlign = 'right';
-      wctx.textBaseline = 'middle';
-      wctx.fillStyle = '#fff';
-      const fSize = N > 12 ? 17 : N > 8 ? 20 : N > 5 ? 23 : 26;
-      wctx.font = `800 ${fSize}px system-ui, sans-serif`;
-      const rawTxt = String(items[i] || '');
-      const lbl = rawTxt.length > 18 ? rawTxt.slice(0, 17) + '…' : rawTxt;
-      wctx.fillText(lbl, R - 18, 0);
-      wctx.restore();
-    }
-
-    // Rim pins
-    for (let i = 0; i < N; i++) {
-      const pa = rot + i * slice;
-      const px = cx + Math.cos(pa) * (R + 4);
-      const py = cy + Math.sin(pa) * (R + 4);
-      wctx.beginPath();
-      wctx.arc(px, py, 5, 0, Math.PI * 2);
-      wctx.fillStyle = '#fff';
-      wctx.fill();
-      wctx.lineWidth = 2;
-      wctx.strokeStyle = '#1b1340';
-      wctx.stroke();
-    }
-
-    // Center hub
-    wctx.save();
-    wctx.beginPath();
-    wctx.arc(cx, cy, R * 0.17, 0, Math.PI * 2);
-    wctx.fillStyle = '#1b1340';
-    wctx.fill();
-    wctx.lineWidth = 6;
-    wctx.strokeStyle = '#ffd33d';
-    wctx.stroke();
-    wctx.font = '28px system-ui, sans-serif';
-    wctx.textAlign = 'center';
-    wctx.textBaseline = 'middle';
-    wctx.fillText('🎡', cx, cy + 2);
-    wctx.restore();
-
-    // Top pointer (flapper)
-    wctx.save();
-    wctx.translate(cx, cy - R - 16);
-    wctx.rotate(-flapper * 0.42);
-    wctx.beginPath();
-    wctx.moveTo(-18, -14);
-    wctx.lineTo(18, -14);
-    wctx.lineTo(0, 26);
-    wctx.closePath();
-    wctx.fillStyle = '#ffd33d';
-    wctx.fill();
-    wctx.lineWidth = 3.5;
-    wctx.strokeStyle = '#1b1340';
-    wctx.stroke();
-    wctx.restore();
-
-    if (S && S.phase === 'spin' && S.spin && S.spin.id === spin.id) {
-      wheelRaf = requestAnimationFrame(frame);
-    }
+// Lobby: Gerüst (QR, Titel) nur bei URL-/Modus-Wechsel neu bauen, sonst nur Banner/Zähler/Chips.
+let lobbySeenChips = new Set();
+function renderLobby(title) {
+  const shellSig = `lobby:${title}:${url}:${S.teamMode}`;
+  if (lastRenderSig !== shellSig || !document.getElementById('lobbyChips')) {
+    lastRenderSig = shellSig;
+    lobbySeenChips = new Set();
+    app.innerHTML = `<h1>${title} <span style="background:rgba(255,211,61,0.16);border:1px solid #ffd33d;color:#ffd33d;padding:4px 14px;border-radius:12px;font-size:.65em;margin-left:10px">Raum: ${esc(ROOM_CODE)}</span></h1><div id="lobbyBanner"></div><div class="row lobby"><div class="qr-copy" onclick="copyJoinLink()" title="Klicken, um den Beitritts-Link zu kopieren"><img src="/qr.png?room=${encodeURIComponent(ROOM_CODE)}&v=${encodeURIComponent(url)}"><div class="url">${esc(url)}</div><div style="font-size:clamp(11px,1.4vmin,15px);opacity:.55;margin-top:.3vh">📋 Klicken zum Link kopieren</div><div id="qrCopiedBadge" class="qr-copied-badge">✅ Link kopiert!</div></div>
+      <div><div class="big">${S.teamMode ? '👥 Team-Spiel: Wählt euer Team am Handy!' : 'Scanne den QR-Code und mach mit!'}</div><p id="lobbyCount"></p>
+      <div class="chips" id="lobbyChips"></div></div></div>`;
   }
-  wheelRaf = requestAnimationFrame(frame);
+  const bannerEl = document.getElementById('lobbyBanner');
+  const bannerHtml = S.lobbyBanner ? `<div class="drink good" style="margin:0 0 2vh;padding:1.6vh 2vw;font-size:3.8vh">${esc(S.lobbyBanner)}</div>` : '';
+  if (bannerEl.dataset.v !== bannerHtml) { bannerEl.dataset.v = bannerHtml; bannerEl.innerHTML = bannerHtml; }
+  pgSetText(document.getElementById('lobbyCount'), `${S.players.length} Spieler dabei`);
+  const chipsEl = document.getElementById('lobbyChips');
+  const keys = S.players.map(p => `${S.teamMode && p.team ? T_ICON[p.team] + ' ' : ''}${p.avatar ? p.avatar + ' ' : ''}${p.name}`);
+  const sig = keys.join('\u0001');
+  if (chipsEl.dataset.sig === sig) return;
+  chipsEl.dataset.sig = sig;
+  // Nur neue Spieler bekommen die popIn-Animation
+  chipsEl.innerHTML = keys.map(k => `<span${lobbySeenChips.has(k) ? ' class="seen"' : ''}>${esc(k)}</span>`).join('');
+  lobbySeenChips = new Set(keys);
 }
 
 function renderPodium() {
@@ -674,7 +567,7 @@ function renderView() {
 
   if (S.phase !== 'spin') {
     activeSpinId = -1;
-    cancelAnimationFrame(wheelRaf);
+    wheelStop();
   }
 
   if (S.phase === 'spin' && S.spin) {
@@ -692,11 +585,7 @@ function renderView() {
   }
 
   if (S.phase === 'lobby') {
-    lastRenderSig = '';
-    const bannerHtml = S.lobbyBanner ? `<div class="drink good" style="margin:0 0 2vh;padding:1.6vh 2vw;font-size:3.8vh">${esc(S.lobbyBanner)}</div>` : '';
-    app.innerHTML = `<h1>${title} <span style="background:rgba(255,211,61,0.16);border:1px solid #ffd33d;color:#ffd33d;padding:4px 14px;border-radius:12px;font-size:.65em;margin-left:10px">Raum: ${esc(ROOM_CODE)}</span></h1>${bannerHtml}<div class="row lobby"><div class="qr-copy" onclick="copyJoinLink()" title="Klicken, um den Beitritts-Link zu kopieren"><img src="/qr.png?room=${encodeURIComponent(ROOM_CODE)}&v=${encodeURIComponent(url)}"><div class="url">${esc(url)}</div><div style="font-size:clamp(11px,1.4vmin,15px);opacity:.55;margin-top:.3vh">📋 Klicken zum Link kopieren</div><div id="qrCopiedBadge" class="qr-copied-badge">✅ Link kopiert!</div></div>
-      <div><div class="big">${S.teamMode ? '👥 Team-Spiel: Wählt euer Team am Handy!' : 'Scanne den QR-Code und mach mit!'}</div><p>${S.players.length} Spieler dabei</p>
-      <div class="chips">${S.players.map(p => `<span>${S.teamMode && p.team ? T_ICON[p.team] + ' ' : ''}${p.avatar ? esc(p.avatar) + ' ' : ''}${esc(p.name)}</span>`).join('')}</div></div></div>`;
+    renderLobby(title);
     return;
   }
 
@@ -1017,20 +906,20 @@ function updateTimerUI() {
   const b = document.getElementById('bar'), sec = document.getElementById('sec');
   if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return;
   if (!clientDeadline) {
-    if (b) b.style.width = '100%';
-    if (sec) sec.textContent = S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : S.phase === 'result' ? 'Tippe „▶ Weiter“' : '';
+    pgSetBar(b, 1);
+    pgSetText(sec, S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : S.phase === 'result' ? 'Tippe „▶ Weiter“' : '');
     return;
   }
   const left = Math.max(0, clientDeadline - performance.now());
   const dur = Math.max(1000, clientTotalMs);
-  if (b) b.style.width = Math.min(100, (left / dur) * 100) + '%';
+  pgSetBar(b, left / dur);
   const sLeft = Math.ceil(left / 1000);
   if (S.phase === 'question' && sLeft >= 1 && sLeft <= 3 && sLeft !== lastTickSec) {
     lastTickSec = sLeft;
     sfx('tick');
   }
   if (sec) {
-    sec.textContent = S.phase === 'result' ? `Weiter in ${sLeft}s…` : `⏱ ${sLeft}s`;
+    pgSetText(sec, S.phase === 'result' ? `Weiter in ${sLeft}s…` : `⏱ ${sLeft}s`);
     sec.classList.toggle('urgent', (S.phase === 'question' || S.phase === 'go') && sLeft >= 1 && sLeft <= 3);
   }
 }
