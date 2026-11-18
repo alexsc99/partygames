@@ -785,13 +785,18 @@ const songCache = {};
 const songInFlight = {};
 async function fetchSongPreview(song) {
   if (!song) return { preview: null, art: null };
-  if (typeof song._idx === 'number') {
-    const localFile = path.join(SONG_AUDIO_DIR, `${song._idx}.mp3`);
-    if (fs.existsSync(localFile)) return { preview: `/song-audio/${song._idx}.mp3`, art: null };
-  }
+  const localFile = typeof song._idx === 'number'
+    ? path.join(SONG_AUDIO_DIR, `${song._idx}.mp3`)
+    : null;
+  const localPreview = localFile && fs.existsSync(localFile) ? `/song-audio/${song._idx}.mp3` : null;
   const key = `${song.artist} - ${song.title}`;
-  if (songCache[key]) return songCache[key];
-  if (songInFlight[key]) return songInFlight[key];
+  if (songCache[key]) {
+    return localPreview ? { ...songCache[key], preview: localPreview } : songCache[key];
+  }
+  if (songInFlight[key]) {
+    const res = await songInFlight[key];
+    return localPreview ? { ...res, preview: localPreview } : res;
+  }
   songInFlight[key] = (async () => {
     const term = song.query || key;
     const ctrl = new AbortController();
@@ -863,9 +868,10 @@ async function fetchSongPreview(song) {
       clearTimeout(t);
       delete songInFlight[key];
     }
-    return { preview: null, art: null };
+    return { preview: localPreview, art: null };
   })();
-  return songInFlight[key];
+  const res = await songInFlight[key];
+  return localPreview ? { ...res, preview: localPreview } : res;
 }
 
 let songKindQueue = [];
