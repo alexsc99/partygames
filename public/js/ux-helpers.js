@@ -28,4 +28,9 @@
       // Ignored on unsupported browsers
     }
   };
+
+  const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  window.esc = function (s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ESC_MAP[c]);
+  };
 })();

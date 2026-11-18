@@ -31,8 +31,9 @@
     <div id="authErr" style="color:#ff8fa3;font-size:13px;margin-top:6px"></div>
   </div>
   <div id="list"></div>
+<script src="/js/ux-helpers.js"></script>
 <script>
-const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+// esc() is provided by /js/ux-helpers.js
 let pin = sessionStorage.getItem('pg_rooms_pin') || '';
 
 function savePin() {

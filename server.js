@@ -7,6 +7,18 @@ const os = require('os');
 const QRCode = require('qrcode');
 const { Server } = require('socket.io');
 const { version: APP_VERSION } = require('./package.json');
+const { writeLog } = require('./src/logger');
+const {
+  ALLOWED_ORIGINS,
+  hostAuthFails,
+  validHostSecret,
+  checkHostAuth,
+  isLocalDirectSocket,
+  getClientIp,
+  getSocketIp,
+  isAllowedOrigin,
+  createRateLimiter,
+} = require('./src/security');
 
 const DATA = {
   quiz: require('./data/questions.json'),
@@ -37,7 +49,9 @@ try {
       }
     }
   }
-} catch {}
+} catch (err) {
+  writeLog('WARN', 'custom_json_load_failed', { error: err?.message || String(err) });
+}
 
 const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'mix'];
 const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'sort', 'songquiz', 'imagequiz'];
@@ -67,119 +81,11 @@ const CATEGORIES = ['party', 'peinlich', 'kennenlernen', 'date', 'hot18'];
 const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20 };
 const TIMER_MULT = { fast: 0.7, normal: 1.0, relaxed: 1.4 };
 const REACTION_ROUNDS = 5;
-const HOST_SECRET_FILE = path.join(__dirname, 'data', '.host-secret');
-if (!fs.existsSync(HOST_SECRET_FILE)) fs.writeFileSync(HOST_SECRET_FILE, crypto.randomBytes(4).toString('hex'), { mode: 0o600, flag: 'wx' });
-const HOST_SECRET = fs.readFileSync(HOST_SECRET_FILE, 'utf8').trim();
-const hostAuthFails = new Map();
-function validHostSecret(val) {
-  if (typeof val !== 'string') return false;
-  const a = Buffer.from(val.trim()), b = Buffer.from(HOST_SECRET);
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
-const LOG_DIR = path.join(__dirname, 'logs');
-const LOG_FILE = path.join(LOG_DIR, 'partygame.log');
-try { fs.mkdirSync(LOG_DIR, { recursive: true }); } catch {}
-
-function writeLog(level, event, meta = {}) {
-  const ts = new Date().toISOString();
-  const line = `[${ts}] [${level}] ${event}${Object.keys(meta).length ? " " + JSON.stringify(meta) : ""}\n`;
-  process.stdout.write(line);
-  fs.appendFile(LOG_FILE, line, () => {});
-}
-
 const PORT = Number(process.env.PORT) || 3002;
 const HOST = process.env.HOST || '0.0.0.0';
 const MAX_PLAYERS = 12;
 const MAX_ROOMS = Number(process.env.MAX_ROOMS) || 50;
-const ALLOWED_ORIGINS = new Set(
-  (process.env.ALLOWED_ORIGINS || 'https://party.goldens.cloud,http://palworld:3002,http://localhost:3002,http://127.0.0.1:3002')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
-);
 const STROKE_COLORS = new Set(['#111', '#e21b3c', '#1368ce', '#26890c']);
-
-function isLocalDirectSocket(reqOrHandshake) {
-  const headers = reqOrHandshake.headers || {};
-  if (headers['x-forwarded-for'] || headers['x-real-ip'] || headers['cf-connecting-ip']) return false;
-  const addr = reqOrHandshake.socket?.remoteAddress || reqOrHandshake.address || '';
-  if (!addr) return false;
-  return (
-    addr === '127.0.0.1' ||
-    addr === '::1' ||
-    addr === '::ffff:127.0.0.1' ||
-    /^(::ffff:)?(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(addr) ||
-    /^fe80:/i.test(addr)
-  );
-}
-
-function getClientIp(req) {
-  return req.ip || req.socket?.remoteAddress || 'unknown';
-}
-
-function getSocketIp(socket) {
-  const peerAddr = socket.handshake.address || '';
-  const fromTrustedProxy = isLocalDirectSocket({ socket: { remoteAddress: peerAddr }, headers: {} });
-  if (fromTrustedProxy) {
-    const xff = socket.handshake.headers['x-forwarded-for'];
-    if (typeof xff === 'string' && xff.trim()) return xff.split(',')[0].trim();
-  }
-  return peerAddr || 'unknown';
-}
-
-function checkHostAuth(ip, secret, extraValidFn = null) {
-  const now = Date.now();
-  let fail = hostAuthFails.get(ip);
-  if (fail && now > fail.resetAt) {
-    hostAuthFails.delete(ip);
-    fail = null;
-  }
-  if (fail && fail.count >= 5) {
-    return { ok: false, locked: true, error: 'Zu viele Fehlversuche' };
-  }
-  const isValid = validHostSecret(secret) || (typeof extraValidFn === 'function' && extraValidFn(secret));
-  if (!isValid) {
-    fail = fail || { count: 0, resetAt: now + 60_000 };
-    fail.count++;
-    hostAuthFails.set(ip, fail);
-    if (hostAuthFails.size > 2000) {
-      for (const [k, v] of hostAuthFails) { if (now > v.resetAt) hostAuthFails.delete(k); }
-    }
-    return { ok: false, locked: false, error: 'Ungültiger Host-PIN' };
-  }
-  hostAuthFails.delete(ip);
-  return { ok: true, locked: false };
-}
-
-function isAllowedOrigin(req) {
-  const origin = req.headers.origin;
-  if (!origin) return true;
-  if (ALLOWED_ORIGINS.has(origin)) return true;
-  if (isLocalDirectSocket(req) && /^https?:\/\/(localhost|127\.0\.0\.1|pi(\.local)?|[a-z0-9-]+(\.local)?|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/i.test(origin)) {
-    return true;
-  }
-  return false;
-}
-
-function createRateLimiter({ windowMs, max }) {
-  const hits = new Map();
-  return (req, res, next) => {
-    const ip = getClientIp(req);
-    const now = Date.now();
-    let entry = hits.get(ip);
-    if (!entry || now > entry.resetAt) {
-      entry = { count: 0, resetAt: now + windowMs };
-      hits.set(ip, entry);
-      if (hits.size > 2000) {
-        for (const [k, v] of hits) { if (now > v.resetAt) hits.delete(k); }
-      }
-    }
-    entry.count++;
-    if (entry.count > max) return res.status(429).send('Zu viele Anfragen');
-    next();
-  };
-}
 
 const app = express();
 app.set('trust proxy', 1);
@@ -534,6 +440,13 @@ function allowedSongs() {
   return list.length ? list : DATA.songs;
 }
 
+const roomCustom = {};
+const getPool = (mode) => {
+  const base = DATA[mode] || [];
+  const extra = roomCustom[mode];
+  return extra && extra.length ? base.concat(extra) : base;
+};
+
 function filteredIndices(mode) {
   if (mode === 'reaction' || mode === 'truthlie' || mode === 'mix') return [];
   if (mode === 'songquiz') {
@@ -544,7 +457,7 @@ function filteredIndices(mode) {
     const matching = DATA.imagequiz.map((item, i) => (imageQuizThemes.includes(item.theme) ? i : -1)).filter(i => i !== -1);
     return matching.length ? matching : DATA.imagequiz.map((_, i) => i);
   }
-  const pool = DATA[mode];
+  const pool = getPool(mode);
   const matching = pool
     .map((item, i) => (!item.cat || activeCategories.includes(item.cat) ? i : -1))
     .filter(i => i !== -1);
@@ -585,7 +498,7 @@ function currentQuestion() {
     };
   }
   const qIdx = state.mode === 'mix' ? state.subIdx : state.order[state.idx];
-  const item = (m === 'reaction' || m === 'songquiz') ? null : DATA[m][qIdx];
+  const item = (m === 'reaction' || m === 'songquiz') ? null : getPool(m)[qIdx];
   switch (m) {
     case 'quiz': return item ? { q: item.q, a: item.a } : null;
     case 'imagequiz': return item ? { q: item.q, a: item.a, img: '/iq/' + item.img, theme: item.theme } : null;
@@ -1178,7 +1091,7 @@ function showResult() {
   let autoNextMs = 7000;
 
   if (m === 'quiz' || m === 'imagequiz') {
-    const q = DATA[m][qIdx];
+    const q = getPool(m)[qIdx];
     ps.forEach(p => {
       if (p.answer === q.c) {
         const left = Math.max(0, state.deadline - p.answeredAt) / (TIME[m] * 1000);
@@ -1477,7 +1390,15 @@ function attachSocket(socket, ip, allowEvent) {
         clearTimeout(saved.timer);
         disconnectedPlayers.delete(name.toLowerCase());
         token = saved.data.reconnectToken || crypto.randomBytes(16).toString('base64url');
-        players[socket.id] = { ...saved.data, name, avatar: rawAvatar, reconnectToken: token, answer: null, answeredAt: 0 };
+        const sameRound = saved.data.roundSeq === roundSeq;
+        players[socket.id] = {
+          ...saved.data,
+          name,
+          avatar: rawAvatar,
+          reconnectToken: token,
+          answer: sameRound ? (saved.data.answer ?? null) : null,
+          answeredAt: sameRound ? (saved.data.answeredAt || 0) : 0,
+        };
         writeLog('INFO', 'player_rejoined', { name, socketId: socket.id, score: players[socket.id].score });
       } else {
         token = crypto.randomBytes(16).toString('base64url');
@@ -1485,7 +1406,7 @@ function attachSocket(socket, ip, allowEvent) {
         writeLog('INFO', 'player_joined', { name, socketId: socket.id });
       }
     }
-    ack && ack({ ok: true, reconnectToken: token });
+    ack && ack({ ok: true, reconnectToken: token, myAnswer: players[socket.id].answer });
     broadcast();
   });
 
@@ -2036,14 +1957,19 @@ function attachSocket(socket, ip, allowEvent) {
     } else {
       return ack && ack({ ok: false, error: 'Unbekannter Modus' });
     }
-    DATA[mode].push(entry);
+    if (!Array.isArray(roomCustom[mode])) roomCustom[mode] = [];
+    roomCustom[mode].push(entry);
     try {
       let saved = {};
       if (fs.existsSync(CUSTOM_FILE)) saved = JSON.parse(fs.readFileSync(CUSTOM_FILE, 'utf8')) || {};
       if (!Array.isArray(saved[mode])) saved[mode] = [];
       saved[mode].push(entry);
-      fs.writeFile(CUSTOM_FILE, JSON.stringify(saved, null, 2), () => {});
-    } catch {}
+      fs.writeFile(CUSTOM_FILE, JSON.stringify(saved, null, 2), (err) => {
+        if (err) writeLog('WARN', 'custom_json_save_failed', { error: err?.message || String(err) });
+      });
+    } catch (err) {
+      writeLog('WARN', 'custom_json_save_failed', { error: err?.message || String(err) });
+    }
     broadcast();
     ack && ack({ ok: true });
   });
@@ -2109,7 +2035,7 @@ function attachSocket(socket, ip, allowEvent) {
       if (prev) clearTimeout(prev.timer);
       const t = setTimeout(() => disconnectedPlayers.delete(key), 900_000);
       disconnectedPlayers.set(key, {
-        data: { avatar: p.avatar, team: p.team, score: p.score, drinks: p.drinks, stats: p.stats, reconnectToken: p.reconnectToken },
+        data: { avatar: p.avatar, team: p.team, score: p.score, drinks: p.drinks, stats: p.stats, reconnectToken: p.reconnectToken, answer: p.answer, answeredAt: p.answeredAt, roundSeq },
         timer: t,
       });
       writeLog('INFO', 'player_disconnected', { name: p.name, socketId: socket.id, reason, recovered: socket.recovered });

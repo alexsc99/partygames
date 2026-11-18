@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.3.0)
+# 🎉 PartyGame (Version 3.4.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 

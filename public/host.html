@@ -262,7 +262,7 @@ function fallbackCopy(text, onDone) {
 }
 const canvas = document.getElementById('tvCanvas');
 const ctx = canvas.getContext('2d');
-const esc = s => String(s).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// esc() is provided by /js/ux-helpers.js
 
 function drawSeg(seg) {
   ctx.strokeStyle = seg.c || '#111';

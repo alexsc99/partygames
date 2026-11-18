@@ -272,7 +272,8 @@ const padWrap = document.getElementById('padWrap');
 const pad = document.getElementById('pad');
 const pctx = pad.getContext('2d');
 let penColor = '#111', drawing = false, lastPt = null;
-const esc = s => String(s).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// esc() is provided by /js/ux-helpers.js
+let lastVibKey = '';
 
 function drawSeg(ctx, cvs, seg) {
   ctx.strokeStyle = seg.c || '#111';
@@ -449,6 +450,7 @@ function join() {
       joined = true;
       localStorage.setItem('qn', name);
       if (r.reconnectToken) { reconnectToken = r.reconnectToken; localStorage.setItem('qt', reconnectToken); }
+      if (r.myAnswer !== undefined && r.myAnswer !== null) myAnswer = r.myAnswer;
       render();
     } else document.getElementById('e').textContent = (r && r.error) || 'Fehler';
   });
@@ -941,6 +943,10 @@ function renderView() {
   }
 
   if (S.mode === 'reaction' && (S.phase === 'wait' || S.phase === 'go')) {
+    if (S.phase === 'go' && myAnswer === null) {
+      const vk = `react:${S.round}:${S.phase}`;
+      if (lastVibKey !== vk) { lastVibKey = vk; pgVibrate([40, 30, 60]); }
+    }
     const cls = S.phase === 'go' ? 'go' : 'wait';
     const txt = myAnswer === 'early' ? '❌ ZU FRÜH!' : myAnswer === 'go' ? '✅ GEDRÜCKT!' : S.phase === 'go' ? '⚡ JETZT!' : '⏳ WARTEN…';
     app.innerHTML = `${top}<button class="buzzer ${cls}" ${myAnswer !== null ? 'disabled' : ''} onpointerdown="buzz()">${txt}</button>`;

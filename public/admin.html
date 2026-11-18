@@ -51,6 +51,7 @@
    <button class="go" style="margin-top:8px;padding:11px;font-size:15px" onclick="addCustom()">Hinzufügen</button>
    <div id="cFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
  </div>
+<script src="/js/ux-helpers.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const GAMES = [
@@ -123,7 +124,7 @@ function copyRoomLink() {
   if (btn) { btn.textContent = '✅ Link kopiert!'; setTimeout(() => { btn.textContent = '📋 Einladungs-Link kopieren'; }, 2000); }
 }
 const app = document.getElementById('app');
-const esc = s => String(s).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// esc() is provided by /js/ux-helpers.js
 document.getElementById('cCat').innerHTML = CATS.map(([id, lbl]) => `<option value="${id}">${lbl}</option>`).join('');
 function renderCustomFields() {
   const m = document.getElementById('cMode').value;
