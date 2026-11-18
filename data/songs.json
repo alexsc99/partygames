@@ -1,0 +1,2778 @@
+[
+  {
+    "artist": "Queen",
+    "title": "Bohemian Rhapsody",
+    "year": 1975,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "ABBA",
+    "title": "Dancing Queen",
+    "year": 1976,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Michael Jackson",
+    "title": "Billie Jean",
+    "year": 1982,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "a-ha",
+    "title": "Take On Me",
+    "year": 1985,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Bon Jovi",
+    "title": "Livin' On A Prayer",
+    "year": 1986,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Whitney Houston",
+    "title": "I Wanna Dance with Somebody",
+    "year": 1987,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Nena",
+    "title": "99 Luftballons",
+    "year": 1983,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Backstreet Boys",
+    "title": "I Want It That Way",
+    "year": 1999,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Spice Girls",
+    "title": "Wannabe",
+    "year": 1996,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Haddaway",
+    "title": "What Is Love",
+    "year": 1993,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Outkast",
+    "title": "Hey Ya!",
+    "year": 2003,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Usher",
+    "title": "Yeah!",
+    "year": 2004,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "The Killers",
+    "title": "Mr. Brightside",
+    "year": 2003,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Mark Ronson",
+    "title": "Uptown Funk",
+    "year": 2014,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Dua Lipa",
+    "title": "Don't Start Now",
+    "year": 2019,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Earth, Wind & Fire",
+    "title": "September",
+    "year": 1978,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Bee Gees",
+    "title": "Stayin' Alive",
+    "year": 1977,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Cyndi Lauper",
+    "title": "Girls Just Want to Have Fun",
+    "year": 1983,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Madonna",
+    "title": "Like a Prayer",
+    "year": 1989,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Gloria Gaynor",
+    "title": "I Will Survive",
+    "year": 1978,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Village People",
+    "title": "Y.M.C.A.",
+    "year": 1978,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Kool & The Gang",
+    "title": "Celebration",
+    "year": 1980,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Snap!",
+    "title": "Rhythm Is a Dancer",
+    "year": 1992,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Vengaboys",
+    "title": "Boom, Boom, Boom, Boom!!",
+    "year": 1998,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Lou Bega",
+    "title": "Mambo No. 5",
+    "year": 1999,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Gala",
+    "title": "Freed from Desire",
+    "year": 1996,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Black Eyed Peas",
+    "title": "I Gotta Feeling",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Pitbull",
+    "title": "Timber",
+    "year": 2013,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "LMFAO",
+    "title": "Party Rock Anthem",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Pharrell Williams",
+    "title": "Happy",
+    "year": 2013,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Calvin Harris",
+    "title": "Summer",
+    "year": 2014,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Justin Timberlake",
+    "title": "Can't Stop the Feeling!",
+    "year": 2016,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Oasis",
+    "title": "Wonderwall",
+    "year": 1995,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Blink-182",
+    "title": "All The Small Things",
+    "year": 1999,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Red Hot Chili Peppers",
+    "title": "Californication",
+    "year": 1999,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Coldplay",
+    "title": "Viva La Vida",
+    "year": 2008,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Avicii",
+    "title": "Wake Me Up",
+    "year": 2013,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Imagine Dragons",
+    "title": "Believer",
+    "year": 2017,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Die Ärzte",
+    "title": "Schrei nach Liebe",
+    "year": 1993,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Die Toten Hosen",
+    "title": "Tage wie diese",
+    "year": 2012,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "The Rembrandts",
+    "title": "I'll Be There for You",
+    "year": 1995,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Queen",
+    "title": "We Will Rock You",
+    "year": 1977,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "AC/DC",
+    "title": "Highway to Hell",
+    "year": 1979,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Journey",
+    "title": "Don't Stop Believin'",
+    "year": 1981,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Bryan Adams",
+    "title": "Summer of '69",
+    "year": 1985,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Foo Fighters",
+    "title": "Everlong",
+    "year": 1997,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Linkin Park",
+    "title": "In the End",
+    "year": 2000,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Green Day",
+    "title": "Boulevard of Broken Dreams",
+    "year": 2004,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Kings of Leon",
+    "title": "Sex on Fire",
+    "year": 2008,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Macklemore",
+    "title": "Can't Hold Us",
+    "year": 2012,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "OneRepublic",
+    "title": "Counting Stars",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Seeed",
+    "title": "Ding",
+    "year": 2005,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Toto",
+    "title": "Africa",
+    "year": 1982,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Nirvana",
+    "title": "Smells Like Teen Spirit",
+    "year": 1991,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Eminem",
+    "title": "Lose Yourself",
+    "year": 2002,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Amy Winehouse",
+    "title": "Back to Black",
+    "year": 2006,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Adele",
+    "title": "Rolling in the Deep",
+    "year": 2010,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Daft Punk",
+    "title": "Get Lucky",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "The Weeknd",
+    "title": "Blinding Lights",
+    "year": 2019,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Harry Styles",
+    "title": "As It Was",
+    "year": 2022,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Miley Cyrus",
+    "title": "Flowers",
+    "year": 2023,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Billie Eilish",
+    "title": "bad guy",
+    "year": 2019,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Taylor Swift",
+    "title": "Shake It Off",
+    "year": 2014,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Katy Perry",
+    "title": "Firework",
+    "year": 2010,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Sia",
+    "title": "Chandelier",
+    "year": 2014,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Ed Sheeran",
+    "title": "Shape of You",
+    "year": 2017,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Arctic Monkeys",
+    "title": "Do I Wanna Know?",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Gorillaz",
+    "title": "Feel Good Inc.",
+    "year": 2005,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "R.E.M.",
+    "title": "Losing My Religion",
+    "year": 1991,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "The Beatles",
+    "title": "Here Comes the Sun",
+    "year": 1969,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Fleetwood Mac",
+    "title": "Dreams",
+    "year": 1977,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "David Bowie",
+    "title": "Heroes",
+    "year": 1977,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Cro",
+    "title": "Easy",
+    "year": 2012,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Apache 207",
+    "title": "Roller",
+    "year": 2019,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Ed Sheeran",
+    "title": "Perfect",
+    "year": 2017,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "John Legend",
+    "title": "All of Me",
+    "year": 2013,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Bruno Mars",
+    "title": "Just the Way You Are",
+    "year": 2010,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Maroon 5",
+    "title": "Sugar",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Alicia Keys",
+    "title": "If I Ain't Got You",
+    "year": 2003,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Elvis Presley",
+    "title": "Can't Help Falling in Love",
+    "year": 1961,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Lady Gaga",
+    "title": "Shallow",
+    "year": 2018,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Coldplay",
+    "title": "Yellow",
+    "year": 2000,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Ben E. King",
+    "title": "Stand by Me",
+    "year": 1961,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Etta James",
+    "title": "At Last",
+    "year": 1960,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "The Temptations",
+    "title": "My Girl",
+    "year": 1964,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Jason Mraz",
+    "title": "I'm Yours",
+    "year": 2008,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "James Arthur",
+    "title": "Say You Won't Let Go",
+    "year": 2016,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Lewis Capaldi",
+    "title": "Someone You Loved",
+    "year": 2018,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Train",
+    "title": "Hey, Soul Sister",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Norah Jones",
+    "title": "Come Away with Me",
+    "year": 2002,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Deichkind",
+    "title": "Leider geil",
+    "year": 2012,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Helene Fischer",
+    "title": "Atemlos durch die Nacht",
+    "year": 2013,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Peter Fox",
+    "title": "Haus am See",
+    "year": 2008,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Culcha Candela",
+    "title": "Hamma!",
+    "year": 2007,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Kraftklub",
+    "title": "Songs für Liam",
+    "year": 2012,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Scooter",
+    "title": "Hyper Hyper",
+    "year": 1994,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Darude",
+    "title": "Sandstorm",
+    "year": 1999,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Cascada",
+    "title": "Everytime We Touch",
+    "year": 2005,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "DJ Ötzi",
+    "title": "Hey Baby",
+    "year": 2000,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Fettes Brot",
+    "title": "Emanuela",
+    "year": 2005,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Rihanna",
+    "title": "We Found Love",
+    "year": 2011,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Britney Spears",
+    "title": "Toxic",
+    "year": 2003,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Marvin Gaye",
+    "title": "Sexual Healing",
+    "year": 1982,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Beyoncé",
+    "title": "Crazy in Love",
+    "year": 2003,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Shakira",
+    "title": "Hips Don't Lie",
+    "year": 2005,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Ruki Vverh",
+    "title": "18 мне уже",
+    "year": 2001,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Руки Вверх 18 мне уже"
+  },
+  {
+    "artist": "t.A.T.u.",
+    "title": "Нас не догонят",
+    "year": 2001,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "t.A.T.u. Нас не догонят"
+  },
+  {
+    "artist": "Dima Bilan",
+    "title": "Believe",
+    "year": 2008,
+    "type": "solo",
+    "lang": "ru"
+  },
+  {
+    "artist": "Sergey Lazarev",
+    "title": "You Are the Only One",
+    "year": 2016,
+    "type": "solo",
+    "lang": "ru"
+  },
+  {
+    "artist": "Little Big",
+    "title": "Skibidi",
+    "year": 2018,
+    "type": "gruppe",
+    "lang": "ru"
+  },
+  {
+    "artist": "Little Big",
+    "title": "Uno",
+    "year": 2020,
+    "type": "gruppe",
+    "lang": "ru"
+  },
+  {
+    "artist": "Kino",
+    "title": "Кукушка",
+    "year": 1990,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Кино Кукушка"
+  },
+  {
+    "artist": "Zemfira",
+    "title": "Искала",
+    "year": 2000,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Земфира Искала"
+  },
+  {
+    "artist": "Basta",
+    "title": "Сансара",
+    "year": 2017,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Баста Сансара"
+  },
+  {
+    "artist": "Egor Kreed",
+    "title": "Самая самая",
+    "year": 2014,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Егор Крид Самая самая"
+  },
+  {
+    "artist": "Valery Meladze",
+    "title": "Салют, Вера",
+    "year": 2005,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Валерий Меладзе Салют, Вера"
+  },
+  {
+    "artist": "Alla Pugacheva",
+    "title": "Миллион алых роз",
+    "year": 1982,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Алла Пугачёва Миллион алых роз"
+  },
+  {
+    "artist": "Ivanushki International",
+    "title": "Тополиный пух",
+    "year": 1998,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Иванушки International Тополиный пух"
+  },
+  {
+    "artist": "Verka Serduchka",
+    "title": "Всё будет хорошо",
+    "year": 2003,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Верка Сердючка Всё будет хорошо"
+  },
+  {
+    "artist": "Mumiy Troll",
+    "title": "Владивосток 2000",
+    "year": 1997,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Мумий Тролль Владивосток 2000"
+  },
+  {
+    "artist": "Serebro",
+    "title": "Mama Lover",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "ru"
+  },
+  {
+    "artist": "Zivert",
+    "title": "Life",
+    "year": 2018,
+    "type": "solo",
+    "lang": "ru"
+  },
+  {
+    "artist": "Ruki Vverh",
+    "title": "Крошка моя",
+    "year": 1998,
+    "type": "gruppe",
+    "query": "Руки Вверх Крошка моя",
+    "lang": "ru"
+  },
+  {
+    "artist": "Ruki Vverh",
+    "title": "Чужие губы",
+    "year": 1998,
+    "type": "gruppe",
+    "query": "Руки Вверх Чужие губы",
+    "lang": "ru"
+  },
+  {
+    "artist": "Ruki Vverh",
+    "title": "Алёшка",
+    "year": 2000,
+    "type": "gruppe",
+    "query": "Руки Вверх Алешка",
+    "lang": "ru"
+  },
+  {
+    "artist": "Diskoteka Avariya",
+    "title": "Новогодняя",
+    "year": 1999,
+    "type": "gruppe",
+    "query": "Дискотека Авария Новогодняя",
+    "lang": "ru"
+  },
+  {
+    "artist": "Diskoteka Avariya",
+    "title": "Пей пиво!",
+    "year": 2000,
+    "type": "gruppe",
+    "query": "Дискотека Авария Пей пиво",
+    "lang": "ru"
+  },
+  {
+    "artist": "Zveri",
+    "title": "Районы-кварталы",
+    "year": 2004,
+    "type": "gruppe",
+    "query": "Звери Районы-кварталы",
+    "lang": "ru"
+  },
+  {
+    "artist": "Zveri",
+    "title": "Всё, что тебя касается",
+    "year": 2004,
+    "type": "gruppe",
+    "query": "Звери Все что тебя касается",
+    "lang": "ru"
+  },
+  {
+    "artist": "Splean",
+    "title": "Выхода нет",
+    "year": 1998,
+    "type": "gruppe",
+    "query": "Сплин Выхода нет",
+    "lang": "ru"
+  },
+  {
+    "artist": "Filipp Kirkorov",
+    "title": "Цвет настроения синий",
+    "year": 2018,
+    "type": "solo",
+    "query": "Филипп Киркоров Цвет настроения синий",
+    "lang": "ru"
+  },
+  {
+    "artist": "Max Korzh",
+    "title": "Малиновый закат",
+    "year": 2017,
+    "type": "solo",
+    "query": "Макс Корж Малиновый закат",
+    "lang": "ru"
+  },
+  {
+    "artist": "Max Korzh",
+    "title": "Мотылёк",
+    "year": 2013,
+    "type": "solo",
+    "query": "Макс Корж Мотылек",
+    "lang": "ru"
+  },
+  {
+    "artist": "Max Korzh",
+    "title": "Жить в кайф",
+    "year": 2013,
+    "type": "solo",
+    "query": "Макс Корж Жить в кайф",
+    "lang": "ru"
+  },
+  {
+    "artist": "Miyagi & Andy Panda",
+    "title": "Kosandra",
+    "year": 2020,
+    "type": "gruppe",
+    "query": "Miyagi Andy Panda Kosandra",
+    "lang": "ru"
+  },
+  {
+    "artist": "Miyagi & Andy Panda",
+    "title": "Там ревели горы",
+    "year": 2020,
+    "type": "gruppe",
+    "query": "Miyagi Andy Panda Там ревели горы",
+    "lang": "ru"
+  },
+  {
+    "artist": "Miyagi & Эндшпиль",
+    "title": "I Got Love",
+    "year": 2016,
+    "type": "gruppe",
+    "query": "Miyagi Эндшпиль I Got Love",
+    "lang": "ru"
+  },
+  {
+    "artist": "Skryptonite",
+    "title": "Это любовь",
+    "year": 2015,
+    "type": "solo",
+    "query": "Скриптонит Это любовь",
+    "lang": "ru"
+  },
+  {
+    "artist": "Basta",
+    "title": "Медлячок",
+    "year": 2016,
+    "type": "solo",
+    "query": "Баста Медлячок",
+    "lang": "ru"
+  },
+  {
+    "artist": "Basta",
+    "title": "Моя игра",
+    "year": 1998,
+    "type": "solo",
+    "query": "Баста Моя игра",
+    "lang": "ru"
+  },
+  {
+    "artist": "Noize MC",
+    "title": "Выдыхай",
+    "year": 2008,
+    "type": "solo",
+    "query": "Noize MC Выдыхай",
+    "lang": "ru"
+  },
+  {
+    "artist": "Monetochka",
+    "title": "Каждый раз",
+    "year": 2018,
+    "type": "solo",
+    "query": "Монеточка Каждый раз",
+    "lang": "ru"
+  },
+  {
+    "artist": "Polina Gagarina",
+    "title": "Спектакль окончен",
+    "year": 2012,
+    "type": "solo",
+    "query": "Полина Гагарина Спектакль окончен",
+    "lang": "ru"
+  },
+  {
+    "artist": "Sergey Lazarev",
+    "title": "В самое сердце",
+    "year": 2013,
+    "type": "solo",
+    "query": "Сергей Лазарев В самое сердце",
+    "lang": "ru"
+  },
+  {
+    "artist": "Dima Bilan",
+    "title": "Невозможное возможно",
+    "year": 2006,
+    "type": "solo",
+    "query": "Дима Билан Невозможное возможно",
+    "lang": "ru"
+  },
+  {
+    "artist": "Dima Bilan",
+    "title": "Молния",
+    "year": 2018,
+    "type": "solo",
+    "query": "Дима Билан Молния",
+    "lang": "ru"
+  },
+  {
+    "artist": "Nyusha",
+    "title": "Выбирать чудо",
+    "year": 2010,
+    "type": "solo",
+    "query": "Нюша Выбирать чудо",
+    "lang": "ru"
+  },
+  {
+    "artist": "Nyusha",
+    "title": "Цунами",
+    "year": 2014,
+    "type": "solo",
+    "query": "Нюша Цунами",
+    "lang": "ru"
+  },
+  {
+    "artist": "Loboda",
+    "title": "SuperSTAR",
+    "year": 2018,
+    "type": "solo",
+    "query": "Loboda SuperSTAR",
+    "lang": "ru"
+  },
+  {
+    "artist": "Artik & Asti",
+    "title": "Грустный дэнс",
+    "year": 2019,
+    "type": "gruppe",
+    "query": "Artik Asti Грустный дэнс",
+    "lang": "ru"
+  },
+  {
+    "artist": "HammAli & Navai",
+    "title": "Пустите меня на танцпол",
+    "year": 2018,
+    "type": "gruppe",
+    "query": "HammAli Navai Пустите меня на танцпол",
+    "lang": "ru"
+  },
+  {
+    "artist": "Rauf & Faik",
+    "title": "Детство",
+    "year": 2018,
+    "type": "gruppe",
+    "query": "Rauf Faik Детство",
+    "lang": "ru"
+  },
+  {
+    "artist": "JONY",
+    "title": "Аллея",
+    "year": 2019,
+    "type": "solo",
+    "query": "JONY Аллея",
+    "lang": "ru"
+  },
+  {
+    "artist": "Kasta",
+    "title": "Вокруг шум",
+    "year": 2008,
+    "type": "gruppe",
+    "query": "Каста Вокруг шум",
+    "lang": "ru"
+  },
+  {
+    "artist": "Centr",
+    "title": "Город дорог",
+    "year": 2007,
+    "type": "gruppe",
+    "query": "Centr Город дорог",
+    "lang": "ru"
+  },
+  {
+    "artist": "Serebro",
+    "title": "Между нами любовь",
+    "year": 2017,
+    "type": "gruppe",
+    "query": "Serebro Между нами любовь",
+    "lang": "ru"
+  },
+  {
+    "artist": "VIA Gra",
+    "title": "Бриллианты",
+    "year": 2005,
+    "type": "gruppe",
+    "query": "ВИА Гра Бриллианты",
+    "lang": "ru"
+  },
+  {
+    "artist": "MakSim",
+    "title": "Трудный возраст",
+    "year": 2006,
+    "type": "solo",
+    "query": "Maksim Trudnyy Vozrast",
+    "lang": "ru"
+  },
+  {
+    "artist": "Grigory Leps",
+    "title": "Рюмка водки на столе",
+    "year": 2002,
+    "type": "solo",
+    "query": "Григорий Лепс Рюмка водки на столе",
+    "lang": "ru"
+  },
+  {
+    "artist": "Zivert",
+    "title": "Beverly Hills",
+    "year": 2019,
+    "type": "solo",
+    "query": "Zivert Beverly Hills",
+    "lang": "ru"
+  },
+  {
+    "artist": "HammAli & Navai",
+    "title": "Прятки",
+    "year": 2019,
+    "type": "gruppe",
+    "query": "HammAli Navai Прятки",
+    "lang": "ru"
+  },
+  {
+    "artist": "t.A.T.u.",
+    "title": "Я сошла с ума",
+    "year": 2000,
+    "type": "gruppe",
+    "query": "t.A.T.u. Я сошла с ума",
+    "lang": "ru"
+  },
+  {
+    "artist": "Gradusy",
+    "title": "Голая",
+    "year": 2011,
+    "type": "gruppe",
+    "query": "Градусы Голая",
+    "lang": "ru"
+  },
+  {
+    "artist": "IOWA",
+    "title": "Маршрутка",
+    "year": 2014,
+    "type": "gruppe",
+    "query": "IOWA Маршрутка",
+    "lang": "ru"
+  },
+  {
+    "artist": "Vremya i Steklo",
+    "title": "Имя 505",
+    "year": 2015,
+    "type": "gruppe",
+    "query": "Время и Стекло Имя 505",
+    "lang": "ru"
+  },
+  {
+    "artist": "Monatik",
+    "title": "Кружит",
+    "year": 2016,
+    "type": "solo",
+    "query": "MONATIK Кружит",
+    "lang": "ru"
+  },
+  {
+    "artist": "Mikhail Shufutinsky",
+    "title": "3-е сентября",
+    "year": 1993,
+    "type": "solo",
+    "query": "Михаил Шуфутинский 3-е сентября",
+    "lang": "ru"
+  },
+  {
+    "artist": "Korol i Shut",
+    "title": "Кукла колдуна",
+    "year": 1998,
+    "type": "gruppe",
+    "query": "Король и Шут Кукла колдуна",
+    "lang": "ru"
+  },
+  {
+    "artist": "Korol i Shut",
+    "title": "Лесник",
+    "year": 1997,
+    "type": "gruppe",
+    "query": "Король и Шут Лесник",
+    "lang": "ru"
+  },
+  {
+    "artist": "Kino",
+    "title": "Пачка сигарет",
+    "year": 1989,
+    "type": "gruppe",
+    "query": "Кино Пачка сигарет",
+    "lang": "ru"
+  },
+  {
+    "artist": "Leningrad",
+    "title": "Экспонат",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Ленинград Экспонат"
+  },
+  {
+    "artist": "Leningrad",
+    "title": "В Питере - пить",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Ленинград В Питере пить"
+  },
+  {
+    "artist": "Niletto",
+    "title": "Любимка",
+    "year": 2019,
+    "type": "solo",
+    "lang": "ru",
+    "query": "NILETTO Любимка"
+  },
+  {
+    "artist": "Dabro",
+    "title": "Юность",
+    "year": 2020,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Dabro Юность"
+  },
+  {
+    "artist": "Anna Asti",
+    "title": "По барам",
+    "year": 2022,
+    "type": "solo",
+    "lang": "ru",
+    "query": "ANNA ASTI По барам"
+  },
+  {
+    "artist": "Anna Asti",
+    "title": "Царица",
+    "year": 2023,
+    "type": "solo",
+    "lang": "ru",
+    "query": "ANNA ASTI Царица"
+  },
+  {
+    "artist": "Morgenstern & Eldzhey",
+    "title": "Cadillac",
+    "year": 2020,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "MORGENSHTERN Элджей Cadillac"
+  },
+  {
+    "artist": "Mot",
+    "title": "Капкан",
+    "year": 2016,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Мот Капкан"
+  },
+  {
+    "artist": "Timati & Grigory Leps",
+    "title": "Лондон",
+    "year": 2012,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Тимати Григорий Лепс Лондон"
+  },
+  {
+    "artist": "Valery Meladze",
+    "title": "Красиво",
+    "year": 1999,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Валерий Меладзе Красиво"
+  },
+  {
+    "artist": "Valery Meladze",
+    "title": "Текила-любовь",
+    "year": 2002,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Валерий Меладзе Текила-любовь"
+  },
+  {
+    "artist": "Leonid Agutin",
+    "title": "На сиреневой луне",
+    "year": 1998,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Леонид Агутин На сиреневой луне"
+  },
+  {
+    "artist": "Hi-Fi",
+    "title": "Седьмой лепесток",
+    "year": 2004,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Hi-Fi Седьмой лепесток"
+  },
+  {
+    "artist": "Gosti iz Budushchego",
+    "title": "Беги от меня",
+    "year": 1999,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Гости из будущего Беги от меня"
+  },
+  {
+    "artist": "Demo",
+    "title": "Солнышко",
+    "year": 1999,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Демо Солнышко"
+  },
+  {
+    "artist": "Kraski",
+    "title": "Старший брат",
+    "year": 2002,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Краски Старший брат"
+  },
+  {
+    "artist": "DDT",
+    "title": "Что такое осень",
+    "year": 1992,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "ДДТ Что такое осень"
+  },
+  {
+    "artist": "Agata Kristi",
+    "title": "Как на войне",
+    "year": 1995,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Агата Кристи Как на войне"
+  },
+  {
+    "artist": "Zemfira",
+    "title": "Хочешь?",
+    "year": 2000,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Земфира Хочешь"
+  },
+  {
+    "artist": "Клава Кока & NILETTO",
+    "title": "Краш",
+    "year": 2020,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Клава Кока NILETTO Краш"
+  },
+  {
+    "artist": "Gayazov$ Brother$",
+    "title": "Малиновая Лада",
+    "year": 2021,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "GAYAZOV$ BROTHER$ Малиновая Лада"
+  },
+  {
+    "artist": "Instasamka",
+    "title": "За деньги да",
+    "year": 2022,
+    "type": "solo",
+    "lang": "ru",
+    "query": "INSTASAMKA За деньги да"
+  },
+  {
+    "artist": "Mikhail Krug",
+    "title": "Владимирский централ",
+    "year": 1998,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Михаил Круг Владимирский централ"
+  },
+  {
+    "artist": "Sergey Shnurov & Leningrad",
+    "title": "WWW",
+    "year": 2002,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Ленинград WWW"
+  },
+  {
+    "artist": "MIA BOYKA",
+    "title": "ЭКСПОНАТ",
+    "year": 2024,
+    "type": "solo",
+    "lang": "ru",
+    "query": "MIA BOYKA ЭКСПОНАТ"
+  },
+  {
+    "artist": "Sabi, MIA BOYKA",
+    "title": "Базовый минимум",
+    "year": 2024,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Sabi MIA BOYKA Базовый минимум"
+  },
+  {
+    "artist": "Мари Краймбрери",
+    "title": "Ты помнишь",
+    "year": 2021,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Мари Краймбрери Ты помнишь"
+  },
+  {
+    "artist": "Karna.val",
+    "title": "ты первый кто",
+    "year": 2025,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Karna.val ты первый кто"
+  },
+  {
+    "artist": "Фактор 2",
+    "title": "Красавица",
+    "year": 2005,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Фактор 2 Красавица"
+  },
+  {
+    "artist": "Кирилл Мойтон",
+    "title": "Белые ночи",
+    "year": 2020,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Кирилл Мойтон Белые ночи"
+  },
+  {
+    "artist": "Alexander Rybak",
+    "title": "Котик",
+    "year": 2015,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Alexander Rybak Kotik"
+  },
+  {
+    "artist": "Александр Рыбак",
+    "title": "Небеса Европы",
+    "year": 2011,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Alexander Rybak Europe Skies"
+  },
+  {
+    "artist": "Александр Рыбак",
+    "title": "Сказка",
+    "year": 2009,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Alexander Rybak Fairytale"
+  },
+  {
+    "artist": "Фактор 2",
+    "title": "Война",
+    "year": 2005,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Фактор 2 Война"
+  },
+  {
+    "artist": "Мари Краймбрери feat. Alex Davia",
+    "title": "If You Love Me",
+    "year": 2022,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Мари Краймбрери If You Love Me"
+  },
+  {
+    "artist": "5sta Family & 23:45",
+    "title": "Я буду",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "5sta Family Я буду"
+  },
+  {
+    "artist": "Егор Крид feat. Tenderlybae & Егорик",
+    "title": "ТАРО",
+    "year": 2023,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Егор Крид ТАРО"
+  },
+  {
+    "artist": "Тимати feat. Рекорд Оркестр",
+    "title": "Баклажан",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Тимати Баклажан"
+  },
+  {
+    "artist": "Клава Кока & MORGENSHTERN",
+    "title": "Мне пох",
+    "year": 2019,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Клава Кока Мне пох"
+  },
+  {
+    "artist": "Клава Кока",
+    "title": "Покинула Чат",
+    "year": 2020,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Клава Кока Покинула Чат"
+  },
+  {
+    "artist": "Russian Village Boys",
+    "title": "Romantic & Jackass",
+    "year": 2020,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Russian Village Boys Romantic Jackass"
+  },
+  {
+    "artist": "Дима Билан & Мари Краймбрери",
+    "title": "It's My Life",
+    "year": 2024,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Dima Bilan It's My Life"
+  },
+  {
+    "artist": "Culcha Candela",
+    "title": "Eiskalt",
+    "year": 2009,
+    "type": "gruppe",
+    "query": "Culcha Candela Eiskalt",
+    "lang": "de"
+  },
+  {
+    "artist": "Culcha Candela",
+    "title": "Berlin City Girl",
+    "year": 2010,
+    "type": "gruppe",
+    "query": "Culcha Candela Berlin City Girl",
+    "lang": "de"
+  },
+  {
+    "artist": "Тима Белорусских",
+    "title": "Алёнка",
+    "year": 2019,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Тима Белорусских Алёнка"
+  },
+  {
+    "artist": "Тима Белорусских",
+    "title": "ВЕСНУШКИ",
+    "year": 2020,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Тима Белорусских Веснушки"
+  },
+  {
+    "artist": "Flo Rida & Kesha",
+    "title": "Right Round",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "The Notorious B.I.G.",
+    "title": "Big Poppa",
+    "year": 1994,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Nelly & Kelly Rowland",
+    "title": "Dilemma",
+    "year": 2002,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "David Guetta feat. Usher",
+    "title": "Without You",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Kid Ink feat. Verse Simmonds",
+    "title": "Diamonds & Gold",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Kid Ink Diamonds & Gold"
+  },
+  {
+    "artist": "Kid Ink",
+    "title": "That's on You",
+    "year": 2014,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Kid Ink, Tyga, Wale, YG & Rich Homie Quan",
+    "title": "Ride Out",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Kid Ink Ride Out"
+  },
+  {
+    "artist": "Steve Aoki, Chris Lake & Tujamo feat. Kid Ink",
+    "title": "Delirious (Boneless)",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Steve Aoki Delirious Boneless"
+  },
+  {
+    "artist": "Kid Ink",
+    "title": "Hell & Back",
+    "year": 2012,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "DJ Willi & Bow Wow",
+    "title": "Too Real",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Kid Ink feat. Chris Brown",
+    "title": "Main Chick",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Kid Ink Main Chick"
+  },
+  {
+    "artist": "T.I. feat. Iggy Azalea",
+    "title": "No Mediocre",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "T.I. No Mediocre"
+  },
+  {
+    "artist": "Chris Brown feat. Yo Gotti, A Boogie Wit da Hoodie & Kodak Black",
+    "title": "Pills & Automobiles",
+    "year": 2017,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Chris Brown Pills Automobiles"
+  },
+  {
+    "artist": "Kendrick Lamar feat. Jay Rock",
+    "title": "Money Trees",
+    "year": 2012,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Ty Dolla $ign feat. Joe Moses",
+    "title": "Wavy",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Ty Dolla Sign Wavy"
+  },
+  {
+    "artist": "Future feat. The Weeknd",
+    "title": "Low Life",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Future Low Life"
+  },
+  {
+    "artist": "Chris Brown & Tyga feat. Boosie Badazz",
+    "title": "Real One",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Chris Brown Tyga Real One"
+  },
+  {
+    "artist": "A$AP Rocky feat. Rod Stewart, Miguel & Mark Ronson",
+    "title": "Everyday",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "ASAP Rocky Everyday"
+  },
+  {
+    "artist": "Akon feat. Eminem",
+    "title": "Smack That",
+    "year": 2006,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Outkast",
+    "title": "Ms. Jackson",
+    "year": 2000,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Kid Cudi",
+    "title": "Day 'N' Nite (Nightmare)",
+    "year": 2008,
+    "type": "solo",
+    "lang": "en",
+    "query": "Kid Cudi Day N Nite"
+  },
+  {
+    "artist": "50 Cent feat. Ne-Yo",
+    "title": "Baby By Me",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Ty Dolla $ign feat. The Weeknd, Wiz Khalifa & DJ Mustard",
+    "title": "Or Nah",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Ty Dolla Sign Or Nah"
+  },
+  {
+    "artist": "Wiz Khalifa feat. Charlie Puth",
+    "title": "See You Again",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "will.i.am feat. Miley Cyrus, French Montana, Wiz Khalifa & DJ Mustard",
+    "title": "Feelin' Myself",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "will.i.am Feelin Myself"
+  },
+  {
+    "artist": "Wiz Khalifa",
+    "title": "Paperbond",
+    "year": 2012,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Wiz Khalifa",
+    "title": "Work Hard, Play Hard",
+    "year": 2012,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Wiz Khalifa & Iggy Azalea",
+    "title": "Go Hard or Go Home",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Wiz Khalifa",
+    "title": "We Dem Boyz",
+    "year": 2014,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Lil Wayne, Wiz Khalifa & Imagine Dragons feat. X Ambassadors, Logic & Ty Dolla $ign",
+    "title": "Sucker for Pain",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Sucker for Pain"
+  },
+  {
+    "artist": "Wiz Khalifa",
+    "title": "Black and Yellow",
+    "year": 2010,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Snoop Dogg & Wiz Khalifa feat. Bruno Mars",
+    "title": "Young, Wild & Free",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Snoop Dogg Wiz Khalifa Young Wild Free"
+  },
+  {
+    "artist": "DJ Khaled feat. Chris Brown, Lil Wayne & Big Sean",
+    "title": "Jealous",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "DJ Khaled Jealous"
+  },
+  {
+    "artist": "Lil Dicky feat. Chris Brown",
+    "title": "Freaky Friday",
+    "year": 2018,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Lil Dicky Freaky Friday"
+  },
+  {
+    "artist": "Kid Ink feat. Chris Brown",
+    "title": "Show Me",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Kid Ink feat. Chris Brown",
+    "title": "Hotel",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Kid Ink Hotel"
+  },
+  {
+    "artist": "Deorro & Chris Brown",
+    "title": "Five More Hours",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Deorro Five More Hours"
+  },
+  {
+    "artist": "Chris Brown & Tyga",
+    "title": "Ayo",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Chris Brown Tyga Ayo"
+  },
+  {
+    "artist": "Madonna",
+    "title": "Hung Up",
+    "year": 2005,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Justin Timberlake feat. T.I.",
+    "title": "My Love",
+    "year": 2006,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "The Weeknd",
+    "title": "Earned It (Fifty Shades Of Grey)",
+    "year": 2014,
+    "type": "solo",
+    "lang": "en",
+    "query": "The Weeknd Earned It"
+  },
+  {
+    "artist": "Calvin Harris & Dua Lipa",
+    "title": "One Kiss",
+    "year": 2018,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Pitbull",
+    "title": "Hotel Room Service",
+    "year": 2009,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Timbaland feat. Justin Timberlake",
+    "title": "Carry Out",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Jay Sean feat. Lil Wayne",
+    "title": "Down",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Fergie feat. Ludacris",
+    "title": "Glamorous",
+    "year": 2006,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Fergie Glamorous"
+  },
+  {
+    "artist": "Blu Cantrell feat. Sean Paul",
+    "title": "Breathe",
+    "year": 2003,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Katy Perry",
+    "title": "I Kissed A Girl",
+    "year": 2008,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Ellie Goulding",
+    "title": "Lights",
+    "year": 2010,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Kanye West",
+    "title": "Heartless",
+    "year": 2008,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Madonna feat. Justin Timberlake & Timbaland",
+    "title": "4 Minutes",
+    "year": 2008,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Madonna 4 Minutes"
+  },
+  {
+    "artist": "Backstreet Boys",
+    "title": "Everybody (Backstreet's Back)",
+    "year": 1997,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Katy Perry feat. Kanye West",
+    "title": "E.T.",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Ariana Grande feat. Mac Miller",
+    "title": "The Way",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Estelle feat. Kanye West",
+    "title": "American Boy",
+    "year": 2008,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Justin Timberlake",
+    "title": "Rock Your Body",
+    "year": 2002,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Michael Sembello",
+    "title": "Maniac",
+    "year": 1983,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Earth, Wind & Fire & The Emotions",
+    "title": "Boogie Wonderland",
+    "year": 1979,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Boney M.",
+    "title": "Daddy Cool",
+    "year": 1976,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "MIKA",
+    "title": "Relax, Take It Easy",
+    "year": 2006,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "George Michael",
+    "title": "Careless Whisper",
+    "year": 1984,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Kylie Minogue",
+    "title": "Can't Get You out of My Head",
+    "year": 2001,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Sade",
+    "title": "Smooth Operator",
+    "year": 1984,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Modern Talking",
+    "title": "Cheri Cheri Lady",
+    "year": 1985,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "ABBA",
+    "title": "Mamma Mia",
+    "year": 1975,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "ABBA",
+    "title": "Gimme! Gimme! Gimme! (A Man After Midnight)",
+    "year": 1979,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Ласковый Май",
+    "title": "Седая ночь",
+    "year": 1988,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Ласковый Май Седая ночь"
+  },
+  {
+    "artist": "Murat Nasyrov",
+    "title": "Я это ты (Ты это я)",
+    "year": 1998,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Мурат Насыров Я это ты"
+  },
+  {
+    "artist": "Linkin Park",
+    "title": "Papercut",
+    "year": 2000,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Блестящие",
+    "title": "Восточные сказки",
+    "year": 2005,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Блестящие Восточные сказки"
+  },
+  {
+    "artist": "REFLEX",
+    "title": "Падали звезды",
+    "year": 2003,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "REFLEX Падали звезды"
+  },
+  {
+    "artist": "ДЕТИ RAVE",
+    "title": "ТАНЦЕВАТЬ",
+    "year": 2019,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "ДЕТИ RAVE ТАНЦЕВАТЬ"
+  },
+  {
+    "artist": "ARTIK & ASTI",
+    "title": "Любовь после тебя",
+    "year": 2017,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "Artik Asti Lyubov posle tebya"
+  },
+  {
+    "artist": "Jennifer Lopez feat. Pitbull",
+    "title": "On The Floor",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Nelly Furtado",
+    "title": "Say It Right",
+    "year": 2006,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Fifth Harmony feat. Ty Dolla $ign",
+    "title": "Work from Home",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Fifth Harmony Work from Home"
+  },
+  {
+    "artist": "Sean Paul feat. Dua Lipa",
+    "title": "No Lie",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Sean Paul Dua Lipa No Lie"
+  },
+  {
+    "artist": "Charlie Puth feat. Kehlani",
+    "title": "Done for Me",
+    "year": 2018,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Charlie Puth Done for Me"
+  },
+  {
+    "artist": "Gym Class Heroes feat. Adam Levine",
+    "title": "Stereo Hearts",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Gym Class Heroes Stereo Hearts"
+  },
+  {
+    "artist": "Charlie Puth",
+    "title": "How Long",
+    "year": 2017,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Katy Perry feat. Juicy J",
+    "title": "Dark Horse",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Katy Perry Dark Horse"
+  },
+  {
+    "artist": "Selena Gomez",
+    "title": "The Heart Wants What It Wants",
+    "year": 2014,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Calvin Harris & Disciples",
+    "title": "How Deep Is Your Love",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Selena Gomez",
+    "title": "Come & Get It",
+    "year": 2013,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Shakira feat. Rihanna",
+    "title": "Can't Remember to Forget You",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Shakira Rihanna Can't Remember to Forget You"
+  },
+  {
+    "artist": "Ariana Grande",
+    "title": "7 rings",
+    "year": 2019,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Black Eyed Peas",
+    "title": "Boom Boom Pow",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Echosmith",
+    "title": "Cool Kids",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Black Eyed Peas",
+    "title": "Rock That Body",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Black Eyed Peas",
+    "title": "Meet Me Halfway",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Pitbull feat. T-Pain",
+    "title": "Hey Baby (Drop It to the Floor)",
+    "year": 2010,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Pitbull Hey Baby"
+  },
+  {
+    "artist": "Katy Perry feat. Snoop Dogg",
+    "title": "California Gurls",
+    "year": 2010,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Katy Perry California Gurls"
+  },
+  {
+    "artist": "Calvin Harris feat. Pharrell Williams, Katy Perry & Big Sean",
+    "title": "Feels",
+    "year": 2017,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Calvin Harris Feels"
+  },
+  {
+    "artist": "Katy Perry",
+    "title": "Last Friday Night (T.G.I.F.)",
+    "year": 2011,
+    "type": "solo",
+    "lang": "en",
+    "query": "Katy Perry Last Friday Night"
+  },
+  {
+    "artist": "Katy Perry feat. Skip Marley",
+    "title": "Chained To The Rhythm",
+    "year": 2017,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Katy Perry Chained To The Rhythm"
+  },
+  {
+    "artist": "Britney Spears",
+    "title": "...Baby One More Time",
+    "year": 1998,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Nimo",
+    "title": "Heute mit mir",
+    "year": 2017,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Bausa",
+    "title": "Was du Liebe nennst",
+    "year": 2017,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Gzuz, KITSCHKRIEG & Trettmann",
+    "title": "Nur mit den Echten",
+    "year": 2018,
+    "type": "gruppe",
+    "lang": "de",
+    "query": "Gzuz Nur mit den Echten"
+  },
+  {
+    "artist": "Ufo361",
+    "title": "Nice Girl 2.0",
+    "year": 2017,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "PA Sports feat. RAF Camora & Bonez MC",
+    "title": "Sie will",
+    "year": 2017,
+    "type": "gruppe",
+    "lang": "de",
+    "query": "PA Sports Sie will"
+  },
+  {
+    "artist": "Bonez MC & RAF Camora feat. Maxwell",
+    "title": "Ohne mein Team",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "de",
+    "query": "Bonez MC Ohne mein Team"
+  },
+  {
+    "artist": "Bonez MC & RAF Camora",
+    "title": "Palmen aus Plastik",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Cassandra Steen feat. Adel Tawil",
+    "title": "Stadt",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Andreas Bourani",
+    "title": "Auf uns",
+    "year": 2014,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Adel Tawil",
+    "title": "Lieder",
+    "year": 2013,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Jason Derulo",
+    "title": "In My Head",
+    "year": 2009,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Taio Cruz feat. Ludacris",
+    "title": "Break Your Heart",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Taio Cruz Break Your Heart"
+  },
+  {
+    "artist": "Eminem feat. Rihanna",
+    "title": "The Monster",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Eminem Rihanna The Monster"
+  },
+  {
+    "artist": "Rihanna",
+    "title": "Don't Stop The Music",
+    "year": 2007,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Usher",
+    "title": "Scream",
+    "year": 2012,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Iyaz",
+    "title": "Replay",
+    "year": 2009,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Usher feat. will.i.am",
+    "title": "OMG",
+    "year": 2010,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Usher OMG"
+  },
+  {
+    "artist": "Ariana Grande feat. Iggy Azalea",
+    "title": "Problem",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Ariana Grande Problem"
+  },
+  {
+    "artist": "Maroon 5",
+    "title": "Maps",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Calvin Harris feat. Ellie Goulding",
+    "title": "I Need Your Love",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Calvin Harris Ellie Goulding I Need Your Love"
+  },
+  {
+    "artist": "Selena Gomez & The Scene",
+    "title": "Love You Like A Love Song",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Jason Derulo",
+    "title": "Whatcha Say",
+    "year": 2009,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Nico & Vinz",
+    "title": "Am I Wrong",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Jason Derulo",
+    "title": "Breathing",
+    "year": 2011,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Rihanna",
+    "title": "Rude Boy",
+    "year": 2010,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Maroon 5",
+    "title": "Animals",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Mike WiLL Made-It feat. Miley Cyrus, Wiz Khalifa & Juicy J",
+    "title": "23",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Mike WiLL Made-It 23"
+  },
+  {
+    "artist": "Far East Movement feat. The Cataracs & DEV",
+    "title": "Like A G6",
+    "year": 2010,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Far East Movement Like A G6"
+  },
+  {
+    "artist": "DJ Blyatman & Russian Village Boys",
+    "title": "Cyka Blyat",
+    "year": 2018,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Britney Spears",
+    "title": "Circus",
+    "year": 2008,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Estelle feat. Kanye West (Lost Frequencies Remix)",
+    "title": "American Boy - Lost Frequencies Remix",
+    "year": 2018,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Estelle American Boy Lost Frequencies Remix"
+  },
+  {
+    "artist": "Mann feat. 50 Cent",
+    "title": "Buzzin",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Mann 50 Cent Buzzin"
+  },
+  {
+    "artist": "French Montana",
+    "title": "Famous",
+    "year": 2017,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Tyga feat. The Game",
+    "title": "Switch Lanes",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Tyga The Game Switch Lanes"
+  },
+  {
+    "artist": "G-Eazy & Bebe Rexha",
+    "title": "Me, Myself & I",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Wiz Khalifa feat. Snoop Dogg & Ty Dolla $ign",
+    "title": "You and Your Friends",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Wiz Khalifa You and Your Friends"
+  },
+  {
+    "artist": "Sido",
+    "title": "Schlechtes Vorbild",
+    "year": 2006,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Linkin Park",
+    "title": "Breaking the Habit",
+    "year": 2003,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Manu Chao",
+    "title": "Bongo Bong",
+    "year": 1998,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "KISS",
+    "title": "I Was Made For Lovin' You",
+    "year": 1979,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Stardust",
+    "title": "Music Sounds Better With You",
+    "year": 1998,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Naughty Boy feat. Sam Smith",
+    "title": "La La La",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Naughty Boy Sam Smith La La La"
+  },
+  {
+    "artist": "Coldplay",
+    "title": "Hymn for the Weekend",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Capital Cities",
+    "title": "Safe and Sound",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Coldplay",
+    "title": "A Sky Full of Stars",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Adele",
+    "title": "Skyfall",
+    "year": 2012,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Coldplay",
+    "title": "Adventure of a Lifetime",
+    "year": 2015,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Kesha",
+    "title": "Take It Off",
+    "year": 2010,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Avicii vs. Nicky Romero",
+    "title": "I Could Be The One",
+    "year": 2012,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Taio Cruz",
+    "title": "Dynamite",
+    "year": 2010,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Sean Paul",
+    "title": "She Doesn't Mind",
+    "year": 2011,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "David Guetta feat. Akon",
+    "title": "Sexy Bitch",
+    "year": 2009,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "David Guetta Akon Sexy Bitch"
+  },
+  {
+    "artist": "Jason Derulo",
+    "title": "Don't Wanna Go Home",
+    "year": 2011,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Daft Punk",
+    "title": "One More Time",
+    "year": 2000,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "David Guetta feat. Taio Cruz & Ludacris",
+    "title": "Little Bad Girl",
+    "year": 2011,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "David Guetta Little Bad Girl"
+  },
+  {
+    "artist": "Gzuz & Bonez MC",
+    "title": "Was erlebt",
+    "year": 2016,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Azzi Memo feat. Nimo",
+    "title": "BlaBla",
+    "year": 2017,
+    "type": "gruppe",
+    "lang": "de",
+    "query": "Azzi Memo Nimo BlaBla"
+  },
+  {
+    "artist": "Kontra K",
+    "title": "Freunde",
+    "year": 2016,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Kontra K feat. RAF Camora",
+    "title": "Fame",
+    "year": 2018,
+    "type": "gruppe",
+    "lang": "de",
+    "query": "Kontra K RAF Camora Fame"
+  },
+  {
+    "artist": "RIN",
+    "title": "Hollywood",
+    "year": 2020,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "SEREBRO",
+    "title": "Мало тебя",
+    "year": 2013,
+    "type": "gruppe",
+    "lang": "ru",
+    "query": "SEREBRO Мало тебя"
+  }
+]

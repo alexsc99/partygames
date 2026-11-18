@@ -1,0 +1,566 @@
+[
+  {
+    "q": "Wie spontan bist du im Alltag?",
+    "min": "Gar nicht (Plan-Freak)",
+    "max": "100% spontan!",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie sehr magst du Ananas auf Pizza?",
+    "min": "Verbrechen!",
+    "max": "Beste Pizza!",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie ordentlich ist dein Zimmer / deine Wohnung gerade?",
+    "min": "Komplettes Chaos",
+    "max": "Wie aus dem Katalog",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie gut kannst du kochen?",
+    "min": "Wasser brennt an",
+    "max": "Sternekoch",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie sehr bist du ein Morgenmensch?",
+    "min": "Morgenmuffel",
+    "max": "Um 6 Uhr hellwach!",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viel Zeit verbringst du am Tag am Handy?",
+    "min": "Fast nie",
+    "max": "Dauer-online",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie wichtig ist dir Romantik bei einem Date?",
+    "min": "Lieber locker & witzig",
+    "max": "Kerzenschein & Rosen!",
+    "cat": "date"
+  },
+  {
+    "q": "Wie aufgeregt bist du normalerweise vor einem ersten Date?",
+    "min": "Total entspannt",
+    "max": "Herzrasen pur",
+    "cat": "date"
+  },
+  {
+    "q": "Wie sehr magst du Überraschungs-Dates?",
+    "min": "Lieber selbst planen",
+    "max": "Liebe Überraschungen!",
+    "cat": "date"
+  },
+  {
+    "q": "Wie wichtig ist dir gutes Essen bei einem Date?",
+    "min": "Nebensache",
+    "max": "Absolutes Muss!",
+    "cat": "date"
+  },
+  {
+    "q": "Wie lange hältst du auf einer guten Party durch?",
+    "min": "Um 23 Uhr müde",
+    "max": "Bis zum Sonnenaufgang",
+    "cat": "party"
+  },
+  {
+    "q": "Wie hoch ist die Wahrscheinlichkeit, dass du beim Karaoke singst?",
+    "min": "Niemals!",
+    "max": "Ich reiß das Mikro an mich!",
+    "cat": "party"
+  },
+  {
+    "q": "Wie gut verträgst du Alkohol?",
+    "min": "Nach 2 Drinks fertig",
+    "max": "Endgegner",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie schlimm ist dein Kater normalerweise am nächsten Tag?",
+    "min": "Nie Kater",
+    "max": "Komplett außer Gefecht",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie ehrgeizig bist du bei Gesellschaftsspielen?",
+    "min": "Dabei sein ist alles",
+    "max": "Ich muss gewinnen!",
+    "cat": "party"
+  },
+  {
+    "q": "Wie pünktlich bist du bei Verabredungen mit Freunden?",
+    "min": "Immer zu spät",
+    "max": "10 Min zu früh",
+    "cat": "party"
+  },
+  {
+    "q": "Wie gut kannst du Geheimnisse für dich behalten?",
+    "min": "Rutscht mir raus",
+    "max": "Wie ein Tresor",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie offensichtlich flirtest du, wenn du jemanden gut findest?",
+    "min": "Komplett unauffällig",
+    "max": "Jeder merkt es sofort",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie gerne probierst du im Restaurant völlig unbekannte Gerichte?",
+    "min": "Immer das Gleiche",
+    "max": "Je exotischer, desto besser",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie geduldig bist du im Stau oder in der Warteschlange?",
+    "min": "Sofort genervt",
+    "max": "Die Ruhe selbst",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie sehr magst du schrägen / schwarzen Humor?",
+    "min": "Gar nicht meins",
+    "max": "Liebs!",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie wichtig ist dir Musik im Alltag?",
+    "min": "Läuft selten",
+    "max": "Ohne Kopfhörer geht nichts",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie sehr bist du ein Stadtmensch vs. Naturmensch?",
+    "min": "Großstadt-Kind",
+    "max": "Ab in den Wald!",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie gerne planst du Urlaube Wochen im Voraus?",
+    "min": "Morgens Koffer packen reicht",
+    "max": "Excel-Tabelle steht!",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie wichtig ist dir ein gemütliches Zuhause?",
+    "min": "Hauptsache ein Bett",
+    "max": "Meine Wohlfühl-Oase",
+    "cat": "date"
+  },
+  {
+    "q": "Wie gerne gehst du abends einfach spontan noch raus?",
+    "min": "Lieber Couch!",
+    "max": "Bin in 5 Minuten fertig!",
+    "cat": "date"
+  },
+  {
+    "q": "Wie schnell lernst du neue Leute kennen?",
+    "min": "Eher schüchtern",
+    "max": "Rede mit jedem",
+    "cat": "party"
+  },
+  {
+    "q": "Wie laut singst du im Auto mit, wenn dein Lieblingssong läuft?",
+    "min": "Stumm",
+    "max": "Konzertbühne!",
+    "cat": "party"
+  },
+  {
+    "q": "Wie peinlich wird es dir, wenn dich jemand beim Singen unter der Dusche erwischt?",
+    "min": "Egal, Zugabe!",
+    "max": "Im Boden versinken",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie oft schaust du alte peinliche Chats oder Fotos von dir an?",
+    "min": "Nie wieder!",
+    "max": "Ständig zum Lachen",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie chaotisch sind deine spontanen Entscheidungen am Wochenende?",
+    "min": "Alles durchgeplant",
+    "max": "Komplettes Chaos",
+    "cat": "party"
+  },
+  {
+    "q": "Wie hoch ist die Chance, dass du ein gefundenes Handy mit 500 € ehrlich abgibst?",
+    "min": "0 % (Meins!)",
+    "max": "100 % Fundbüro",
+    "cat": "party"
+  },
+  {
+    "q": "Wie glücklich bist du gerade mit deinem Leben insgesamt?",
+    "min": "Luft nach oben",
+    "max": "Absolut erfüllt",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie leicht fällt es dir, anderen Menschen wirklich zu vertrauen?",
+    "min": "Sehr schwer",
+    "max": "Sofort & voll",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie experimentierfreudig bist du im Schlafzimmer?",
+    "min": "Ganz klassisch",
+    "max": "Alles ausprobieren!",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie wichtig ist dir guter Sex in einer Beziehung?",
+    "min": "Nebensache",
+    "max": "Absolutes Muss!",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie hoch ist deine Lust auf einen spontanen Flirt heute Abend?",
+    "min": "Gar kein Bock",
+    "max": "Voll auf Jagd!",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie versaut sind deine Gedanken im Alltag wirklich?",
+    "min": "Heiligenschein",
+    "max": "Komplett verdorben",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie wichtig ist dir Leidenschaft im Vergleich zu Romantik?",
+    "min": "100% Kuscheln",
+    "max": "100% Leidenschaft",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie offen wärst du für eine Freundschaft Plus?",
+    "min": "Niemals",
+    "max": "Sofort dabei",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie oft hörst du dir deine eigenen Sprachnachrichten nochmal an?",
+    "min": "Nie, direkt weg",
+    "max": "Jedes verdammte Mal",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie schnell wirst du rot, wenn dir etwas peinlich ist?",
+    "min": "Pokerface 100%",
+    "max": "Sofort wie eine Tomate",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie hoch ist die Chance, dass du betrunken jemanden anrufst?",
+    "min": "0 % (Flugmodus)",
+    "max": "100 % (Alle dran)",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie gut bist du im Notlügen erfinden?",
+    "min": "Verrate mich sofort",
+    "max": "Oscar-reif",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie oft stalkst du Leute auf Instagram aus Versehen bis 2018 zurück?",
+    "min": "Nie",
+    "max": "Passiert wöchentlich",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie schlimm war dein schlimmster Kater bisher?",
+    "min": "Kaum gemerkt",
+    "max": "Nie wieder Alkohol!",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie eifersüchtig bist du in einer Beziehung?",
+    "min": "Überhaupt nicht",
+    "max": "Sehr besitzergreifend",
+    "cat": "date"
+  },
+  {
+    "q": "Wie romantisch bist du wirklich?",
+    "min": "Eher pragmatisch",
+    "max": "Totaler Romantiker",
+    "cat": "date"
+  },
+  {
+    "q": "Wie schnell vertraust du einer neuen Person beim Daten?",
+    "min": "Sehr vorsichtig",
+    "max": "Sofort all-in",
+    "cat": "date"
+  },
+  {
+    "q": "Wie wichtig ist dir Kuscheln nach einem langen Tag?",
+    "min": "Brauche Platz",
+    "max": "Pflichtprogramm!",
+    "cat": "date"
+  },
+  {
+    "q": "Wie offensiv flirtest du, wenn dir jemand gefällt?",
+    "min": "Warte ab",
+    "max": "Gehe direkt drauf zu",
+    "cat": "date"
+  },
+  {
+    "q": "Wie experimentierfreudig bist du abseits vom Standard?",
+    "min": "Klassisch reicht",
+    "max": "Alles ausprobieren!",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie laut darf es werden, wenn die Nachbarn da sind?",
+    "min": "Mucksmäuschenstill",
+    "max": "Mir doch egal",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie wichtig ist dir ein gutes Vorspiel?",
+    "min": "Kann kurz sein",
+    "max": "Das Allerwichtigste",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie spontan bist du für ein Abenteuer im Urlaub?",
+    "min": "Lieber nicht",
+    "max": "Sofort dabei!",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie sehr stehst du auf Komplimente im Bett?",
+    "min": "Unnötig",
+    "max": "Absoluter Turn-On",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie wahrscheinlich ist es, dass du als Letzter auf der Tanzfläche stehst?",
+    "min": "Sitze nur rum",
+    "max": "Bis das Licht angeht",
+    "cat": "party"
+  },
+  {
+    "q": "Wie hoch ist deine Motivation um 2 Uhr nachts noch weiterzuziehen?",
+    "min": "Ab ins Bett",
+    "max": "Die Nacht fängt erst an!",
+    "cat": "party"
+  },
+  {
+    "q": "Wie gut verträgst du mehrere Sorten Alkohol durcheinander?",
+    "min": "Sofort Game Over",
+    "max": "Stahlmagen",
+    "cat": "party"
+  },
+  {
+    "q": "Wie laut singst du bei Party-Hits mit?",
+    "min": "Nur leise summen",
+    "max": "Heiser am nächsten Tag",
+    "cat": "party"
+  },
+  {
+    "q": "Wie gut kannst du lügen, ohne rot zu werden?",
+    "min": "Verrate mich sofort",
+    "max": "Pokerface-Profi",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie hoch ist dein Bedürfnis nach Alleinsein nach einer langen Party-Woche?",
+    "min": "0 % – direkt weiter!",
+    "max": "100 % – 3 Tage Ruhe",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie wahrscheinlich ist es, dass du bei einem Karaoke-Abend freiwillig singst?",
+    "min": "Niemals!",
+    "max": "Reiß das Mikro an mich!",
+    "cat": "party"
+  },
+  {
+    "q": "Wie stark lässt du dich von Bewertungen auf Google Maps leiten?",
+    "min": "Egal, geh einfach rein",
+    "max": "Unter 4,5★ geht gar nix",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie schnell verliebst du dich?",
+    "min": "Brauche Monate",
+    "max": "Nach 2 netten Blicken",
+    "cat": "date"
+  },
+  {
+    "q": "Wie wichtig ist dir gutes Aussehen im Vergleich zu Humor?",
+    "min": "Humor schlägt alles",
+    "max": "Optik muss 100 % passen",
+    "cat": "date"
+  },
+  {
+    "q": "Wie offen bist du für spontane Dates noch am selben Abend?",
+    "min": "Brauche 1 Woche Vorlauf",
+    "max": "In 20 Min. bin ich fertig",
+    "cat": "date"
+  },
+  {
+    "q": "Wie gut kannst du Komplimente annehmen?",
+    "min": "Red es sofort klein",
+    "max": "„Danke, weiß ich!“",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie peinlich wird es, wenn deine Eltern deine alten Chats lesen würden?",
+    "min": "Alles harmlos",
+    "max": "Muss auswandern",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie wahrscheinlich ist es, dass du im Club jemanden ansprichst?",
+    "min": "Nie im Leben",
+    "max": "Nach 2 Drinks sofort",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie abenteuerlustig bist du im Schlafzimmer?",
+    "min": "Klassisch & gemütlich",
+    "max": "Alles wird getestet",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie sehr magst du es, beim Küssen die Führung zu übernehmen?",
+    "min": "Lasse mich lieber führen",
+    "max": "Ich gebe den Takt vor",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie wichtig ist dir körperliche Chemie schon beim ersten Treffen?",
+    "min": "Kann warten",
+    "max": "Muss sofort funken",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie oft hast du schon so getan, als hättest du eine Nachricht übersehen?",
+    "min": "Nie",
+    "max": "Tägliches Hobby",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie groß ist dein Kleiderschrank-Chaos nach dem Ausgehen?",
+    "min": "Alles ordentlich auf Bügeln",
+    "max": "Kleiderstuhl brennt",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie mutig bist du bei scharfem Essen?",
+    "min": "Paprika ist schon scharf",
+    "max": "Carolina Reaper bitte",
+    "cat": "party"
+  },
+  {
+    "q": "Wie wahrscheinlich ist es, dass du auf einer Hochzeit als Erster auf der Tanzfläche stehst?",
+    "min": "Sitze am Tisch",
+    "max": "Eröffne die Tanzfläche",
+    "cat": "party"
+  },
+  {
+    "q": "Wie sehr glaubst du an „Liebe auf den ersten Blick“?",
+    "min": "Quatsch",
+    "max": "100 % Romantiker",
+    "cat": "date"
+  },
+  {
+    "q": "Wie oft stalkst du Leute auf Instagram vor dem ersten Date?",
+    "min": "Gar nicht",
+    "max": "Kenne auch den Hund der Tante",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie gut kannst du ein Geheimnis für dich behalten, wenn du angetrunken bist?",
+    "min": "Alles kommt raus",
+    "max": "Grabesstille",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie sehr magst du Überraschungen?",
+    "min": "Hasse Kontrollverlust",
+    "max": "Liebe Überraschungen!",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie schnell wirst du beim Autofahren ungeduldig?",
+    "min": "Zen-Meister",
+    "max": "Hupe schon bei Gelb",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie hoch ist dein „Body-Count“-Geheimhaltungslevel?",
+    "min": "Erzähle alles offen",
+    "max": "Streng geheim",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie sehr stehst du auf verbotene Blicke in der Öffentlichkeit?",
+    "min": "Gar nicht meins",
+    "max": "Bester Nervenkitzel",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie wahrscheinlich ist ein spontaner Kuss auf dem Nachhauseweg nach einer Party?",
+    "min": "0 %",
+    "max": "99 %",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie sehr achtest du beim Date auf kleine Details (Geruch, Schuhe, Manieren)?",
+    "min": "Merke nichts",
+    "max": "Scanne alles",
+    "cat": "date"
+  },
+  {
+    "q": "Wie lange hältst du Augenkontakt beim Flirten?",
+    "min": "Schaue nach 0,5 Sek weg",
+    "max": "Starr-Duell gewonnen",
+    "cat": "date"
+  },
+  {
+    "q": "Wie gut bist du im Geschenkefinden für Freunde?",
+    "min": "Immer Gutschein",
+    "max": "Treffe immer ins Schwarze",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie wahrscheinlich ist es, dass du heute noch ein Geheimnis ausplauderst?",
+    "min": "Unmöglich",
+    "max": "Kommt gleich!",
+    "cat": "party"
+  },
+  {
+    "q": "Wie sehr eskalierst du bei Gesellschaftsspielen wie UNO oder Mario Kart?",
+    "min": "Dabei sein ist alles",
+    "max": "Freundschaften enden hier",
+    "cat": "party"
+  },
+  {
+    "q": "Wie wohl fühlst du dich vor einer Kamera (Selfies / Stories)?",
+    "min": "Flüchte sofort",
+    "max": "Geborenes Model",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie wahrscheinlich ist es, dass du einem Ex nochmal schreibst?",
+    "min": "Nummer blockiert",
+    "max": "Passiert schneller als gedacht",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie wichtig ist dir ein guter Musikgeschmack beim Partner?",
+    "min": "Egal",
+    "max": "Ohne geht gar nichts",
+    "cat": "date"
+  },
+  {
+    "q": "Wie sehr genießt du tiefe Gespräche um 3 Uhr nachts?",
+    "min": "Schlafe lieber",
+    "max": "Beste Zeit des Tages",
+    "cat": "kennenlernen"
+  }
+]

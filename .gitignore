@@ -1,0 +1,9 @@
+node_modules/
+logs/
+backups/
+*.zip
+*.tar.gz
+*.log
+data/.host-secret
+data/used.json
+.env

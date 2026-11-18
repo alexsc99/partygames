@@ -1,0 +1,882 @@
+[
+  {
+    "word": "Kater",
+    "taboo": [
+      "Alkohol",
+      "Kopfschmerzen",
+      "Katze",
+      "Morgen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Bierpong",
+    "taboo": [
+      "Becher",
+      "Ball",
+      "Tisch",
+      "Trinken"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "DJ",
+    "taboo": [
+      "Musik",
+      "Club",
+      "Platten",
+      "Mixen"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Wahrheit oder Pflicht",
+    "taboo": [
+      "Spiel",
+      "Frage",
+      "Aufgabe",
+      "Flasche"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Schnaps",
+    "taboo": [
+      "Alkohol",
+      "Shot",
+      "Trinken",
+      "Glas"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Konfetti",
+    "taboo": [
+      "Papier",
+      "Bunt",
+      "Party",
+      "Werfen"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Karaoke",
+    "taboo": [
+      "Singen",
+      "Mikrofon",
+      "Text",
+      "Musik"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Türsteher",
+    "taboo": [
+      "Club",
+      "Eingang",
+      "Ausweis",
+      "Reinlassen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Afterhour",
+    "taboo": [
+      "Party",
+      "Morgen",
+      "Club",
+      "Schlafen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Tinder",
+    "taboo": [
+      "App",
+      "Swipen",
+      "Match",
+      "Date"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Erstes Date",
+    "taboo": [
+      "Treffen",
+      "Kino",
+      "Essen",
+      "Nervös"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Knutschen",
+    "taboo": [
+      "Küssen",
+      "Lippen",
+      "Zunge",
+      "Liebe"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Liebeskummer",
+    "taboo": [
+      "Trennung",
+      "Weinen",
+      "Herz",
+      "Ex"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Ghosting",
+    "taboo": [
+      "Nachricht",
+      "Antworten",
+      "Ignorieren",
+      "Geist"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Peinlich",
+    "taboo": [
+      "Schämen",
+      "Rot",
+      "Fremdscham",
+      "Lachen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Sprachnachricht",
+    "taboo": [
+      "WhatsApp",
+      "Mikrofon",
+      "Anhören",
+      "Minute"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Ohrwurm",
+    "taboo": [
+      "Lied",
+      "Singen",
+      "Kopf",
+      "Musik"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Sonnenbrand",
+    "taboo": [
+      "Sommer",
+      "Haut",
+      "Rot",
+      "Creme"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Stau",
+    "taboo": [
+      "Auto",
+      "Autobahn",
+      "Warten",
+      "Verkehr"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Montag",
+    "taboo": [
+      "Woche",
+      "Arbeit",
+      "Sonntag",
+      "Schule"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Pizza",
+    "taboo": [
+      "Käse",
+      "Italien",
+      "Ofen",
+      "Salami"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Kaffee",
+    "taboo": [
+      "Morgen",
+      "Tasse",
+      "Wach",
+      "Koffein"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Netflix",
+    "taboo": [
+      "Serie",
+      "Film",
+      "Streamen",
+      "Fernseher"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Flughafen",
+    "taboo": [
+      "Flugzeug",
+      "Koffer",
+      "Urlaub",
+      "Gate"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Zahnarzt",
+    "taboo": [
+      "Bohren",
+      "Mund",
+      "Schmerzen",
+      "Praxis"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Schlafwandeln",
+    "taboo": [
+      "Nacht",
+      "Bett",
+      "Gehen",
+      "Träumen"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Notlüge",
+    "taboo": [
+      "Wahrheit",
+      "Flunkern",
+      "Ausrede",
+      "Schwindeln"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Spontan",
+    "taboo": [
+      "Planen",
+      "Sofort",
+      "Überraschung",
+      "Kurzfristig"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Geheimnis",
+    "taboo": [
+      "Verraten",
+      "Verstecken",
+      "Niemand",
+      "Wissen"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Lampenfieber",
+    "taboo": [
+      "Bühne",
+      "Nervös",
+      "Auftritt",
+      "Publikum"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Striptease",
+    "taboo": [
+      "Ausziehen",
+      "Tanzen",
+      "Kleidung",
+      "Stange"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "One-Night-Stand",
+    "taboo": [
+      "Nacht",
+      "Bett",
+      "Morgen",
+      "Sex"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Fremdscham",
+    "taboo": [
+      "Peinlich",
+      "Cringe",
+      "Andere",
+      "Lachen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Knutschfleck",
+    "taboo": [
+      "Hals",
+      "Saugen",
+      "Blau",
+      "Verstecken"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Blackout",
+    "taboo": [
+      "Vergessen",
+      "Alkohol",
+      "Filmriß",
+      "Nacht"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Lachflash",
+    "taboo": [
+      "Lachen",
+      "Unkontrolliert",
+      "Witz",
+      "Aufhören"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Bauchklatscher",
+    "taboo": [
+      "Schwimmbad",
+      "Wasser",
+      "Springen",
+      "Rot"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Stolpern",
+    "taboo": [
+      "Fallen",
+      "Fuß",
+      "Boden",
+      "Hinfliegen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Kerzenschein",
+    "taboo": [
+      "Flamme",
+      "Romantisch",
+      "Dunkel",
+      "Wachs"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Schmetterlinge",
+    "taboo": [
+      "Bauch",
+      "Verliebt",
+      "Fliegen",
+      "Gefühl"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Blind Date",
+    "taboo": [
+      "Treffen",
+      "Unbekannt",
+      "Erstes",
+      "Sehen"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Heiratsantrag",
+    "taboo": [
+      "Ring",
+      "Knien",
+      "Hochzeit",
+      "Fragen"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Rosenstrauß",
+    "taboo": [
+      "Blumen",
+      "Rot",
+      "Dornen",
+      "Schenken"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Eifersucht",
+    "taboo": [
+      "Neid",
+      "Partner",
+      "Kontrolle",
+      "Andere"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Liebesbrief",
+    "taboo": [
+      "Schreiben",
+      "Papier",
+      "Herz",
+      "Gefühle"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Handschellen",
+    "taboo": [
+      "Polizei",
+      "Fesseln",
+      "Metall",
+      "Schlüssel"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Dessous",
+    "taboo": [
+      "Unterwäsche",
+      "Spitze",
+      "BH",
+      "Sexy"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Liebesbiss",
+    "taboo": [
+      "Zähne",
+      "Haut",
+      "Knutschfleck",
+      "Schmerz"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Whirlpool",
+    "taboo": [
+      "Wasser",
+      "Blasen",
+      "Warm",
+      "Baden"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Fantasie",
+    "taboo": [
+      "Kopf",
+      "Vorstellen",
+      "Traum",
+      "Wunsch"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Bucket List",
+    "taboo": [
+      "Ziele",
+      "Sterben",
+      "Liste",
+      "Wünsche"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Heimweh",
+    "taboo": [
+      "Zuhause",
+      "Vermissen",
+      "Urlaub",
+      "Familie"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Traumjob",
+    "taboo": [
+      "Arbeit",
+      "Beruf",
+      "Geld",
+      "Zukunft"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Kindheit",
+    "taboo": [
+      "Jung",
+      "Eltern",
+      "Schule",
+      "Früher"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Glühwein",
+    "taboo": [
+      "Weihnachtsmarkt",
+      "Heiß",
+      "Rotwein",
+      "Winter"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Konterbier",
+    "taboo": [
+      "Kater",
+      "Morgen",
+      "Trinken",
+      "Alkohol"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Walk of Shame",
+    "taboo": [
+      "Morgen",
+      "Kleidung",
+      "One-Night-Stand",
+      "Nachhause"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Friendzone",
+    "taboo": [
+      "Freunde",
+      "Liebe",
+      "Korb",
+      "Beziehung"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Stalken",
+    "taboo": [
+      "Instagram",
+      "Profil",
+      "Heimlich",
+      "Schauen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Schmetterlinge im Bauch",
+    "taboo": [
+      "Verliebt",
+      "Nervös",
+      "Kribbeln",
+      "Gefühl"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Peinliche Stille",
+    "taboo": [
+      "Schweigen",
+      "Unangenehm",
+      "Gespräch",
+      "Pause"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Dönerbude",
+    "taboo": [
+      "Fleisch",
+      "Spieß",
+      "Nachts",
+      "Brot"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Festivalticket",
+    "taboo": [
+      "Musik",
+      "Bühne",
+      "Camping",
+      "Band"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Korb geben",
+    "taboo": [
+      "Ablehnen",
+      "Nein",
+      "Flirt",
+      "Enttäuscht"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Sprachmemos",
+    "taboo": [
+      "WhatsApp",
+      "Aufnehmen",
+      "Hören",
+      "Mikrofon"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Wochenendtrip",
+    "taboo": [
+      "Reise",
+      "Kurz",
+      "Samstag",
+      "Hotel"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Nachtclub",
+    "taboo": [
+      "Tanzen",
+      "DJ",
+      "Musik",
+      "Türsteher"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Katerfrühstück",
+    "taboo": [
+      "Essen",
+      "Morgen",
+      "Alkohol",
+      "Rollmops"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Herzklopfen",
+    "taboo": [
+      "Schnell",
+      "Aufgeregt",
+      "Liebe",
+      "Brust"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Tiefgründig",
+    "taboo": [
+      "Deep",
+      "Gespräch",
+      "Sinn",
+      "Oberflächlich"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Heimlicher Schwarm",
+    "taboo": [
+      "Verliebt",
+      "Verheimlichen",
+      "Person",
+      "Mögen"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Beichte",
+    "taboo": [
+      "Geheimnis",
+      "Zugeben",
+      "Kirche",
+      "Wahrheit"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Strip-Poker",
+    "taboo": [
+      "Karten",
+      "Ausziehen",
+      "Nackt",
+      "Verlieren"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Nacktbaden",
+    "taboo": [
+      "See",
+      "Meer",
+      "Kleidung",
+      "Wasser"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Flaschendrehen",
+    "taboo": [
+      "Kreis",
+      "Küssen",
+      "Pflicht",
+      "Glas"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Sexting",
+    "taboo": [
+      "Nachrichten",
+      "Handy",
+      "Schreiben",
+      "Heiß"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "word": "Liebesgeständnis",
+    "taboo": [
+      "Sagen",
+      "Gefühle",
+      "Ich liebe dich",
+      "Mut"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Hausparty",
+    "taboo": [
+      "Wohnung",
+      "Gäste",
+      "Musik",
+      "Feiern"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Fotobox",
+    "taboo": [
+      "Hochzeit",
+      "Party",
+      "Bilder",
+      "Verkleiden"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Ohrstöpsel",
+    "taboo": [
+      "Laut",
+      "Musik",
+      "Schlafen",
+      "Ohr"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Lagerfeuer",
+    "taboo": [
+      "Holz",
+      "Flamme",
+      "Stockbrot",
+      "Gitarre"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "word": "Sternschnuppe",
+    "taboo": [
+      "Nacht",
+      "Himmel",
+      "Wunsch",
+      "Licht"
+    ],
+    "cat": "date"
+  },
+  {
+    "word": "Fremdschämen",
+    "taboo": [
+      "Peinlich",
+      "Andere",
+      "Unangenehm",
+      "Gucken"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Betrunken",
+    "taboo": [
+      "Alkohol",
+      "Torkeln",
+      "Bier",
+      "Voll"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Ausrede",
+    "taboo": [
+      "Lüge",
+      "Grund",
+      "Spät",
+      "Erfinden"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "word": "Gruppenzwang",
+    "taboo": [
+      "Alle",
+      "Mitmachen",
+      "Freunde",
+      "Druck"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Aftershow",
+    "taboo": [
+      "Konzert",
+      "Danach",
+      "Party",
+      "Backstage"
+    ],
+    "cat": "party"
+  },
+  {
+    "word": "Handyakku",
+    "taboo": [
+      "Laden",
+      "Prozent",
+      "Kabel",
+      "Leer"
+    ],
+    "cat": "kennenlernen"
+  }
+]

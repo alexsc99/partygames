@@ -1,0 +1,426 @@
+[
+  {
+    "q": "Ich hab noch nie beim Karaoke freiwillig ein Lied gesungen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie auf einer Party etwas kaputt gemacht und bin abgehauen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie eine Party verlassen, ohne mich von irgendwem zu verabschieden (Polnischer Abgang).",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie auf einer Hochzeit zu viel gegessen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie bei einem Trinkspiel geschummelt.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie auf einem Tisch getanzt.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie ein Konzert oder Festival ohne Stimme verlassen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie in einem Club den DJ nach einem Songwunsch gefragt.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie eine komplette Nacht durchgemacht und bin direkt zur Arbeit/Schule.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie bei einer Hausparty einen Raum betreten, in dem ich nichts verloren hatte.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie Konfetti noch Wochen später in meiner Wohnung gefunden.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie auf einer Party so getan, als würde ich den Songtext kennen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie das Geheimnis eines Freundes weiterverraten.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie ein Geschenk weiterverschenkt.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie einen Geburtstag eines guten Freundes komplett vergessen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie bei einem Spieleabend aus Wut abgebrochen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie so getan, als wäre ich krank, um ein Treffen abzusagen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie das Essen eines Mitbewohners oder Freundes heimlich aufgegessen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie einen Freund im Club oder auf dem Festival aus den Augen verloren und erst Stunden später wiedergefunden.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie über einen Freund gelästert, der kurz danach den Raum betreten hat.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie einem Freund Geld geliehen und es nie zurückbekommen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie beim Zocken vor Wut den Controller weggelegt.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie einen Screenshot von einem Chat an die falsche Person weitergeleitet.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie für einen Kumpel oder eine Freundin ein Alibi geliefert.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie eine Nachricht an den falschen Chat geschickt.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie so getan, als würde ich jemanden erkennen.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie im Kino geweint.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie einen Strafzettel fürs Falschparken bekommen.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie den Namen von jemandem vergessen, obwohl wir schon 10 Minuten geredet haben.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie Essen vom Boden aufgehoben und trotzdem gegessen.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie im Auto laut und schief mitgesungen.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie einen Termin verschlafen.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie versucht, eine Tür zu ziehen, obwohl groß DRÜCKEN draufstand.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie ein Getränk verschüttet und so getan, als wäre es schon da gewesen.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie mein Handy im Kühlschrank oder an einem völlig absurden Ort gesucht.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie behauptet, einen Film zu kennen, den ich nie gesehen habe.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie nach einer Partynacht einen kompletten Filmriss gehabt.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie betrunken meinem Ex / meiner Ex geschrieben.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie morgens um 4 Uhr noch einen Döner oder Burger gegessen.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie im Bus oder Zug geschlafen und meine Haltestelle verpasst.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie am nächsten Tag in den Kontakten Nummern gefunden, die ich nicht zuordnen konnte.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie ein Bier mit einem absurden Gegenstand (Schuh, Feuerzeug, Tischkante) geöffnet.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie behauptet 'Ich bin gar nicht betrunken!' und bin danach gestolpert.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie betrunken online etwas komplett Unnützes bestellt.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie in einer Kneipe oder einem Club Hausverbot bekommen (oder bin rausgeflogen).",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie am nächsten Morgen ein Verkehrsschild, Glas oder Deko mitgenommen gehabt.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie einen Shot getrunken und ihn sofort bereut.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie vor lauter Kater geschworen 'Ich trinke nie wieder Alkohol!'",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie einen One-Night-Stand gehabt.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie jemanden aus dieser Runde attraktiv gefunden.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie Nacktbilder verschickt oder bekommen.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie jemanden beim ersten Date geküsst.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie an einem ungewöhnlichen Ort (nicht im Bett) rumgemacht.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie eine Dating-App genutzt, um einfach nur mein Ego zu pushen.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie jemanden geküsst, dessen Namen ich nicht kannte.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie bei 'Flaschendrehen' oder 'Wahrheit oder Pflicht' geknutscht.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie ein Sexspielzeug besessen oder verschenkt.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie währenddessen den falschen Namen gedacht oder fast gesagt.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie jemanden heimlich gestalkt, weil ich ihn/sie heiß fand.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie einen Knutschfleck überschminken oder verstecken müssen.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie ein Tagebuch geführt.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie alleine eine Reise oder einen Städtetrip gemacht.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie bei einem Film oder einer Serie richtig geweint.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie meinen Job oder mein Studium komplett gewechselt.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie etwas von meiner Bucket-List abgehakt (z. B. Fallschirmsprung, Tattoo).",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie stundenlang mit jemandem telefoniert, den ich kaum kannte.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie freiwillig einen kompletten Tag ohne Handy verbracht.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie ein Musikinstrument gelernt.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie eine Nacht unter freiem Himmel geschlafen.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie für jemand anderen ein aufwendiges Überraschungs-Essen gekocht.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie vor einem Date vor Aufregung kaum einen Bissen runterbekommen.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie ein Date nach 20 Minuten am liebsten heimlich abgebrochen.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie extra ein neues Outfit für ein Date gekauft.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie auf einem Date so getan, als würde ich ein bestimmtes Essen/Hobby lieben.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie jemandem nach einem Date sofort geschrieben, wie schön es war.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie beim ersten Date die Zeit komplett vergessen.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie einen Freund / eine Freundin gebeten, mich während eines Dates 'Notfall-anzurufen'.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie beim Händchenhalten zuerst geschwitzt wie verrückt.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie ein Date im Regen oder im Auto verbracht und fand es mega romantisch.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie beim Abschied den perfekten Moment für einen Kuss verpasst.",
+    "cat": "date"
+  },
+  {
+    "q": "Ich hab noch nie über jemandem gelästert und gemerkt, dass die Person direkt hinter mir steht.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie einen Namen vergessen, während ich die Person schon zehnmal getroffen habe.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie auf eine Tür gedrückt, auf der groß ZIEHEN stand – und es weiter versucht.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie beim Stalken auf Instagram aus Versehen ein drei Jahre altes Foto geliked.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie laut geantwortet, als jemand über Kopfhörer telefoniert hat.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ich hab noch nie eine Ausrede erfunden, um ein Treffen abzusagen, und bin dann doch rausgegangen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie etwas ausgeliehen und nie zurückgegeben.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie im Restaurant oder Supermarkt etwas heimlich zurückgestellt, nachdem es mir runtergefallen ist.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie eine Nachricht gelesen, ignoriert und später behauptet, ich hätte sie übersehen.",
+    "cat": "party"
+  },
+  {
+    "q": "Ich hab noch nie eine wichtige Entscheidung getroffen, die mein ganzes Leben verändert hat.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie vor Freude oder Erleichterung geweint.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie jemandem gesagt, wie wichtig er mir ist – obwohl es Überwindung gekostet hat.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie einen Lebenstraum aufgegeben und es später bereut.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Ich hab noch nie an einem öffentlichen Ort etwas Verbotenes im Bett-Sinn gemacht.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie Sexting betrieben, während jemand anderes im selben Raum war.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie einen Dreier gehabt oder ernsthaft darüber nachgedacht.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie ein Sex-Spielzeug benutzt oder gekauft.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie jemanden geküsst, dessen Namen ich bis heute nicht weiß.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie jemanden geküsst, während mein fester Partner im selben Haus oder Club war.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie ein heißes Foto oder Video gemacht, das eigentlich niemand jemals sehen darf.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie im Freien (Park, Strand, Balkon, Auto) Sex gehabt.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie beim Feiern direkt mit zwei verschiedenen Leuten am selben Abend rumgemacht.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie über meinen Body-Count gelogen – nach oben oder nach unten.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie einen Crush auf jemanden gehabt, der hier im Raum sitzt.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie morgens neben jemandem aufgewacht und erstmal überlegt, wie die Person heißt.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Ich hab noch nie einen Knutschfleck überschminkt oder mit Schal versteckt.",
+    "cat": "hot18"
+  }
+]

@@ -1,0 +1,1193 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>PartyGame</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<link rel="stylesheet" href="/style.css">
+<style>
+ body { padding: 18px; max-width: 560px; width: 100%; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; text-align: center; }
+ input { font: inherit; font-size: 22px; padding: 14px; border-radius: 12px; border: 0; width: 100%; margin: 12px 0; text-align: center; }
+ .go { background: #7c4dff; padding: 16px; width: 100%; font-size: 22px; font-weight: 700; margin-top: 8px; }
+ .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; animation: fadeSlideUp .25s ease-out both; }
+ .grid button { font-size: 24px; font-weight: 700; min-height: 20vh; padding: 10px; }
+ .grid button:disabled, .votes button:disabled, .wyr button:disabled { opacity: .38; }
+ .wyr { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; animation: fadeSlideUp .25s ease-out both; }
+ .wyr button { padding: 22px 14px; font-size: 20px; font-weight: 700; min-height: 18vh; }
+ .votes { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; animation: fadeSlideUp .25s ease-out both; }
+ .votes button { background: #4b3a9e; padding: 15px; font-size: 20px; font-weight: 700; }
+ .votes button.picked { background: #26890c; }
+ .buzzer { width: 100%; min-height: 48vh; font-size: 32px; font-weight: 900; margin-top: 20px; border-radius: 22px; touch-action: manipulation; }
+ .buzzer.wait { background: #e21b3c; }
+ .buzzer.go { background: #26890c; animation: pulseGo .9s infinite ease-in-out; }
+ .wordBox { background: #2d2266; border: 2px solid #ffd33d; border-radius: 16px; padding: 24px 16px; font-size: 32px; font-weight: 800; margin: 18px 0; animation: popIn .3s ease-out both; }
+ #padWrap { display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
+ #pad { background: #fff; border-radius: 14px; width: 100%; height: 48vh; touch-action: none; display: block; }
+ .tools { display: flex; gap: 8px; justify-content: center; align-items: center; }
+ .col { width: 38px; height: 38px; border-radius: 50%; border: 3px solid #fff3; }
+ .col.on { border-color: #ffd33d; transform: scale(1.1); }
+ .clr { background: #e21b3c; padding: 10px 16px; font-size: 16px; font-weight: 700; }
+ h1 { margin: 10px 0; } .msg { font-size: 25px; margin-top: 14vh; animation: popIn .28s ease-out both; }
+ .qtxt { font-size: 20px; font-weight: 700; margin: 12px 0; animation: fadeSlideUp .25s ease-out both; }
+ .err { color: #ff8a8a; min-height: 24px; }
+ .bar { height: 10px; background: #fff3; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+ .bar div { height: 100%; background: #ffd33d; transition: width .15s linear; }
+ #viewWrap { display: none; margin: 8px 0 6px; }
+ #viewPad { background: #fff; border-radius: 14px; width: 100%; max-height: 36vh; object-fit: contain; display: block; }
+ .resBox { background: #261b59; border: 1px solid #ffffff1a; border-radius: 16px; padding: 14px; margin-top: 14px; text-align: left; animation: fadeSlideUp .25s ease-out both; }
+ .resTitle { font-size: 16px; font-weight: 800; color: #ffd33d; margin-bottom: 10px; text-align: center; }
+ .resRow { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: #ffffff0d; margin-bottom: 6px; font-size: 15px; }
+ .resRow:last-child { margin-bottom: 0; }
+ .resAns { padding: 9px 12px; border-radius: 10px; margin-bottom: 6px; font-size: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+ .resAns.dim { opacity: .45; }
+ .resAns.win { outline: 2px solid #ffd33d; }
+ .resChips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+ .resChip { background: #ffffff1a; padding: 5px 10px; border-radius: 999px; font-size: 14px; }
+</style></head>
+<body>
+<div id="viewWrap"><canvas id="viewPad" width="500" height="420"></canvas></div>
+<div id="app"></div>
+<div id="padWrap">
+  <div id="padWord" class="qtxt" style="margin:4px 0"></div>
+  <canvas id="pad" width="500" height="420"></canvas>
+  <div class="tools">
+    <button class="col on" style="background:#111" onclick="setCol('#111',this)"></button>
+    <button class="col" style="background:#e21b3c" onclick="setCol('#e21b3c',this)"></button>
+    <button class="col" style="background:#1368ce" onclick="setCol('#1368ce',this)"></button>
+    <button class="col" style="background:#26890c" onclick="setCol('#26890c',this)"></button>
+    <button class="clr" onclick="clearPad()">Löschen</button>
+  </div>
+</div>
+<div id="emojiLayer"></div>
+<audio id="playSongAudio"></audio>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const NAMES = {
+  quiz: '🎉 Party-Quiz', mostlikely: '🍻 Wer würde am ehesten?',
+  wouldyourather: '⚖️ Entweder-Oder', estimate: '🎯 Schätz-Duell',
+  reaction: '⚡ Reaktions-Buzzer', neverhavei: '🙈 Ich hab noch nie…',
+  imposter: '🕵️ Imposter', draw: '🎨 Zeichnen & Raten',
+  taboo: '🗣️ Erklär-Spiel (Tabu)', sort: '🔢 Sortier-Duell',
+  icebreaker: '🫶 Kennenlernen', teams: '🏆 Team-Wahl',
+  scale: '📊 Skala 1–10', truthlie: '🎭 2 Wahrheiten, 1 Lüge',
+  wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song', mix: '🎲 Party-Mix',
+};
+const AVATARS = ['😎', '🦊', '🐼', '🐸', '🦁', '🦄', '🐙', '🐱', '🚀', '🌟', '🍕', '🔥', '🪅', '🤡', '🤪', '🥳', '👽', '👻', '💩', '🐵', '🦖', '🦩', '🦝', '🦆', '🦥', '🦫', '🍺', '🌮', '🪩', '🤖', '🧙', '🥷', '🧛', '🍌', '🧀', '🌵'];
+const WHEEL_COLS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#7c4dff', '#ff6b9d', '#00897b', '#e86c00'];
+const ROOM_CODE = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+let roomError = '';
+const socket = ROOM_CODE ? io({ query: { room: ROOM_CODE } }) : { on(){}, emit(){} };
+if (ROOM_CODE) {
+  socket.on('room:error', (e) => {
+    roomError = (e && e.error) || 'Raum nicht gefunden oder abgelaufen.';
+    render();
+  });
+}
+async function joinByRoomInput() {
+  const inp = document.getElementById('roomCodeInp');
+  const errEl = document.getElementById('roomErrMsg');
+  const code = (inp ? inp.value : '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  if (!code) { if (errEl) errEl.textContent = 'Bitte einen Raumcode eingeben.'; return; }
+  try {
+    const res = await fetch('/api/rooms/' + encodeURIComponent(code));
+    const d = await res.json();
+    if (!d.exists) { if (errEl) errEl.textContent = 'Raum „' + code + '“ wurde nicht gefunden.'; return; }
+    location.href = '/?room=' + encodeURIComponent(d.code);
+  } catch {
+    if (errEl) errEl.textContent = 'Verbindungsfehler beim Prüfen des Raums.';
+  }
+}
+function copyInviteLink() {
+  const link = location.origin + '/?room=' + encodeURIComponent(ROOM_CODE);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(() => {
+      document.querySelectorAll('.copyInviteBtn').forEach(b => {
+        b.textContent = '✅ Link kopiert!';
+        setTimeout(() => { b.textContent = '📋 Einladungs-Link kopieren'; }, 2000);
+      });
+    }).catch(() => prompt('Einladungs-Link kopieren:', link));
+  } else {
+    prompt('Einladungs-Link kopieren:', link);
+  }
+}
+function inviteBarHtml() {
+  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(255,211,61,0.1);border:1px solid rgba(255,211,61,0.35);border-radius:10px;padding:8px 12px;margin:8px 0 12px;font-size:14px"><span>Raum: <b style="color:#ffd33d;letter-spacing:2px">${esc(ROOM_CODE)}</b></span><button type="button" class="copyInviteBtn" onclick="copyInviteLink()" style="background:#4b3a9e;color:#fff;padding:7px 12px;font-size:13px;font-weight:700;border-radius:8px;border:0;cursor:pointer">📋 Einladungs-Link kopieren</button></div>`;
+}
+async function createRoomFromHome(target) {
+  try {
+    const res = await fetch('/api/rooms', { method: 'POST' });
+    const d = await res.json();
+    if (d && d.code) {
+      if (d.hostToken) localStorage.setItem('pg_host_' + d.code, d.hostToken);
+      location.href = target + '?room=' + encodeURIComponent(d.code);
+    }
+  } catch {}
+}
+let S = null, P = null, joined = false, myAnswer = null, sortPicks = [], lastRoundKey = '', name = localStorage.getItem('qn') || '', avatar = localStorage.getItem('qa') || '😎', reconnectToken = localStorage.getItem('qt') || '';
+let localRevealed = false, localSecret = null, localImposterDone = [], localNameDraft = '', localActiveName = '';
+let pWheelRaf = 0, pActiveSpinId = -1;
+
+function startPhoneWheelAnim(spin) {
+  const cvs = document.getElementById('phoneWheelCanvas');
+  if (!cvs || !spin || !Array.isArray(spin.items) || !spin.items.length) return;
+  cancelAnimationFrame(pWheelRaf);
+  const wctx = cvs.getContext('2d');
+  const items = spin.items;
+  const N = items.length;
+  const slice = (Math.PI * 2) / N;
+  const winIdx = Math.max(0, Math.min(N - 1, Number(spin.winnerIdx) || 0));
+  const jitter = N > 1 ? (((spin.id * 37) % 41 - 20) / 100) * slice * 0.42 : 0;
+  const targetRot = (Math.PI * 2 * 5) - (winIdx + 0.5) * slice - Math.PI / 2 + jitter;
+  const spinDur = 3000;
+  const start = performance.now();
+  let lastTickIdx = -1, flapper = 0, winShown = false;
+
+  function frame(now) {
+    const elapsed = now - start;
+    const t = Math.min(1, elapsed / spinDur);
+    const ease = 1 - Math.pow(1 - t, 4);
+    const rot = targetRot * ease;
+
+    if (N > 1 && t < 1) {
+      const pointerRel = ((-Math.PI / 2 - rot) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      const curIdx = Math.floor(pointerRel / slice) + Math.floor(rot / (Math.PI * 2)) * N;
+      if (lastTickIdx !== -1 && curIdx !== lastTickIdx) flapper = 1;
+      lastTickIdx = curIdx;
+    }
+    flapper *= 0.84;
+
+    if (t >= 1 && !winShown) {
+      winShown = true;
+      const wb = document.getElementById('phoneWheelWinner');
+      if (wb) wb.innerHTML = `<div style="background:#26890c;border:2px solid #ffd33d;border-radius:14px;padding:10px 18px;font-size:22px;font-weight:900;display:inline-block;animation:popIn .3s ease-out both">🎉 ${esc(spin.winnerLabel || items[winIdx])}</div>`;
+    }
+
+    const W = cvs.width, H = cvs.height, cx = W / 2, cy = H / 2 + 8, R = Math.min(W, H) * 0.42;
+    wctx.clearRect(0, 0, W, H);
+
+    wctx.save();
+    wctx.beginPath();
+    wctx.arc(cx, cy, R + 9, 0, Math.PI * 2);
+    wctx.fillStyle = '#ffd33d';
+    wctx.fill();
+    wctx.lineWidth = 3;
+    wctx.strokeStyle = '#1b1340';
+    wctx.stroke();
+    wctx.restore();
+
+    for (let i = 0; i < N; i++) {
+      const a0 = rot + i * slice;
+      const a1 = a0 + slice;
+      let colIdx = i % WHEEL_COLS.length;
+      if (i === N - 1 && N > 1 && colIdx === 0) colIdx = 1;
+      wctx.save();
+      wctx.beginPath();
+      wctx.moveTo(cx, cy);
+      wctx.arc(cx, cy, R, a0, a1);
+      wctx.closePath();
+      wctx.fillStyle = WHEEL_COLS[colIdx];
+      wctx.fill();
+      wctx.lineWidth = winShown && i === winIdx ? 5 : 2;
+      wctx.strokeStyle = winShown && i === winIdx ? '#ffd33d' : 'rgba(27,19,64,0.85)';
+      wctx.stroke();
+
+      const mid = a0 + slice / 2;
+      wctx.translate(cx, cy);
+      wctx.rotate(mid);
+      wctx.textAlign = 'right';
+      wctx.textBaseline = 'middle';
+      wctx.fillStyle = '#fff';
+      const fSize = N > 12 ? 13 : N > 8 ? 15 : N > 5 ? 17 : 19;
+      wctx.font = `800 ${fSize}px system-ui, sans-serif`;
+      const rawTxt = String(items[i] || '');
+      const lbl = rawTxt.length > 16 ? rawTxt.slice(0, 15) + '…' : rawTxt;
+      wctx.fillText(lbl, R - 12, 0);
+      wctx.restore();
+    }
+
+    wctx.save();
+    wctx.beginPath();
+    wctx.arc(cx, cy, R * 0.17, 0, Math.PI * 2);
+    wctx.fillStyle = '#1b1340';
+    wctx.fill();
+    wctx.lineWidth = 4;
+    wctx.strokeStyle = '#ffd33d';
+    wctx.stroke();
+    wctx.font = '20px system-ui, sans-serif';
+    wctx.textAlign = 'center';
+    wctx.textBaseline = 'middle';
+    wctx.fillText('🎡', cx, cy + 1);
+    wctx.restore();
+
+    wctx.save();
+    wctx.translate(cx, cy - R - 12);
+    wctx.rotate(-flapper * 0.42);
+    wctx.beginPath();
+    wctx.moveTo(-13, -10);
+    wctx.lineTo(13, -10);
+    wctx.lineTo(0, 20);
+    wctx.closePath();
+    wctx.fillStyle = '#ffd33d';
+    wctx.fill();
+    wctx.lineWidth = 2.5;
+    wctx.strokeStyle = '#1b1340';
+    wctx.stroke();
+    wctx.restore();
+
+    if (S && S.phase === 'spin' && S.spin && S.spin.id === spin.id) {
+      pWheelRaf = requestAnimationFrame(frame);
+    }
+  }
+  pWheelRaf = requestAnimationFrame(frame);
+}
+const playSongAudio = document.getElementById('playSongAudio');
+let playAudioOn = localStorage.getItem('qAudio') === '1', playAudioBlocked = false, playAudioError = false, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000;
+let playVol = Number(localStorage.getItem('qVol') ?? 0.5);
+if (!Number.isFinite(playVol) || playVol < 0 || playVol > 1) playVol = 0.5;
+playSongAudio.volume = playVol;
+playSongAudio.addEventListener('error', () => { playAudioError = true; playAudioBlocked = false; render(); });
+playSongAudio.addEventListener('playing', () => {
+  if (S && S.mode === 'songquiz' && S.phase === 'question') {
+    const sk = `${S.mode}:${S.idx}`;
+    if (songPlayingSent !== sk) {
+      songPlayingSent = sk;
+      socket.emit('song:playing', S.idx);
+    }
+  }
+});
+function setPlayVol(v) {
+  playVol = Math.max(0, Math.min(1, Number(v) / 100));
+  localStorage.setItem('qVol', String(playVol));
+  playSongAudio.volume = playVol;
+}
+const app = document.getElementById('app');
+const viewWrap = document.getElementById('viewWrap');
+const viewPad = document.getElementById('viewPad');
+const vctx = viewPad.getContext('2d');
+const padWrap = document.getElementById('padWrap');
+const pad = document.getElementById('pad');
+const pctx = pad.getContext('2d');
+let penColor = '#111', drawing = false, lastPt = null;
+const esc = s => String(s).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function drawSeg(ctx, cvs, seg) {
+  ctx.strokeStyle = seg.c || '#111';
+  ctx.lineWidth = seg.w || 6;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(seg.x0 * cvs.width, seg.y0 * cvs.height);
+  ctx.lineTo(seg.x1 * cvs.width, seg.y1 * cvs.height);
+  ctx.stroke();
+}
+socket.on('draw:clear', () => vctx.clearRect(0, 0, viewPad.width, viewPad.height));
+socket.on('draw:stroke', seg => drawSeg(vctx, viewPad, seg));
+socket.on('draw:history', list => { vctx.clearRect(0, 0, viewPad.width, viewPad.height); list.forEach(s => drawSeg(vctx, viewPad, s)); });
+socket.on('react', r => {
+  if (!r || !r.emoji) return;
+  const layer = document.getElementById('emojiLayer');
+  if (!layer) return;
+  const el = document.createElement('div');
+  el.className = 'floatEmoji';
+  el.style.left = (10 + Math.random() * 76) + '%';
+  el.innerHTML = `<span class="emIcon" style="font-size:34px">${esc(r.emoji)}</span>${r.name ? `<small style="font-size:11px">${esc(r.avatar || '😎')} ${esc(r.name)}</small>` : ''}`;
+  layer.appendChild(el);
+  setTimeout(() => el.remove(), 3100);
+});
+
+const pStreakTag = p => (p && p.streak >= 2)
+  ? `<span class="streakBadge ${p.streak >= 3 ? 'hot' : ''}" style="font-size:12px;padding:1px 7px">🔥 ${p.streak}×</span>`
+  : '';
+
+function renderEmojiBar() {
+  const emojis = ['😂', '🔥', '💀', '🤡', '🍻', '❤️'];
+  return `<div class="emojiBar">${emojis.map(em => `<button type="button" onclick="socket.emit('player:react','${em}')">${em}</button>`).join('')}</div>`;
+}
+
+let pLastScoreAnimKey = '', pScoreRaf = 0;
+function animatePhoneScores() {
+  if (!S || S.phase !== 'result') return;
+  const ak = `${S.mode}:${S.idx}:result`;
+  const nodes = [...document.querySelectorAll('.scoreNum')];
+  if (!nodes.length) return;
+  if (ak === pLastScoreAnimKey) {
+    nodes.forEach(n => { n.textContent = `${n.dataset.to} Pkt`; });
+    return;
+  }
+  pLastScoreAnimKey = ak;
+  cancelAnimationFrame(pScoreRaf);
+  const start = performance.now();
+  const dur = 750;
+  function tick(now) {
+    const t = Math.min(1, (now - start) / dur);
+    const ease = 1 - Math.pow(1 - t, 3);
+    nodes.forEach(n => {
+      const from = Number(n.dataset.from) || 0;
+      const to = Number(n.dataset.to) || 0;
+      n.textContent = `${Math.round(from + (to - from) * ease)} Pkt`;
+    });
+    if (t < 1) pScoreRaf = requestAnimationFrame(tick);
+  }
+  pScoreRaf = requestAnimationFrame(tick);
+}
+
+function renderPhonePodium() {
+  const list = (S.teamMode && S.teams && S.teams.length)
+    ? S.teams.slice(0, 3).map(t => ({ label: t.label, score: t.score }))
+    : S.players.slice(0, 3).map(p => ({ label: `${p.avatar || '😎'} ${p.name}`, score: p.score }));
+  if (!list.length) return '';
+  const slot = (item, place, medal) => item
+    ? `<div class="podiumSlot p${place}">
+        <div class="podiumWho" style="font-size:13px">${esc(item.label)}</div>
+        <div class="podiumBar" style="height:${place === 1 ? '115px' : place === 2 ? '86px' : '66px'};padding:8px 4px"><div style="font-size:22px">${medal}</div><div style="font-size:12px;margin-top:2px">${item.score} Pkt</div></div>
+      </div>`
+    : '';
+  return `<div class="podiumStage" style="min-height:145px;margin:10px auto 14px;gap:8px">${slot(list[1], 2, '🥈')}${slot(list[0], 1, '🥇')}${slot(list[2], 3, '🥉')}</div>`;
+}
+
+function syncPlayAudio(s) {
+  const songKey = `${s.mode}:${s.idx}`;
+  if (!s.noTvMode || !playAudioOn || s.paused) {
+    if (!playSongAudio.paused) playSongAudio.pause();
+    if (!s.noTvMode || !playAudioOn) lastSongKey = '';
+    return;
+  }
+  if (s.mode === 'songquiz' && s.phase === 'question' && s.q && s.q.preview) {
+    if (songKey !== lastSongKey) {
+      lastSongKey = songKey;
+      playAudioBlocked = false;
+      playAudioError = false;
+      playSongAudio.pause();
+      playSongAudio.src = s.q.preview;
+      playSongAudio.load();
+      playSongAudio.volume = playVol;
+      const pr = playSongAudio.play();
+      if (pr && pr.catch) pr.catch(() => { if (!playAudioError) playAudioBlocked = true; render(); });
+    } else if (playSongAudio.paused && !playAudioBlocked && !playAudioError) {
+      playSongAudio.play().catch(() => { if (!playAudioError) playAudioBlocked = true; render(); });
+    }
+  } else if (s.mode !== 'songquiz' || s.phase === 'lobby' || s.phase === 'end') {
+    lastSongKey = '';
+    playAudioBlocked = false;
+    playAudioError = false;
+    if (!playSongAudio.paused) playSongAudio.pause();
+  }
+}
+
+function togglePlayAudio(retryOnly = false) {
+  if (!retryOnly) {
+    playAudioOn = !playAudioOn;
+    localStorage.setItem('qAudio', playAudioOn ? '1' : '0');
+  }
+  playAudioBlocked = false;
+  playAudioError = false;
+  lastSongKey = '';
+  if (!playAudioOn && !playSongAudio.paused) playSongAudio.pause();
+  if (S) syncPlayAudio(S);
+  render();
+}
+
+function renderAudioControls(inLobby) {
+  if (!S || !S.noTvMode) return '';
+  let btn = '';
+  if (!inLobby && (!S.q || !S.q.preview)) {
+    return `<div style="font-size:13px;opacity:.75;margin-bottom:6px">⚠️ Keine Audio-Vorschau verfügbar</div>`;
+  }
+  if (!inLobby && playAudioOn && playAudioError) {
+    return `<div style="font-size:13px;color:#ff8a8a;margin:6px 0">⚠️ Audio konnte nicht geladen werden</div>`;
+  }
+  if (!inLobby && playAudioOn && playAudioBlocked) {
+    btn = `<button type="button" onclick="togglePlayAudio(true)" style="background:#e21b3c;padding:9px 14px;font-size:14px;font-weight:700;border-radius:10px">▶️ Ton jetzt starten (Autoplay blockiert)</button>`;
+  } else if (playAudioOn) {
+    btn = `<button type="button" onclick="togglePlayAudio()" style="background:#26890c;padding:9px 14px;font-size:14px;font-weight:700;border-radius:10px">🔊 Ton auf diesem Gerät: An</button>`;
+  } else {
+    btn = `<button type="button" onclick="togglePlayAudio()" style="background:#2d2266;border:1px solid #ffffff33;padding:9px 14px;font-size:14px;border-radius:10px">🔇 Ton auf diesem Gerät: Aus (Antippen für Musik)</button>`;
+  }
+  const slider = playAudioOn
+    ? `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:13px;opacity:.9"><span>🔈</span><input type="range" min="0" max="100" value="${Math.round(playVol * 100)}" oninput="setPlayVol(this.value)" style="width:160px;accent-color:#ffd33d;padding:0;margin:0"><span>${Math.round(playVol * 100)}%</span></div>`
+    : '';
+  return `<div style="margin:${inLobby ? '14px 0 0' : '6px 0'}">${btn}${slider}</div>`;
+}
+
+socket.on('state', s => {
+  const rk = `${s.mode}:${s.idx}:${s.phase === 'lobby' ? 'l' : ''}`;
+  if (rk !== lastRoundKey) {
+    myAnswer = null;
+    sortPicks = [];
+    localRevealed = false;
+    localSecret = null;
+    localImposterDone = [];
+    lastRoundKey = rk;
+    pctx.clearRect(0, 0, pad.width, pad.height);
+    vctx.clearRect(0, 0, viewPad.width, viewPad.height);
+  }
+  S = s;
+  if (s.nextAudio && s.nextAudio !== window._lastPreloadAudio) { window._lastPreloadAudio = s.nextAudio; fetch(s.nextAudio).catch(() => {}); }
+  const leftMs = typeof s.leftMs === 'number' ? s.leftMs : (s.deadline ? Math.max(0, s.deadline - Date.now()) : 0);
+  clientDeadline = leftMs > 0 ? performance.now() + leftMs : 0;
+  clientTotalMs = s.totalMs > 0 ? s.totalMs : (s.phase === 'result' ? 5000 : (s.time || 15) * 1000);
+  syncPlayAudio(s);
+  render();
+});
+socket.on('private', p => { P = p; render(); });
+socket.on('connect', () => {
+  if (joined && name) {
+    socket.emit('join', { name, avatar, reconnectToken }, r => {
+      if (r && r.ok && r.reconnectToken) { reconnectToken = r.reconnectToken; localStorage.setItem('qt', reconnectToken); }
+    });
+  }
+});
+
+function pickAv(av) { avatar = av; localStorage.setItem('qa', av); render(); }
+function join() {
+  name = document.getElementById('n').value.trim();
+  socket.emit('join', { name, avatar, reconnectToken }, r => {
+    if (r && r.ok) {
+      joined = true;
+      localStorage.setItem('qn', name);
+      if (r.reconnectToken) { reconnectToken = r.reconnectToken; localStorage.setItem('qt', reconnectToken); }
+      render();
+    } else document.getElementById('e').textContent = (r && r.error) || 'Fehler';
+  });
+}
+function ans(v) { myAnswer = v; socket.emit('answer', v); render(); }
+function editAnswer() { myAnswer = null; sortPicks = []; render(); }
+function vote(i) { const t = S.players[i]?.name; if (t) ans(t); }
+function sendEst() {
+  const v = document.getElementById('est')?.value;
+  if (v !== '' && v !== undefined && Number.isFinite(Number(v))) ans(Number(v));
+}
+function sendIce() {
+  const el = document.getElementById('iceIn');
+  const v = el ? el.value.trim() : '';
+  if (v) ans(v);
+}
+function sendScale() {
+  const el = document.getElementById('scIn');
+  if (el) ans(Number(el.value));
+}
+function sendTL() {
+  const t1 = document.getElementById('tl1')?.value.trim();
+  const t2 = document.getElementById('tl2')?.value.trim();
+  const lie = document.getElementById('tl3')?.value.trim();
+  if (!t1 || !t2 || !lie) {
+    const fb = document.getElementById('tlFb');
+    if (fb) fb.textContent = 'Bitte alle 3 Felder ausfüllen!';
+    return;
+  }
+  socket.emit('truthlie:submit', [t1, t2, lie], () => {});
+}
+function sendAssoc() {
+  const el = document.getElementById('waIn');
+  const v = el ? el.value.trim() : '';
+  if (v) ans(v);
+}
+function buzz() {
+  if (myAnswer !== null) return;
+  myAnswer = S.phase === 'go' ? 'go' : 'early';
+  socket.emit('answer', true);
+  render();
+}
+function sendGuess() {
+  const el = document.getElementById('gIn');
+  if (!el || !el.value.trim()) return;
+  socket.emit('draw:guess', el.value.trim(), r => {
+    if (!r.ok) { const fb = document.getElementById('gFb'); if (fb) fb.textContent = '❌ Leider falsch!'; }
+  });
+  el.value = '';
+}
+function sendTabooGuess() {
+  const el = document.getElementById('tIn');
+  if (!el || !el.value.trim()) return;
+  socket.emit('taboo:guess', el.value.trim(), r => {
+    if (!r.ok) { const fb = document.getElementById('tFb'); if (fb) fb.textContent = '❌ Leider falsch!'; }
+  });
+  el.value = '';
+}
+function pickSort(idx) {
+  if (myAnswer !== null) return;
+  const pos = sortPicks.indexOf(idx);
+  if (pos !== -1) sortPicks.splice(pos, 1);
+  else if (sortPicks.length < 4) sortPicks.push(idx);
+  render();
+}
+function sendSort() {
+  if (sortPicks.length === 4) ans(sortPicks.slice());
+}
+function setCol(c, btn) {
+  penColor = c;
+  document.querySelectorAll('.col').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function clearPad() { pctx.clearRect(0, 0, pad.width, pad.height); socket.emit('draw:clear'); }
+function pt(e) {
+  const r = pad.getBoundingClientRect();
+  return { x: Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)) };
+}
+pad.addEventListener('pointerdown', e => { drawing = true; lastPt = pt(e); pad.setPointerCapture(e.pointerId); });
+pad.addEventListener('pointermove', e => {
+  if (!drawing || !lastPt) return;
+  const cur = pt(e);
+  pctx.strokeStyle = penColor; pctx.lineWidth = 4; pctx.lineCap = 'round';
+  pctx.beginPath(); pctx.moveTo(lastPt.x * pad.width, lastPt.y * pad.height); pctx.lineTo(cur.x * pad.width, cur.y * pad.height); pctx.stroke();
+  socket.emit('draw:stroke', { x0: lastPt.x, y0: lastPt.y, x1: cur.x, y1: cur.y, c: penColor, w: 6 });
+  lastPt = cur;
+});
+pad.addEventListener('pointerup', () => { drawing = false; lastPt = null; });
+pad.addEventListener('pointercancel', () => { drawing = false; lastPt = null; });
+
+function addLocalPlayer() {
+  const el = document.getElementById('localName');
+  const n = (el ? el.value : localNameDraft).trim();
+  socket.emit('local:addPlayer', { name: n, avatar }, r => {
+    const fb = document.getElementById('localErr');
+    if (r && r.ok) {
+      localNameDraft = '';
+      if (el) el.value = '';
+      if (fb) fb.textContent = '';
+    } else if (fb) fb.textContent = (r && r.error) || 'Fehler';
+  });
+}
+function revealLocal(fetchSecret = false) {
+  if (!fetchSecret) { localRevealed = true; render(); return; }
+  socket.emit('local:getSecret', localActiveName, sec => {
+    localSecret = sec || {};
+    localRevealed = true;
+    render();
+  });
+}
+function submitLocal(val) {
+  const target = localActiveName;
+  localRevealed = false;
+  sortPicks = [];
+  socket.emit('local:answer', { name: target, val });
+}
+function submitLocalVote(i) {
+  const t = S.players[i]?.name;
+  if (t) submitLocal(t);
+}
+function submitLocalEst() {
+  const v = document.getElementById('est')?.value;
+  if (v !== '' && v !== undefined && Number.isFinite(Number(v))) submitLocal(Number(v));
+}
+function submitLocalIce() {
+  const v = document.getElementById('iceIn')?.value.trim();
+  if (v) submitLocal(v);
+}
+function submitLocalScale() {
+  const el = document.getElementById('scIn');
+  if (el) submitLocal(Number(el.value));
+}
+function submitLocalAssoc() {
+  const v = document.getElementById('waIn')?.value.trim();
+  if (v) submitLocal(v);
+}
+function submitLocalTL() {
+  const t1 = document.getElementById('tl1')?.value.trim();
+  const t2 = document.getElementById('tl2')?.value.trim();
+  const lie = document.getElementById('tl3')?.value.trim();
+  if (!t1 || !t2 || !lie) { const fb = document.getElementById('tlFb'); if (fb) fb.textContent = 'Bitte alle 3 Felder ausfüllen!'; return; }
+  socket.emit('local:truthlie', { name: localActiveName, arr: [t1, t2, lie] }, r => {
+    if (r && r.ok) { localRevealed = false; }
+  });
+}
+function doneImposterRead() {
+  localImposterDone.push(localActiveName);
+  localRevealed = false;
+  localSecret = null;
+  render();
+}
+function renderOneDevice() {
+  viewWrap.style.display = 'none';
+  const showPad = S.mode === 'draw' && S.phase === 'question' && localRevealed;
+  padWrap.style.display = showPad ? 'flex' : 'none';
+  const ctrlBar = `<div id="localCtrl" style="display:flex;justify-content:space-between;align-items:center;font-size:13px;opacity:.85;margin-bottom:8px">
+    <span>🤝 Ein-Gerät-Modus · ${NAMES[S.mode] || S.mode}</span>
+    <span>${S.phase !== 'lobby' ? `<button type="button" onclick="socket.emit('host:reset')" style="padding:4px 8px;font-size:12px;background:#4b3a9e;border-radius:6px">🏠 Lobby</button>` : ''}</span>
+  </div>`;
+
+  if (S.phase !== 'spin') {
+    pActiveSpinId = -1;
+    cancelAnimationFrame(pWheelRaf);
+  }
+  if (S.phase === 'spin' && S.spin) {
+    if (pActiveSpinId === S.spin.id && document.getElementById('phoneWheelCanvas')) return;
+    pActiveSpinId = S.spin.id;
+    app.innerHTML = `${ctrlBar}
+      ${S.spin.subtitle ? `<div style="font-size:13px;opacity:.8;margin-top:4px">${esc(S.spin.subtitle)}</div>` : ''}
+      <div class="qtxt" style="font-size:22px;color:#ffd33d;margin:6px 0 10px">${esc(S.spin.title || '🎡 Drehrad')}</div>
+      <div style="display:flex;justify-content:center"><canvas id="phoneWheelCanvas" width="380" height="380" style="width:min(76vw,320px);height:min(76vw,320px)"></canvas></div>
+      <div id="phoneWheelWinner" style="min-height:48px;margin-top:10px"></div>
+      <button class="go" style="background:#4b3a9e;margin-top:8px;padding:10px;font-size:15px" onclick="socket.emit('host:next')">⏭ Überspringen</button>`;
+    startPhoneWheelAnim(S.spin);
+    return;
+  }
+
+  if (S.phase === 'lobby') {
+    const avs = AVATARS.map(a => `<button type="button" onclick="avatar='${a}';render()" style="font-size:24px;padding:6px 8px;background:${a === avatar ? '#7c4dff' : '#2d2266'};border:2px solid ${a === avatar ? '#ffd33d' : 'transparent'}">${a}</button>`).join('');
+    const plist = S.players.map((p, i) => `<div class="resRow"><span>${esc(p.avatar)} ${esc(p.name)}</span><button type="button" onclick="socket.emit('local:removePlayer',S.players[${i}]?.name)" style="background:#e21b3c;padding:4px 10px;font-size:13px;border-radius:8px">✕</button></div>`).join('') || '<div style="opacity:.6;font-size:14px">Noch keine Spieler hinzugefügt</div>';
+    const lBan = S.lobbyBanner ? `<div style="background:#26890c;border:2px solid #ffd33d;border-radius:10px;padding:8px 12px;font-weight:800;font-size:15px;margin:6px 0">${esc(S.lobbyBanner)}</div>` : '';
+    if (document.getElementById('localName') && document.getElementById('localAvGrid') && document.getElementById('localList')) {
+      const lc = document.getElementById('localCtrl');
+      if (lc) lc.outerHTML = ctrlBar;
+      const lbEl = document.getElementById('localBanner');
+      if (lbEl) lbEl.innerHTML = lBan;
+      const la = document.getElementById('localAudio');
+      if (la) la.innerHTML = renderAudioControls(true);
+      document.getElementById('localAvGrid').innerHTML = avs;
+      document.getElementById('localList').innerHTML = plist;
+      document.getElementById('localStartBtn').disabled = S.players.length < 1;
+      document.getElementById('localStartBtn').textContent = `▶ Spiel starten (${S.players.length} Spieler)`;
+      const spBtn = document.getElementById('localSpinPlayerBtn');
+      if (spBtn) spBtn.disabled = S.players.length < 1;
+      return;
+    }
+    app.innerHTML = `${ctrlBar}<h1>🤝 Pass & Play</h1>
+      <div id="localBanner">${lBan}</div>
+      <div id="localAvGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0">${avs}</div>
+      <div style="display:flex;gap:8px">
+        <input id="localName" maxlength="16" placeholder="Spielername" value="${esc(localNameDraft)}" oninput="localNameDraft=this.value" onkeydown="if(event.key==='Enter')addLocalPlayer()" style="flex:1;margin:0">
+        <button type="button" class="go" onclick="addLocalPlayer()" style="width:auto;margin:0;padding:0 16px;font-size:18px">+</button>
+      </div>
+      <div class="err" id="localErr"></div>
+      <div class="resBox" style="margin-top:12px"><div class="resTitle">Spieler</div><div id="localList">${plist}</div></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button type="button" class="go" style="background:#4b3a9e;font-size:14px;padding:10px;margin:0" onclick="socket.emit('host:spinWheel','mode')">🎰 Zufalls-Spiel</button>
+        <button id="localSpinPlayerBtn" type="button" class="go" style="background:#4b3a9e;font-size:14px;padding:10px;margin:0" ${S.players.length < 1 ? 'disabled' : ''} onclick="socket.emit('host:spinWheel','player')">🎡 Spieler auslosen</button>
+      </div>
+      <div id="localAudio">${renderAudioControls(true)}</div>
+      <button id="localStartBtn" class="go" ${S.players.length < 1 ? 'disabled' : ''} onclick="socket.emit('host:start')">▶ Spiel starten (${S.players.length} Spieler)</button>`;
+    return;
+  }
+
+  if (S.phase === 'end') {
+    const awardsHtml = S.awards && S.awards.length
+      ? `<div class="resBox"><div class="resTitle">🏅 Auszeichnungen</div>${S.awards.map(a => `<div class="resRow"><span>${a.icon} ${esc(a.title)}</span><b>${esc(a.name)} (${esc(a.detail)})</b></div>`).join('')}</div>`
+      : '';
+    app.innerHTML = `${ctrlBar}<div class="msg" style="margin-top:2vh">Spiel vorbei! 🎉</div>${awardsHtml}${renderLb('🏆 Endstand')}
+      <button class="go" onclick="socket.emit('host:start')">🔄 Nochmal spielen</button>
+      <button class="go" style="background:#4b3a9e" onclick="socket.emit('host:reset')">🏠 Zur Lobby</button>`;
+    return;
+  }
+
+  const top = `${ctrlBar}<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b></div>` +
+    (S.isFinalRound ? `<div style="background:#e21b3c;color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px;display:inline-block;margin:4px 0">🔥 FINALRUNDE · 2× PUNKTE</div>` : '') +
+    (P && P.mission && S.phase !== 'result' ? `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#ffd33d;font-weight:700;font-size:13px;padding:7px 10px;border-radius:10px;margin:6px 0;text-align:left">🕵️ <b>Geheime Mission (+150 Pkt):</b> ${esc(P.mission)}</div>` : '') +
+    (S.phase === 'result' && S.missionReveal ? `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#fff;font-size:13px;padding:8px 10px;border-radius:10px;margin:6px 0;text-align:left"><b style="color:#ffd33d">🕵️ Geheime Mission (${esc(S.missionReveal.playerName)}):</b> „${esc(S.missionReveal.text)}“<br><b>${S.missionReveal.resolved ? (S.missionReveal.success ? '✅ Geschafft (+150 Pkt)' : '❌ Aufgeflogen (0 Pkt)') : '⏳ Host bewertet…'}</b></div>` : '');
+
+  if (S.phase === 'result') {
+    app.innerHTML = `${top}${renderPhoneResult()}<button class="go" onclick="socket.emit('host:next')">▶ Nächste Runde</button>`;
+    return;
+  }
+
+  if (S.mode === 'reaction') {
+    app.innerHTML = `${top}<div class="msg">⚡ Reaktions-Buzzer braucht mehrere Handys.<br><small>Überspringe diese Runde.</small></div><button class="go" onclick="socket.emit('host:next')">⏭ Nächste Runde</button>`;
+    return;
+  }
+
+  if (S.phase === 'discuss' && S.mode === 'imposter') {
+    const nextP = S.players.find(p => !localImposterDone.includes(p.name));
+    if (!nextP) {
+      app.innerHTML = `${top}<div class="msg">💬 Alle kennen ihr Wort!<br><small>Gebt reihum einen Hinweis.</small></div><button class="go" onclick="socket.emit('host:next')">🗳 Abstimmung starten</button>`;
+    } else if (!localRevealed) {
+      localActiveName = nextP.name;
+      app.innerHTML = `${top}<div class="msg">📱 Gib das Gerät an<br><b>${esc(nextP.avatar)} ${esc(nextP.name)}</b></div><button class="go" onclick="revealLocal(true)">👁️ Ich bin ${esc(nextP.name)} (Wort zeigen)</button>`;
+    } else {
+      localActiveName = nextP.name;
+      app.innerHTML = `${top}<div class="qtxt">${esc(nextP.name)}, dein geheimes Wort:</div><div class="wordBox">${esc((localSecret && localSecret.word) || '')}</div><button class="go" onclick="doneImposterRead()">✅ Gelesen & Weitergeben</button>`;
+    }
+    return;
+  }
+
+  if (S.phase === 'write' && S.mode === 'truthlie' && S.q) {
+    const st = S.q.storyteller;
+    localActiveName = st;
+    if (!localRevealed) {
+      app.innerHTML = `${top}<div class="msg">📱 Gib das Gerät an<br><b>🎭 ${esc(st)}</b></div><button class="go" onclick="revealLocal(false)">✍️ Ich bin ${esc(st)}</button>`;
+    } else {
+      app.innerHTML = `${top}<div class="qtxt">🎭 ${esc(st)}: 2 Wahrheiten & 1 Lüge</div>
+        <input id="tl1" maxlength="90" placeholder="✅ Wahrheit 1">
+        <input id="tl2" maxlength="90" placeholder="✅ Wahrheit 2">
+        <input id="tl3" maxlength="90" placeholder="🚨 Deine Lüge">
+        <div class="err" id="tlFb"></div>
+        <button class="go" onclick="submitLocalTL()">Absenden</button>`;
+    }
+    return;
+  }
+
+  if (S.mode === 'draw' && S.q) {
+    localActiveName = S.q.drawer;
+    if (!localRevealed) {
+      app.innerHTML = `${top}<div class="msg">📱 Gib das Gerät an<br><b>🎨 ${esc(S.q.drawer)}</b></div><button class="go" onclick="revealLocal(true)">🎨 Ich bin ${esc(S.q.drawer)} (Wort zeigen)</button>`;
+    } else {
+      document.getElementById('padWord').textContent = `🎨 Male: ${(localSecret && localSecret.word) || ''}`;
+      app.innerHTML = `${top}<div style="font-size:13px;opacity:.8;margin-bottom:6px">Wer hat's erraten?</div>
+        <div class="votes">${S.players.map((p, i) => p.name !== S.q.drawer ? `<button onclick="socket.emit('local:wordGuessed',S.players[${i}]?.name)">✅ ${esc(p.name)}</button>` : '').join('')}</div>
+        <button class="go" style="background:#555;margin-top:8px" onclick="socket.emit('local:wordGuessed',null)">⏭ Niemand</button>`;
+    }
+    return;
+  }
+
+  if (S.mode === 'taboo' && S.q) {
+    localActiveName = S.q.explainer;
+    if (!localRevealed) {
+      app.innerHTML = `${top}<div class="msg">📱 Gib das Gerät an<br><b>🗣️ ${esc(S.q.explainer)}</b></div><button class="go" onclick="revealLocal(true)">🗣️ Ich bin ${esc(S.q.explainer)} (Wort zeigen)</button>`;
+    } else {
+      const taboos = ((localSecret && localSecret.taboo) || []).map(w => `<span class="resChip" style="background:#e21b3c">${esc(w)}</span>`).join('');
+      app.innerHTML = `${top}<div class="qtxt">🗣️ Erkläre:</div><div class="wordBox">${esc((localSecret && localSecret.word) || '')}</div>
+        <div class="resChips" style="margin:8px 0">${taboos}</div>
+        <div style="font-size:13px;opacity:.8;margin:10px 0 4px">Wer hat's erraten?</div>
+        <div class="votes">${S.players.map((p, i) => p.name !== S.q.explainer ? `<button onclick="socket.emit('local:wordGuessed',S.players[${i}]?.name)">✅ ${esc(p.name)}</button>` : '').join('')}</div>
+        <button class="go" style="background:#555;margin-top:8px" onclick="socket.emit('local:wordGuessed',null)">⏭ Niemand</button>`;
+    }
+    return;
+  }
+
+  const cur = S.players.find(p => !p.answered && !(S.mode === 'truthlie' && S.q && p.name === S.q.storyteller));
+  if (!cur) {
+    app.innerHTML = `${top}<div class="msg">⏳ Auswertung…</div>`;
+    return;
+  }
+  localActiveName = cur.name;
+  if (!localRevealed) {
+    app.innerHTML = `${top}${S.mode === 'songquiz' ? renderAudioControls(false) : ''}<div class="msg">📱 Gib das Gerät an<br><b>${esc(cur.avatar)} ${esc(cur.name)}</b></div><button class="go" onclick="revealLocal(false)">👁️ Ich bin ${esc(cur.name)}</button>`;
+    return;
+  }
+
+  const pn = esc(cur.name);
+  const turnHdr = `${top}<div style="font-size:14px;color:#ffd33d;font-weight:700;margin-bottom:6px">Am Zug: ${esc(cur.avatar)} ${pn}</div>`;
+  if (S.mode === 'quiz' || S.mode === 'teams' || S.mode === 'songquiz' || S.mode === 'imagequiz') {
+    const minH = S.q.a.length > 4 ? '11vh' : '14vh';
+    const iqImg = S.q && S.q.img ? `<div style="text-align:center;margin:8px 0 10px"><img src="${esc(S.q.img)}" style="max-height:24vh;max-width:84vw;border-radius:12px;object-fit:contain;${(S.q.theme === 'logos' || S.q.theme === 'cars') ? 'background:#fff;padding:12px;width:140px;height:140px;' : ''}"></div>` : '';
+    app.innerHTML = `${turnHdr}${S.mode === 'songquiz' ? renderAudioControls(false) : ''}<div class="qtxt">${esc(S.q.q)}</div>${iqImg}<div class="grid">${S.q.a.map((a, i) => `<button class="c${i}" style="font-size:16px;min-height:${minH}" onclick="submitLocal(${i})">${esc(a)}</button>`).join('')}</div>`;
+  } else if (S.mode === 'mostlikely' || S.mode === 'imposter') {
+    app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div><div class="votes">${S.players.map((p, i) => `<button onclick="submitLocalVote(${i})">${esc(p.name)}</button>`).join('')}</div>`;
+  } else if (S.mode === 'wouldyourather') {
+    app.innerHTML = `${turnHdr}<div class="wyr"><button class="c0" onclick="submitLocal(0)">${esc(S.q.a)}</button><button class="c1" onclick="submitLocal(1)">${esc(S.q.b)}</button></div>`;
+  } else if (S.mode === 'estimate') {
+    app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div><input id="est" type="number" inputmode="decimal" placeholder="Deine Zahl"><button class="go" onclick="submitLocalEst()">Absenden</button>`;
+  } else if (S.mode === 'neverhavei') {
+    app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div><div class="wyr"><button class="c0" onclick="submitLocal(true)">🙌 Hab ich schon</button><button class="c3" onclick="submitLocal(false)">😇 Noch nie</button></div>`;
+  } else if (S.mode === 'icebreaker') {
+    app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div><input id="iceIn" maxlength="120" placeholder="Deine Antwort…"><button class="go" onclick="submitLocalIce()">Absenden</button>`;
+  } else if (S.mode === 'scale') {
+    app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div><div style="font-size:42px;font-weight:900;color:#ffd33d;margin:10px 0" id="scVal">5</div>
+      <input id="scIn" type="range" min="1" max="10" value="5" style="width:100%;accent-color:#ffd33d" oninput="document.getElementById('scVal').textContent=this.value">
+      <div style="display:flex;justify-content:space-between;font-size:13px;opacity:.85;margin-bottom:12px"><span>1: ${esc(S.q.min)}</span><span>10: ${esc(S.q.max)}</span></div>
+      <button class="go" onclick="submitLocalScale()">Absenden</button>`;
+  } else if (S.mode === 'truthlie') {
+    app.innerHTML = `${turnHdr}<div class="qtxt">Was ist die Lüge von ${esc(S.q.storyteller)}?</div><div class="wyr">${S.q.statements.map((st, i) => `<button class="c${i}" style="min-height:12vh;font-size:17px" onclick="submitLocal(${i})">${esc(st)}</button>`).join('')}</div>`;
+  } else if (S.mode === 'wordassoc') {
+    app.innerHTML = `${turnHdr}<div class="qtxt" style="font-size:28px">⚡ ${esc(S.q.w)}</div><input id="waIn" maxlength="30" placeholder="Erstes Wort…"><button class="go" onclick="submitLocalAssoc()">Absenden</button>`;
+  } else if (S.mode === 'sort' && S.q) {
+    const btns = S.q.items.map(it => {
+      const orderNum = sortPicks.indexOf(it.idx) + 1;
+      return `<button type="button" onclick="pickSort(${it.idx})" style="width:100%;margin:5px 0;padding:13px;font-size:15px;text-align:left;display:flex;justify-content:space-between;align-items:center;background:${orderNum ? '#7c4dff' : '#2d2266'};border:2px solid ${orderNum ? '#ffd33d' : 'transparent'}">
+        <span>${esc(it.label)}</span><b>${orderNum ? `#${orderNum}` : 'Antippen'}</b></button>`;
+    }).join('');
+    app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div>${btns}<button class="go" ${sortPicks.length < 4 ? 'disabled style="opacity:.45"' : ''} onclick="if(sortPicks.length===4)submitLocal(sortPicks.slice())">Absenden (${sortPicks.length}/4)</button>`;
+  }
+}
+
+function render() {
+  const activeEl = document.activeElement;
+  if (S && (S.phase === 'question' || S.phase === 'write') && activeEl && activeEl.tagName === 'INPUT' && activeEl.type !== 'range' && app.contains(activeEl)) {
+    updatePhoneTimerUI();
+    return;
+  }
+  renderView();
+  if (joined && S && S.displayMode !== 'onedevice' && S.phase === 'question' && myAnswer !== null && S.mode !== 'reaction' && !document.getElementById('editAnsBox')) {
+    const ebox = document.createElement('div');
+    ebox.id = 'editAnsBox';
+    ebox.style.marginTop = '10px';
+    ebox.innerHTML = `<button class="go" style="margin:6px auto;background:#ff9800;color:#111;font-size:15px;padding:10px 14px" onclick="editAnswer()">✏️ Antwort ändern</button>`;
+    app.appendChild(ebox);
+  }
+  if (joined && S && S.displayMode !== 'onedevice' && S.skipVote && !document.getElementById('skipVoteBox')) {
+    const sv = S.skipVote;
+    const iVoted = Array.isArray(sv.voters) && sv.voters.includes(name.toLowerCase());
+    const label = iVoted ? '✅ Weiter-Stimme aktiv' : (S.phase === 'result' ? '⏭️ Sofort weiter' : '⏭️ Runde überspringen');
+    const box = document.createElement('div');
+    box.id = 'skipVoteBox';
+    box.style.marginTop = '12px';
+    box.innerHTML = `<button class="go" style="margin:6px auto;background:${iVoted ? '#26a69a' : '#5c43c7'};font-size:15px;padding:10px 14px" onclick="socket.emit('player:skipVote')">${label} (${sv.count}/${sv.needed})</button>`;
+    app.appendChild(box);
+  }
+  updatePhoneTimerUI();
+  animatePhoneScores();
+}
+
+function renderView() {
+  if (!ROOM_CODE || roomError) {
+    padWrap.style.display = 'none';
+    viewWrap.style.display = 'none';
+    app.innerHTML = `
+      <div class="card" style="max-width:420px;margin:20px auto;text-align:center">
+        <h2 style="margin-top:0">🎉 PartyGame</h2>
+        ${roomError ? `<div style="background:rgba(226,27,60,.18);border:1px solid #e21b3c;color:#ff8fa3;padding:10px;border-radius:10px;margin-bottom:12px;font-weight:700">${esc(roomError)}</div>` : '<p style="opacity:.85;margin-top:0">Gib den Raumcode ein oder erstelle eine neue Party-Lobby.</p>'}
+        <input id="roomCodeInp" placeholder="Raumcode (z. B. K7M2)" maxlength="6" style="text-transform:uppercase;text-align:center;font-size:22px;letter-spacing:4px;font-weight:800;margin-bottom:10px" onkeydown="if(event.key==='Enter')joinByRoomInput()">
+        <div id="roomErrMsg" style="color:#ff8fa3;min-height:20px;font-size:14px;margin-bottom:8px"></div>
+        <button class="go" onclick="joinByRoomInput()">🚪 Raum beitreten</button>
+        <hr style="border:0;border-top:1px solid rgba(255,255,255,.12);margin:18px 0">
+        <div style="font-size:14px;opacity:.8;margin-bottom:10px">Eigene Runde starten?</div>
+        <button type="button" style="width:100%;background:#1368ce;padding:12px;font-size:16px;font-weight:700" onclick="createRoomFromHome('/host')">📺 Neuen Raum erstellen</button>
+      </div>`;
+    return;
+  }
+  if (S && S.displayMode === 'onedevice') return renderOneDevice();
+  if (!joined) {
+    padWrap.style.display = 'none';
+    viewWrap.style.display = 'none';
+    const avs = AVATARS.map(a => `<button type="button" onclick="pickAv('${a}')" style="font-size:26px;padding:8px 10px;background:${a === avatar ? '#7c4dff' : '#2d2266'};border:2px solid ${a === avatar ? '#ffd33d' : 'transparent'}">${a}</button>`).join('');
+    const avGrid = document.getElementById('avGrid');
+    if (avGrid && document.getElementById('n')) {
+      avGrid.innerHTML = avs;
+      return;
+    }
+    app.innerHTML = `<h1>🎉 PartyGame</h1>${inviteBarHtml()}<div id="avGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0">${avs}</div><input id="n" maxlength="16" placeholder="Dein Name" value="${esc(name)}" oninput="name=this.value"><div class="err" id="e"></div><button class="go" onclick="join()">Mitspielen</button>`;
+    return;
+  }
+  if (!S) return;
+  const isDrawer = S.mode === 'draw' && S.phase === 'question' && P && P.drawer;
+  padWrap.style.display = isDrawer ? 'flex' : 'none';
+  viewWrap.style.display = (S.noTvMode && S.mode === 'draw' && S.phase === 'question' && !isDrawer && !S.paused) ? 'block' : 'none';
+  if (isDrawer) {
+    document.getElementById('padWord').textContent = `🎨 Male: ${P.word}`;
+    app.innerHTML = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b></div>`;
+    return;
+  }
+
+  const me = S.players.find(p => p.name === name);
+  const top = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b>${me ? pStreakTag(me) : ''}</div>` +
+    (S.isFinalRound ? `<div style="background:#e21b3c;color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px;display:inline-block;margin:4px 0">🔥 FINALRUNDE · 2× PUNKTE</div>` : '');
+
+  if (S.phase !== 'spin') {
+    pActiveSpinId = -1;
+    cancelAnimationFrame(pWheelRaf);
+  }
+  if (S.phase === 'spin' && S.spin) {
+    padWrap.style.display = 'none';
+    viewWrap.style.display = 'none';
+    if (pActiveSpinId === S.spin.id && document.getElementById('phoneWheelCanvas')) return;
+    pActiveSpinId = S.spin.id;
+    app.innerHTML = `
+      ${S.spin.subtitle ? `<div style="font-size:13px;opacity:.8;margin-top:6px">${esc(S.spin.subtitle)}</div>` : ''}
+      <div class="qtxt" style="font-size:22px;color:#ffd33d;margin:6px 0 10px">${esc(S.spin.title || '🎡 Drehrad')}</div>
+      <div style="display:flex;justify-content:center"><canvas id="phoneWheelCanvas" width="380" height="380" style="width:min(78vw,320px);height:min(78vw,320px)"></canvas></div>
+      <div id="phoneWheelWinner" style="min-height:50px;margin-top:12px"></div>`;
+    startPhoneWheelAnim(S.spin);
+    return;
+  }
+
+  if (S.phase === 'lobby') {
+    const meTeam = me && me.team;
+    const teamDefs = [
+      ['red', '🔴 Rot', '#e21b3c'],
+      ['blue', '🔵 Blau', '#1368ce'],
+      ['yellow', '🟡 Gelb', '#d89e00'],
+      ['green', '🟢 Grün', '#26890c'],
+      ['purple', '🟣 Lila', '#7c4dff'],
+      ['orange', '🟠 Orange', '#e86c00'],
+      ['pink', '🩷 Pink', '#d81b60'],
+      ['teal', '🩵 Türkis', '#00897b'],
+    ];
+    const teamPick = S.teamMode
+      ? `<div style="margin-top:16px"><div style="font-size:16px;opacity:.85;margin-bottom:10px">Wähle dein Team:</div>
+         <div class="grid" style="margin-top:0">${teamDefs.map(([id, lbl, bg]) =>
+           `<button style="background:${bg};min-height:8vh;font-size:16px;border:3px solid ${meTeam === id ? '#fff' : 'transparent'};opacity:${meTeam && meTeam !== id ? '.55' : '1'}" onclick="socket.emit('player:team','${id}')">${lbl}${meTeam === id ? ' ✓' : ''}</button>`
+         ).join('')}</div></div>`
+      : '';
+    const lobbyBan = S.lobbyBanner ? `<div style="background:#26890c;border:2px solid #ffd33d;border-radius:12px;padding:10px 14px;font-weight:800;font-size:17px;margin-top:12px">${esc(S.lobbyBanner)}</div>` : '';
+    app.innerHTML = `${inviteBarHtml()}<div class="msg" style="margin-top:${S.teamMode ? '4vh' : '8vh'}">Hi ${esc(avatar)} ${esc(name)}! 👋<br><small>Spiel: ${NAMES[S.mode] || S.mode}<br>${S.teamMode ? '👥 Team-Spiel' : 'Gleich geht\'s los…'}</small></div>${lobbyBan}${renderAudioControls(true)}${teamPick}${renderEmojiBar()}`;
+    return;
+  }
+
+  if (S.phase === 'end') {
+    const rank = S.players.findIndex(p => p.name === name) + 1;
+    const awardsHtml = S.awards && S.awards.length
+      ? `<div class="resBox"><div class="resTitle">🏅 Auszeichnungen</div>${S.awards.map(a => `<div class="resRow"><span>${a.icon} ${esc(a.title)}</span><b>${esc(a.name)} (${esc(a.detail)})</b></div>`).join('')}</div>`
+      : '';
+    app.innerHTML = `<div class="msg" style="margin-top:2vh">Spiel vorbei! Platz ${rank} 🎉<br><small>${me ? me.score : 0} Punkte</small></div>${renderPhonePodium()}${awardsHtml}${renderLb('🏆 Endstand')}${renderEmojiBar()}`;
+    return;
+  }
+
+  if (S.paused && S.phase !== 'lobby' && S.phase !== 'end') {
+    padWrap.style.display = 'none';
+    app.innerHTML = `${top}<div class="msg">⏸ Pause<br><small>Gleich geht's weiter…</small></div>`;
+    return;
+  }
+
+  if (S.phase === 'discuss' && S.mode === 'imposter') {
+    const w = P && P.word ? P.word : '…';
+    app.innerHTML = `${top}<div class="qtxt">Dein geheimes Wort:</div><div class="wordBox">${esc(w)}</div><p>Sag reihum einen Hinweis – verrate das Wort nicht!</p>`;
+    return;
+  }
+
+  if (S.phase === 'write' && S.mode === 'truthlie') {
+    if (S.q && S.q.storyteller === name) {
+      app.innerHTML = `${top}<div class="qtxt">🎭 Du bist dran!<br><small>Schreib 2 Wahrheiten & 1 Lüge über dich:</small></div>
+        <input id="tl1" maxlength="90" placeholder="✅ Wahrheit 1">
+        <input id="tl2" maxlength="90" placeholder="✅ Wahrheit 2">
+        <input id="tl3" maxlength="90" placeholder="🚨 Deine Lüge">
+        <div class="err" id="tlFb"></div>
+        <button class="go" onclick="sendTL()">Absenden</button>`;
+    } else {
+      app.innerHTML = `${top}<div class="msg">🎭 ${esc(S.q ? S.q.storyteller : '')} denkt sich gerade 2 Wahrheiten & 1 Lüge aus…</div>`;
+    }
+    return;
+  }
+
+  if (S.mode === 'reaction' && (S.phase === 'wait' || S.phase === 'go')) {
+    const cls = S.phase === 'go' ? 'go' : 'wait';
+    const txt = myAnswer === 'early' ? '❌ ZU FRÜH!' : myAnswer === 'go' ? '✅ GEDRÜCKT!' : S.phase === 'go' ? '⚡ JETZT!' : '⏳ WARTEN…';
+    app.innerHTML = `${top}<button class="buzzer ${cls}" ${myAnswer !== null ? 'disabled' : ''} onpointerdown="buzz()">${txt}</button>`;
+    return;
+  }
+
+  if (S.phase === 'question') {
+    if (S.mode === 'quiz' || S.mode === 'imagequiz') {
+      if (S.noTvMode && S.q) {
+        const iqImg = S.q.img ? `<div style="text-align:center;margin:8px 0 10px"><img src="${esc(S.q.img)}" style="max-height:24vh;max-width:84vw;border-radius:12px;object-fit:contain;${(S.q.theme === 'logos' || S.q.theme === 'cars') ? 'background:#fff;padding:12px;width:140px;height:140px;' : ''}"></div>` : '';
+        app.innerHTML = `${top}<div class="qtxt">${esc(S.q.q)}</div>${iqImg}<div class="grid">${S.q.a.map((a, i) => `<button class="c${i}" style="font-size:16px;min-height:14vh" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(${i})">${['▲', '◆', '●', '■'][i]} ${esc(a)}${myAnswer === i ? ' ✓' : ''}</button>`).join('')}</div>`;
+      } else {
+        app.innerHTML = `${top}<div class="grid">${S.q.a.map((_, i) => `<button class="c${i}" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(${i})">${['▲', '◆', '●', '■'][i]}${myAnswer === i ? ' ✓' : ''}</button>`).join('')}</div>`;
+      }
+    } else if (S.mode === 'mostlikely' || S.mode === 'imposter') {
+      app.innerHTML = `${top}<div class="qtxt">${esc(S.q.q)}</div><div class="votes">${S.players.map((p, i) => `<button class="${myAnswer === p.name ? 'picked' : ''}" ${myAnswer !== null ? 'disabled' : ''} onclick="vote(${i})">${esc(p.name)}${myAnswer === p.name ? ' ✓' : ''}</button>`).join('')}</div>`;
+    } else if (S.mode === 'wouldyourather') {
+      app.innerHTML = `${top}<div class="wyr">
+        <button class="c0" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(0)">${esc(S.q.a)}${myAnswer === 0 ? ' ✓' : ''}</button>
+        <button class="c1" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(1)">${esc(S.q.b)}${myAnswer === 1 ? ' ✓' : ''}</button>
+      </div>`;
+    } else if (S.mode === 'estimate') {
+      app.innerHTML = myAnswer !== null
+        ? `${top}<div class="msg">Tipp abgegeben: <b>${myAnswer}</b> ✅</div>`
+        : `${top}<div class="qtxt">${esc(S.q.q)}</div><input id="est" type="number" inputmode="decimal" placeholder="Deine Zahl"><button class="go" onclick="sendEst()">Absenden</button>`;
+    } else if (S.mode === 'neverhavei') {
+      app.innerHTML = `${top}<div class="qtxt">${esc(S.q.q)}</div><div class="wyr">
+        <button class="c0" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(true)">🙌 Hab ich schon${myAnswer === true ? ' ✓' : ''}</button>
+        <button class="c3" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(false)">😇 Noch nie${myAnswer === false ? ' ✓' : ''}</button>
+      </div>`;
+    } else if (S.mode === 'draw') {
+      if (P && P.guessed) {
+        app.innerHTML = `${top}<div class="msg">✅ Erraten!<br><small>Warte auf die anderen…</small></div>`;
+      } else {
+        app.innerHTML = `${top}<div class="qtxt">Was malt ${esc(S.q.drawer)}?</div>
+          <input id="gIn" placeholder="Dein Tipp…" onkeydown="if(event.key==='Enter')sendGuess()">
+          <button class="go" onclick="sendGuess()">Raten</button><div class="err" id="gFb"></div>`;
+      }
+    } else if (S.mode === 'taboo') {
+      if (P && P.explainer) {
+        const taboos = (P.taboo || []).map(w => `<span class="resChip" style="background:#e21b3c">${esc(w)}</span>`).join('');
+        app.innerHTML = `${top}<div class="qtxt">🗣️ Erkläre dieses Wort:</div><div class="wordBox">${esc(P.word || '')}</div>
+          <div style="font-size:14px;opacity:.85;margin:10px 0 6px">🚫 Verbotene Wörter:</div><div class="resChips">${taboos}</div>`;
+      } else if (P && P.guessed) {
+        app.innerHTML = `${top}<div class="msg">✅ Erraten!<br><small>Warte auf die anderen…</small></div>`;
+      } else {
+        app.innerHTML = `${top}<div class="qtxt">🗣️ ${esc(S.q.explainer)} erklärt! (${S.q.len} Buchstaben)</div>
+          <input id="tIn" placeholder="Dein Tipp…" onkeydown="if(event.key==='Enter')sendTabooGuess()">
+          <button class="go" onclick="sendTabooGuess()">Raten</button><div class="err" id="tFb"></div>`;
+      }
+    } else if (S.mode === 'sort' && S.q) {
+      if (myAnswer !== null) {
+        app.innerHTML = `${top}<div class="msg">Reihenfolge gesendet! ✅<br><small>Warte auf die anderen…</small></div>`;
+      } else {
+        const btns = S.q.items.map(it => {
+          const orderNum = sortPicks.indexOf(it.idx) + 1;
+          return `<button type="button" onclick="pickSort(${it.idx})" style="width:100%;margin:5px 0;padding:14px;font-size:16px;text-align:left;display:flex;justify-content:space-between;align-items:center;background:${orderNum ? '#7c4dff' : '#2d2266'};border:2px solid ${orderNum ? '#ffd33d' : 'transparent'}">
+            <span>${esc(it.label)}</span><b>${orderNum ? `#${orderNum}` : 'Antippen'}</b></button>`;
+        }).join('');
+        app.innerHTML = `${top}<div class="qtxt">${esc(S.q.q)}</div><div style="font-size:13px;opacity:.8;margin-bottom:8px">Tippe der Reihe nach von 1 bis 4 an:</div>${btns}
+          <button class="go" ${sortPicks.length < 4 ? 'disabled style="opacity:.45"' : ''} onclick="sendSort()">Reihenfolge absenden (${sortPicks.length}/4)</button>`;
+      }
+    } else if (S.mode === 'icebreaker') {
+      app.innerHTML = myAnswer !== null
+        ? `${top}<div class="msg">Antwort gesendet! ✅<br><small>${S.noTvMode ? 'Warte auf die anderen…' : 'Schau gleich auf den TV…'}</small></div>`
+        : `${top}<div class="qtxt">${esc(S.q.q)}</div><input id="iceIn" maxlength="120" placeholder="Deine Antwort…" onkeydown="if(event.key==='Enter')sendIce()"><button class="go" onclick="sendIce()">Absenden</button>`;
+    } else if (S.mode === 'teams') {
+      app.innerHTML = `${top}<div class="qtxt">${esc(S.q.q)}</div><div class="grid">${S.q.a.map((a, i) => `<button class="c${i}" style="font-size:18px" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(${i})">${esc(a)}${myAnswer === i ? ' ✓' : ''}</button>`).join('')}</div>`;
+    } else if (S.mode === 'scale') {
+      app.innerHTML = myAnswer !== null
+        ? `${top}<div class="msg">Deine Bewertung: <b>${myAnswer} / 10</b> ✅</div>`
+        : `${top}<div class="qtxt">${esc(S.q.q)}</div>
+           <div style="font-size:46px;font-weight:900;color:#ffd33d;margin:12px 0" id="scVal">5</div>
+           <input id="scIn" type="range" min="1" max="10" value="5" style="width:100%;accent-color:#ffd33d;padding:0;margin:8px 0" oninput="document.getElementById('scVal').textContent=this.value">
+           <div style="display:flex;justify-content:space-between;font-size:14px;opacity:.85;margin-bottom:14px"><span>1: ${esc(S.q.min)}</span><span>10: ${esc(S.q.max)}</span></div>
+           <button class="go" onclick="sendScale()">Absenden</button>`;
+    } else if (S.mode === 'truthlie') {
+      if (S.q && S.q.storyteller === name) {
+        app.innerHTML = `${top}<div class="msg">🤫 Die anderen raten jetzt deine Lüge…</div>`;
+      } else {
+        app.innerHTML = `${top}<div class="qtxt">Was ist die Lüge von ${esc(S.q.storyteller)}?</div><div class="wyr">${S.q.statements.map((st, i) => `<button class="c${i}" style="min-height:12vh;font-size:18px" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(${i})">${esc(st)}${myAnswer === i ? ' ✓' : ''}</button>`).join('')}</div>`;
+      }
+    } else if (S.mode === 'wordassoc') {
+      app.innerHTML = myAnswer !== null
+        ? `${top}<div class="msg">⚡ „${esc(myAnswer)}“ ✅</div>`
+        : `${top}<div class="qtxt">⚡ ${esc(S.q.w)}</div><input id="waIn" maxlength="30" placeholder="Erstes Wort…" onkeydown="if(event.key==='Enter')sendAssoc()"><button class="go" onclick="sendAssoc()">Absenden</button>`;
+    } else if (S.mode === 'songquiz') {
+      const cls = S.q.a.length === 2 ? 'wyr' : 'grid';
+      const minH = S.q.a.length > 4 ? ';min-height:12vh' : '';
+      const vinylHtml = `<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0">
+        <div class="vinylDisc" style="width:64px;height:64px;min-width:64px;min-height:64px"><span style="font-size:22px">🎵</span></div>
+        <div class="eqBars" style="height:36px;min-height:36px">${[0, 1, 2, 3, 4, 5, 6].map(i => `<div class="eqBar" style="width:6px;animation-duration:${0.48 + (i % 4) * 0.12}s;animation-delay:${(i * 0.08).toFixed(2)}s"></div>`).join('')}</div>
+      </div>`;
+      app.innerHTML = `${top}${renderAudioControls(false)}${vinylHtml}<div class="qtxt">${esc(S.q.q)}</div><div class="${cls}">${S.q.a.map((a, i) => `<button class="c${i}" style="font-size:18px${minH}" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(${i})">${esc(a)}${myAnswer === i ? ' ✓' : ''}</button>`).join('')}</div>${myAnswer !== null ? renderEmojiBar() : ''}`;
+    }
+    if (S.mode !== 'songquiz' && myAnswer !== null) {
+      app.innerHTML += renderEmojiBar();
+    }
+    return;
+  }
+
+  // Ergebnis-Phase
+  const r = S.result || {};
+  const mustDrink = (r.drinkers || r.winners || r.yes || []).includes(name);
+  let msg = '';
+  if (S.mode === 'quiz' || S.mode === 'imagequiz' || S.mode === 'songquiz') {
+    msg = myAnswer === null ? '⏰ Zu spät!' : myAnswer === r.correct ? '✅ Richtig!' : '❌ Falsch';
+  } else if (S.mode === 'reaction') {
+    const e = (r.entries || []).find(x => x.name === name);
+    msg = !e || e.ms === null ? '⏰ Zu spät!' : e.ms === -1 ? '❌ Frühstart!' : `⚡ ${e.ms} ms`;
+  } else if (S.mode === 'estimate') {
+    msg = `Lösung: ${r.answer} ${esc(r.unit || '')}`;
+  } else if (S.mode === 'imposter') {
+    msg = r.caught ? '✅ Imposter enttarnt!' : '😈 Imposter entkommen!';
+  } else if (S.mode === 'draw') {
+    msg = `Wort: „${esc(r.word)}“`;
+  } else if (S.mode === 'icebreaker') {
+    msg = myAnswer ? `💬 „${esc(myAnswer)}“` : '⏰ Keine Antwort!';
+  } else if (S.mode === 'teams') {
+    msg = myAnswer !== null ? `Team: ${esc((S.q && S.q.a && S.q.a[myAnswer]) || '')}` : '⏰ Zu spät!';
+  } else if (S.mode === 'scale') {
+    msg = myAnswer !== null ? `📊 Dein Wert: ${myAnswer}/10` : '⏰ Keine Angabe!';
+  } else if (S.mode === 'truthlie') {
+    msg = S.q && S.q.storyteller === name
+      ? (mustDrink ? '😅 Alle haben es erraten!' : '🎭 Gut geschummelt!')
+      : (myAnswer === r.lieIdx ? '✅ Lüge entlarvt!' : '❌ Reingefallen!');
+  } else if (S.mode === 'wordassoc') {
+    msg = myAnswer ? `⚡ „${esc(myAnswer)}“` : '⏰ Zu langsam!';
+  } else if (S.mode === 'neverhavei') {
+    msg = myAnswer === true ? '🙌 Hab ich schon' : myAnswer === false ? '😇 Noch nie' : '⏰ Keine Antwort!';
+  } else {
+    msg = myAnswer !== null ? '✅ Antwort gezählt!' : '⏰ Zu spät!';
+  }
+  const isGood = msg.startsWith('✅') || msg.startsWith('⚡') || msg.startsWith('🎭');
+  const isBad = msg.startsWith('❌') || msg.startsWith('⏰') || msg.startsWith('😈');
+  const details = renderPhoneResult();
+  const gainTag = me && me.lastGain > 0 ? ` <span class="gainBadge" style="font-size:14px">+${me.lastGain}</span>` : '';
+  const nextBannerHtml = S.mode === 'songquiz' ? '<div style="text-align:center"><div class="nextBanner" style="font-size:15px;padding:10px 16px;margin:10px auto">⏭️ Es geht weiter…</div></div>' : '';
+  app.innerHTML = `${top}<div class="msg ${isGood ? 'good' : isBad ? 'bad' : ''}" style="margin-top:2vh">${msg}<br><small>${me ? me.score : 0} Pkt${gainTag}</small></div>${nextBannerHtml}${renderEmojiBar()}${details}`;
+}
+
+function renderLb(title = '🏆 Rangliste') {
+  if (!S) return '';
+  const isRes = S.phase === 'result';
+  if (S.teamMode && S.teams && S.teams.length) {
+    const rows = S.teams.map((t, i) => {
+      const gainHtml = isRes && t.lastGain > 0 ? `<span class="gainBadge" style="font-size:11px;padding:1px 6px;margin-right:5px">+${t.lastGain}</span>` : '';
+      const from = isRes && typeof t.prevScore === 'number' ? t.prevScore : t.score;
+      return `<div class="resRow"><span>${['🥇', '🥈', '🥉'][i] || `${i + 1}.`} ${esc(t.label)}</span><span>${gainHtml}<b class="scoreNum" data-from="${from}" data-to="${t.score}">${from} Pkt</b></span></div>`;
+    }).join('');
+    return `<div class="resBox"><div class="resTitle">${title}</div>${rows}</div>`;
+  }
+  const rows = S.players.map((p, i) => {
+    const gainHtml = isRes && p.lastGain > 0 ? `<span class="gainBadge" style="font-size:11px;padding:1px 6px;margin-right:5px">+${p.lastGain}</span>` : '';
+    const from = isRes && typeof p.prevScore === 'number' ? p.prevScore : p.score;
+    return `<div class="resRow" style="${p.name === name ? 'border:1px solid #ffd33d' : ''}"><span>${['🥇', '🥈', '🥉'][i] || `${i + 1}.`} ${esc(p.avatar)} ${esc(p.name)}${pStreakTag(p)}</span><span>${gainHtml}<b class="scoreNum" data-from="${from}" data-to="${p.score}">${from} Pkt</b></span></div>`;
+  }).join('');
+  return `<div class="resBox"><div class="resTitle">${title}</div>${rows}</div>`;
+}
+
+function renderPhoneResult() {
+  const r = S.result || {};
+  const m = S.mode;
+  let body = '';
+  if (m === 'quiz' || m === 'imagequiz' || m === 'songquiz') {
+    const artDisc = m === 'songquiz'
+      ? `<div class="vinylDisc" style="width:58px;height:58px;min-width:58px;min-height:58px">${r.art && /^https:\/\//i.test(r.art) ? `<img src="${esc(r.art)}" alt="Cover">` : '<span style="font-size:20px">🎵</span>'}</div>`
+      : '';
+    const song = m === 'songquiz' && r.title ? `<div class="resRow" style="justify-content:center;text-align:left;gap:12px">${artDisc}<div><b>🎵 ${esc(r.title)}</b><br><small style="opacity:.8">${esc(r.artist)} · ${r.year}</small></div></div>` : '';
+    const ansHtml = S.q && S.q.a ? S.q.a.map((a, i) => `<div class="resAns c${i} ${i === r.correct ? 'win' : 'dim'}"><span>${i === r.correct ? '✔ ' : ''}${esc(a)}</span><span>${(r.counts && r.counts[i]) || 0}</span></div>`).join('') : '';
+    body = `<div class="resBox"><div class="resTitle">Auflösung</div>${song}${ansHtml}</div>${renderLb()}`;
+  } else if (m === 'mostlikely') {
+    const win = r.winners && r.winners.length ? `<div class="resTitle">🏆 ${r.winners.map(esc).join(' & ')} (${r.max} ${r.max === 1 ? 'Stimme' : 'Stimmen'})</div>` : '<div class="resTitle">Ergebnis</div>';
+    const rows = (r.votes || []).filter(v => v.count > 0).map(v => `<div class="resRow"><span>${esc(v.name)}</span><b>${v.count}</b></div>`).join('');
+    body = `<div class="resBox">${win}${rows || '<div class="resRow">Keine Stimmen</div>'}</div>`;
+  } else if (m === 'wouldyourather' && S.q) {
+    const aL = (r.aNames || []).length, bL = (r.bNames || []).length, tot = aL + bL;
+    const pctA = tot ? Math.round((aL / tot) * 100) : 50, pctB = 100 - pctA;
+    body = `<div class="resBox"><div class="resTitle">Tauziehen</div>
+      <div class="tugTrack" style="height:28px;min-height:28px;margin-bottom:10px">
+        <div class="tugSideA" style="width:${pctA}%;font-size:13px">${pctA >= 15 ? `${pctA}%` : ''}</div>
+        <div class="tugSideB" style="width:${pctB}%;font-size:13px">${pctB >= 15 ? `${pctB}%` : ''}</div>
+      </div>
+      <div class="resAns c0 ${r.loser === 'A' ? 'dim' : ''}"><span>${esc(S.q.a)}</span><span>${aL}</span></div>
+      <div class="resAns c1 ${r.loser === 'B' ? 'dim' : ''}"><span>${esc(S.q.b)}</span><span>${bL}</span></div>
+    </div>`;
+  } else if (m === 'estimate') {
+    const rows = (r.entries || []).map((e, i) => `<div class="resRow"><span>${i === 0 && e.val !== null ? '🥇 ' : ''}${esc(e.name)}</span><b>${e.val !== null ? `${e.val} ${esc(r.unit || '')}` : '—'}</b></div>`).join('');
+    body = `<div class="resBox"><div class="resTitle">${r.best ? `🥇 Am nächsten: ${esc(r.best)}` : 'Schätzungen'}</div>${rows}</div>${renderLb()}`;
+  } else if (m === 'neverhavei') {
+    const yes = (r.yes || []).map(n => `<span class="resChip">${esc(n)}</span>`).join('') || '<span class="resChip">—</span>';
+    const no = (r.no || []).map(n => `<span class="resChip">${esc(n)}</span>`).join('') || '<span class="resChip">—</span>';
+    body = `<div class="resBox"><div class="resTitle">🙌 Hab ich schon</div><div class="resChips">${yes}</div><div class="resTitle" style="margin-top:12px">😇 Noch nie</div><div class="resChips">${no}</div></div>`;
+  } else if (m === 'imposter') {
+    const imp = (r.imposters || []).map(esc).join(', ');
+    const acc = r.accused && r.accused.length ? r.accused.map(esc).join(' & ') : 'Niemand';
+    const w = r.words ? `„${esc(r.words[1])}“ vs. „${esc(r.words[0])}“` : '';
+    body = `<div class="flipScene" style="height:125px;min-height:125px;margin:12px auto"><div class="flipCard">
+      <div class="flipFace flipFront" style="padding:12px"><div style="font-size:13px;opacity:.85">🗳️ Verdächtigt:</div><div style="font-size:22px;font-weight:900;color:#ffd33d;margin-top:4px">🔎 ${acc}</div></div>
+      <div class="flipFace flipBack ${r.caught ? 'good' : 'bad'}" style="padding:12px"><div style="font-size:19px;font-weight:900">${r.caught ? '✅ IMPOSTER ENTTARNT!' : '😈 IMPOSTER ENTKOMMEN!'}</div><div style="font-size:13px;margin-top:4px">🕵️ ${imp} · ${w}</div></div>
+    </div></div>${renderLb()}`;
+  } else if (m === 'draw' || m === 'taboo') {
+    const gb = (r.guessedBy || []).map(esc).join(', ') || 'niemandem';
+    body = `<div class="resBox"><div class="resTitle">Wort: „${esc(r.word || '')}“ · Erraten von: ${gb}</div></div>${renderLb()}`;
+  } else if (m === 'sort') {
+    const orderRows = (r.items || []).map((it, i) => `<div class="resRow"><span><b>${i + 1}.</b> ${esc(it.label)}</span><b>${esc(it.display)}</b></div>`).join('');
+    body = `<div class="resBox"><div class="resTitle">Richtige Reihenfolge</div>${orderRows}</div>${renderLb()}`;
+  } else if (m === 'icebreaker') {
+    const rows = (r.entries || []).map(e => `<div class="resRow"><span>💬 ${esc(e.text)}</span></div>`).join('');
+    body = `<div class="resBox"><div class="resTitle">Antworten</div>${rows || '<div class="resRow">Keine Antworten</div>'}</div>`;
+  } else if (m === 'teams' && S.q) {
+    const rows = S.q.a.map((a, i) => {
+      const names = (r.groups && r.groups[i]) || [];
+      return `<div class="resAns c${i} ${names.length === 0 ? 'dim' : ''}"><span>${esc(a)}</span><span>${names.map(esc).join(', ') || '—'}</span></div>`;
+    }).join('');
+    body = `<div class="resBox"><div class="resTitle">Gruppen</div>${rows}</div>`;
+  } else if (m === 'scale') {
+    const rows = (r.entries || []).map(e => `<div class="resRow"><span>${esc(e.name)}</span><b>${e.val !== null ? `${e.val}/10` : '—'}</b></div>`).join('');
+    body = `<div class="resBox"><div class="resTitle">${r.avg !== null && r.avg !== undefined ? `Durchschnitt: ${r.avg} / 10` : 'Bewertungen'}</div>${rows}</div>`;
+  } else if (m === 'truthlie' && S.q) {
+    const rows = S.q.statements.map((st, i) => `<div class="resAns ${i === r.lieIdx ? 'c0 win' : 'c1 dim'}"><span>${i === r.lieIdx ? '🚨 LÜGE: ' : ''}${esc(st)}</span><span>${(r.counts && r.counts[i]) || 0}</span></div>`).join('');
+    const info = r.caughtBy && r.caughtBy.length ? `Entlarvt von: ${r.caughtBy.map(esc).join(', ')}` : `Niemand hat's gemerkt! (+1000 Pkt für ${esc(r.storyteller || '')})`;
+    body = `<div class="resBox"><div class="resTitle">${info}</div>${rows}</div>${renderLb()}`;
+  } else if (m === 'wordassoc') {
+    const rows = (r.entries || []).map(e => `<div class="resRow"><span>${esc(e.avatar || '')} ${esc(e.name)}</span><b>${e.word ? esc(e.word) : '—'}</b></div>`).join('');
+    body = `<div class="resBox"><div class="resTitle">⚡ ${esc((S.q && S.q.w) || '')}</div>${rows}</div>`;
+  } else if (m === 'reaction') {
+    const rows = (r.entries || []).map((e, i) => `<div class="resRow"><span>${i + 1}. ${esc(e.name)}</span><b>${e.ms === -1 ? '❌ Zu früh!' : e.ms === null ? '⏰ Keine Antwort' : `${e.ms} ms`}</b></div>`).join('');
+    body = `<div class="resBox"><div class="resTitle">${r.fastest ? `⚡ Schnellster: ${esc(r.fastest)}` : 'Ergebnis'}</div>${rows}</div>${renderLb()}`;
+  }
+  return body;
+}
+
+function updatePhoneTimerUI() {
+  const b = document.getElementById('pbar'), s = document.getElementById('psec');
+  if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return;
+  if (!clientDeadline) {
+    if (b) b.style.width = '100%';
+    if (s) {
+      s.textContent = S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : '';
+      s.classList.remove('urgent');
+    }
+    return;
+  }
+  const left = Math.max(0, clientDeadline - performance.now());
+  const dur = Math.max(1000, clientTotalMs);
+  if (b) b.style.width = Math.min(100, (left / dur) * 100) + '%';
+  const sLeft = Math.ceil(left / 1000);
+  if (s) {
+    s.textContent = S.phase === 'result' ? `Weiter in ${sLeft}s…` : `⏱ ${sLeft}s`;
+    s.classList.toggle('urgent', (S.phase === 'question' || S.phase === 'go') && sLeft >= 1 && sLeft <= 3);
+  }
+}
+
+render();
+setInterval(updatePhoneTimerUI, 100);
+</script></body></html>

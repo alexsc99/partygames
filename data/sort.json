@@ -1,0 +1,1388 @@
+[
+  {
+    "q": "📅 Ordne die Erfindungen von ALT nach NEU",
+    "items": [
+      {
+        "label": "Buchdruck (Gutenberg)",
+        "display": "ca. 1450"
+      },
+      {
+        "label": "Telefon",
+        "display": "1876"
+      },
+      {
+        "label": "Fernseher",
+        "display": "1927"
+      },
+      {
+        "label": "iPhone",
+        "display": "2007"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "📅 Ordne die Filme nach Erscheinungsjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Der König der Löwen",
+        "display": "1994"
+      },
+      {
+        "label": "Titanic",
+        "display": "1997"
+      },
+      {
+        "label": "Avatar",
+        "display": "2009"
+      },
+      {
+        "label": "Oppenheimer",
+        "display": "2023"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "📱 Ordne die Apps nach Startjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Facebook",
+        "display": "2004"
+      },
+      {
+        "label": "WhatsApp",
+        "display": "2009"
+      },
+      {
+        "label": "Instagram",
+        "display": "2010"
+      },
+      {
+        "label": "TikTok",
+        "display": "2016"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🍺 Ordne nach Alkoholgehalt (WENIG → VIEL)",
+    "items": [
+      {
+        "label": "Radler",
+        "display": "~2,5 %"
+      },
+      {
+        "label": "Pils / Bier",
+        "display": "~5 %"
+      },
+      {
+        "label": "Rotwein",
+        "display": "~13 %"
+      },
+      {
+        "label": "Wodka",
+        "display": "~40 %"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "🗼 Ordne nach Höhe (KLEIN → GROSS)",
+    "items": [
+      {
+        "label": "Freiheitsstatue (inkl. Sockel)",
+        "display": "93 m"
+      },
+      {
+        "label": "Eiffelturm",
+        "display": "330 m"
+      },
+      {
+        "label": "Empire State Building",
+        "display": "443 m"
+      },
+      {
+        "label": "Burj Khalifa",
+        "display": "828 m"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "🪐 Ordne die Planeten von der Sonne aus (NAH → FERN)",
+    "items": [
+      {
+        "label": "Merkur",
+        "display": "1. Planet"
+      },
+      {
+        "label": "Erde",
+        "display": "3. Planet"
+      },
+      {
+        "label": "Mars",
+        "display": "4. Planet"
+      },
+      {
+        "label": "Saturn",
+        "display": "6. Planet"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "🚗 Ordne nach Höchstgeschwindigkeit (LANGSAM → SCHNELL)",
+    "items": [
+      {
+        "label": "E-Scooter (DE-Limit)",
+        "display": "20 km/h"
+      },
+      {
+        "label": "Gepard (Sprint)",
+        "display": "ca. 110 km/h"
+      },
+      {
+        "label": "ICE 3",
+        "display": "330 km/h"
+      },
+      {
+        "label": "Passagierflugzeug",
+        "display": "ca. 900 km/h"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🎮 Ordne die Konsolen nach Release (ALT → NEU)",
+    "items": [
+      {
+        "label": "Super Nintendo (SNES)",
+        "display": "1990"
+      },
+      {
+        "label": "PlayStation 2",
+        "display": "2000"
+      },
+      {
+        "label": "Nintendo Switch",
+        "display": "2017"
+      },
+      {
+        "label": "PlayStation 5",
+        "display": "2020"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🍕 Ordne nach Kalorien pro 100 g (WENIG → VIEL)",
+    "items": [
+      {
+        "label": "Wassermelone",
+        "display": "ca. 30 kcal"
+      },
+      {
+        "label": "Bananen",
+        "display": "ca. 89 kcal"
+      },
+      {
+        "label": "Pizza Margherita",
+        "display": "ca. 266 kcal"
+      },
+      {
+        "label": "Kartoffelchips",
+        "display": "ca. 536 kcal"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🌍 Ordne die Länder nach Fläche (KLEIN → GROSS)",
+    "items": [
+      {
+        "label": "Schweiz",
+        "display": "41.285 km²"
+      },
+      {
+        "label": "Deutschland",
+        "display": "357.592 km²"
+      },
+      {
+        "label": "USA",
+        "display": "9,8 Mio. km²"
+      },
+      {
+        "label": "Russland",
+        "display": "17,1 Mio. km²"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "🎵 Ordne die Hits nach Erscheinungsjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Queen – Bohemian Rhapsody",
+        "display": "1975"
+      },
+      {
+        "label": "Nirvana – Smells Like Teen Spirit",
+        "display": "1991"
+      },
+      {
+        "label": "Mark Ronson – Uptown Funk",
+        "display": "2014"
+      },
+      {
+        "label": "Miley Cyrus – Flowers",
+        "display": "2023"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "☕ Ordne nach Koffeingehalt pro Tasse/Dose (WENIG → VIEL)",
+    "items": [
+      {
+        "label": "Grüner Tee (Tasse)",
+        "display": "ca. 30 mg"
+      },
+      {
+        "label": "Cola (330 ml)",
+        "display": "ca. 35 mg"
+      },
+      {
+        "label": "Red Bull (250 ml)",
+        "display": "80 mg"
+      },
+      {
+        "label": "Filterkaffee (große Tasse)",
+        "display": "ca. 120 mg"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "💍 Ordne die Beziehungs-Meilensteine (FRÜH → SPÄT)",
+    "items": [
+      {
+        "label": "Erstes Match",
+        "display": "Tag 1"
+      },
+      {
+        "label": "Erster Kuss",
+        "display": "Date"
+      },
+      {
+        "label": "Zusammenziehen",
+        "display": "Alltag"
+      },
+      {
+        "label": "Goldene Hochzeit",
+        "display": "50 Jahre"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "⚽ Ordne die Fußball-WMs nach Jahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "WM in Deutschland (Sommermärchen)",
+        "display": "2006"
+      },
+      {
+        "label": "WM in Brasilien (7:1)",
+        "display": "2014"
+      },
+      {
+        "label": "WM in Russland",
+        "display": "2018"
+      },
+      {
+        "label": "WM in Katar",
+        "display": "2022"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🐾 Ordne die Tiere nach Lebenserwartung (KURZ → LANG)",
+    "items": [
+      {
+        "label": "Hamster",
+        "display": "ca. 2–3 Jahre"
+      },
+      {
+        "label": "Hund",
+        "display": "ca. 12 Jahre"
+      },
+      {
+        "label": "Elefant",
+        "display": "ca. 65 Jahre"
+      },
+      {
+        "label": "Galapagos-Riesenschildkröte",
+        "display": "150+ Jahre"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "💸 Ordne die Dinge nach durchschnittlichem Preis (GÜNSTIG → TEUER)",
+    "items": [
+      {
+        "label": "Döner",
+        "display": "ca. 7 €"
+      },
+      {
+        "label": "Konzertticket",
+        "display": "ca. 80 €"
+      },
+      {
+        "label": "Smartphone (Flaggschiff)",
+        "display": "ca. 1.000 €"
+      },
+      {
+        "label": "Neuwagen (Mittelklasse)",
+        "display": "ca. 40.000 €"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "📺 Ordne die Serien nach Startjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Friends",
+        "display": "1994"
+      },
+      {
+        "label": "Breaking Bad",
+        "display": "2008"
+      },
+      {
+        "label": "Stranger Things",
+        "display": "2016"
+      },
+      {
+        "label": "Squid Game",
+        "display": "2021"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "🌊 Ordne die Gewässer nach Tiefe (FLACH → TIEF)",
+    "items": [
+      {
+        "label": "Ostsee (max.)",
+        "display": "459 m"
+      },
+      {
+        "label": "Mittelmeer (max.)",
+        "display": "5.267 m"
+      },
+      {
+        "label": "Atlantik (max.)",
+        "display": "8.376 m"
+      },
+      {
+        "label": "Marianengraben (Pazifik)",
+        "display": "10.984 m"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "🎉 Ordne den Abend nach Uhrzeit (FRÜH → SPÄT)",
+    "items": [
+      {
+        "label": "Vorglühen",
+        "display": "20:00"
+      },
+      {
+        "label": "Ab in den Club",
+        "display": "23:30"
+      },
+      {
+        "label": "Döner auf dem Heimweg",
+        "display": "04:00"
+      },
+      {
+        "label": "Kater-Frühstück",
+        "display": "13:00"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "🔥 Ordne die Schärfe (MILD → EXTREM SCHARF)",
+    "items": [
+      {
+        "label": "Paprika",
+        "display": "0 Scoville"
+      },
+      {
+        "label": "Jalapeño",
+        "display": "ca. 5.000 Scoville"
+      },
+      {
+        "label": "Habanero",
+        "display": "ca. 250.000 Scoville"
+      },
+      {
+        "label": "Carolina Reaper",
+        "display": "ca. 2.000.000 Scoville"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🍻 Ordne die Getränke nach Alkoholgehalt (NIEDRIG → HOCH)",
+    "items": [
+      {
+        "label": "Alkoholfreies Radler",
+        "display": "0,0 %"
+      },
+      {
+        "label": "Normales Pils",
+        "display": "ca. 4,9 %"
+      },
+      {
+        "label": "Rotwein",
+        "display": "ca. 13 %"
+      },
+      {
+        "label": "Wodka",
+        "display": "40 %"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "😬 Ordne die Ausreden für Zuspätkommen (HARMLOS → DREIST)",
+    "items": [
+      {
+        "label": "Bahn hatte Verspätung",
+        "display": "Klassiker"
+      },
+      {
+        "label": "Wecker nicht gehört",
+        "display": "Ehrlich"
+      },
+      {
+        "label": "Schlüssel im Kühlschrank gesucht",
+        "display": "Verdächtig"
+      },
+      {
+        "label": "Katze hat mein Handy gefressen",
+        "display": "Komplett gelogen"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "📱 Ordne die Chat-Pannen (HARMLOS → KATASTROPHE)",
+    "items": [
+      {
+        "label": "Tippfehler in der Gruppe",
+        "display": "Passiert"
+      },
+      {
+        "label": "Aus Versehen altes Foto gelikt",
+        "display": "Uff"
+      },
+      {
+        "label": "Screenshot an die falsche Person",
+        "display": "Schwitzig"
+      },
+      {
+        "label": "Betrunkene Sprachnachricht an Chef",
+        "display": "Kündigungsgrund"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "😵 Ordne die Kater-Stufen am Sonntagmorgen (LEICHT → ENDGEGNER)",
+    "items": [
+      {
+        "label": "Leichter Durst",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Sonnenbrille in der Wohnung",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "Nie wieder Alkohol schwören",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Filmriß & fremdes Straßenschild im Flur",
+        "display": "Endgegner"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "💘 Ordne die Beziehungs-Meilensteine (FRÜH → SPÄT)",
+    "items": [
+      {
+        "label": "Erstes Match / Nummer tauschen",
+        "display": "Start"
+      },
+      {
+        "label": "Erstes Date",
+        "display": "Kennenlernen"
+      },
+      {
+        "label": "Zahnbürste beim anderen lassen",
+        "display": "Ernst"
+      },
+      {
+        "label": "Gemeinsamer IKEA-Besuch ohne Streit",
+        "display": "Endlevel"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "🎬 Ordne die Liebesfilme nach Erscheinungsjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Dirty Dancing",
+        "display": "1987"
+      },
+      {
+        "label": "Pretty Woman",
+        "display": "1990"
+      },
+      {
+        "label": "Tatsächlich… Liebe",
+        "display": "2003"
+      },
+      {
+        "label": "La La Land",
+        "display": "2016"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "🌹 Ordne die Date-Ideen nach Budget (GÜNSTIG → TEUER)",
+    "items": [
+      {
+        "label": "Spaziergang im Park",
+        "display": "0 €"
+      },
+      {
+        "label": "Kino mit Popcorn",
+        "display": "ca. 35 €"
+      },
+      {
+        "label": "Schickes Abendessen",
+        "display": "ca. 90 €"
+      },
+      {
+        "label": "Wochenendtrip nach Paris",
+        "display": "500 €+"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "💌 Ordne die Nachrichten nach dem ersten Date (ZU SCHNELL → ENTSPANNT)",
+    "items": [
+      {
+        "label": "Schreiben noch bevor man zuhause ist",
+        "display": "Sofort"
+      },
+      {
+        "label": "Kurzes „Bin gut angekommen“",
+        "display": "Süß"
+      },
+      {
+        "label": "Am nächsten Mittag melden",
+        "display": "Normal"
+      },
+      {
+        "label": "Nach 4 Tagen „Hey“ schreiben",
+        "display": "Ghosting-Alarm"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "💍 Ordne die Hochzeitsjubiläen (FRÜH → SPÄT)",
+    "items": [
+      {
+        "label": "Papierhochzeit",
+        "display": "1 Jahr"
+      },
+      {
+        "label": "Rosenhochzeit",
+        "display": "10 Jahre"
+      },
+      {
+        "label": "Silberhochzeit",
+        "display": "25 Jahre"
+      },
+      {
+        "label": "Goldene Hochzeit",
+        "display": "50 Jahre"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "💋 Ordne die Flirt-Signale (SUBTIL → SEHR DEUTLICH)",
+    "items": [
+      {
+        "label": "Längerer Blickkontakt",
+        "display": "Subtil"
+      },
+      {
+        "label": "Zufällige Berührung am Arm",
+        "display": "Hinweis"
+      },
+      {
+        "label": "Ehrliches Kompliment",
+        "display": "Deutlich"
+      },
+      {
+        "label": "„Kommst du noch mit hoch?“",
+        "display": "100 % klar"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "🔥 Ordne die Date-Stufen (BRAV → HOT 18+)",
+    "items": [
+      {
+        "label": "Händchenhalten im Kino",
+        "display": "Brav"
+      },
+      {
+        "label": "Langer Abschiedskuss an der Tür",
+        "display": "Knisternd"
+      },
+      {
+        "label": "Auf einen „letzten Drink“ hochgehen",
+        "display": "Eindeutig"
+      },
+      {
+        "label": "Morgens im fremden T-Shirt Kaffee machen",
+        "display": "Hot 18+"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "📱 Ordne die Flirt-Apps nach Gründungsjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Lovoo",
+        "display": "2011"
+      },
+      {
+        "label": "Tinder",
+        "display": "2012"
+      },
+      {
+        "label": "Bumble",
+        "display": "2014"
+      },
+      {
+        "label": "Hinge (Relaunch als Dating-App)",
+        "display": "2016"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "🎬 Ordne diese Filme nach Erscheinungsjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Basic Instinct",
+        "display": "1992"
+      },
+      {
+        "label": "Eiskalte Engel",
+        "display": "1999"
+      },
+      {
+        "label": "Magic Mike",
+        "display": "2012"
+      },
+      {
+        "label": "Fifty Shades of Grey",
+        "display": "2015"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "🛏️ Ordne die Übernachtungs-Ausreden (HARMLOS → SEHR DIREKT)",
+    "items": [
+      {
+        "label": "„Die letzte Bahn ist schon weg“",
+        "display": "Klassiker"
+      },
+      {
+        "label": "„Mein Akku ist gleich leer“",
+        "display": "Clever"
+      },
+      {
+        "label": "„Ich zeig dir noch meine Playlist“",
+        "display": "Transparent"
+      },
+      {
+        "label": "„Bleib einfach heute Nacht hier“",
+        "display": "Direkt"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "🌶️ Ordne die Schärfegrade beim Flirten (MILD → EXTRA SCHARF)",
+    "items": [
+      {
+        "label": "Zwinkern aus der Ferne",
+        "display": "Mild"
+      },
+      {
+        "label": "Zweideutiger Spruch",
+        "display": "Pikant"
+      },
+      {
+        "label": "Flüstern ins Ohr",
+        "display": "Scharf"
+      },
+      {
+        "label": "Kuss im Club",
+        "display": "Extra scharf"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "🛁 Ordne die Orte nach Romantik/Spannung (NORMAL → GEWAGT)",
+    "items": [
+      {
+        "label": "Heimisches Sofa",
+        "display": "Gemütlich"
+      },
+      {
+        "label": "Schickes Hotelzimmer",
+        "display": "Klassisch"
+      },
+      {
+        "label": "Whirlpool im Wellness-Hotel",
+        "display": "Prickelnd"
+      },
+      {
+        "label": "Rückbank vom Auto",
+        "display": "Gewagt"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "🎬 Ordne die Disney-/Pixar-Filme nach Erscheinungsjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Toy Story",
+        "display": "1995"
+      },
+      {
+        "label": "Findet Nemo",
+        "display": "2003"
+      },
+      {
+        "label": "Die Eiskönigin",
+        "display": "2013"
+      },
+      {
+        "label": "Alles steht Kopf 2",
+        "display": "2024"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "🌍 Ordne die Städte nach Einwohnerzahl (KLEIN → GROSS)",
+    "items": [
+      {
+        "label": "Zürich",
+        "display": "ca. 0,43 Mio."
+      },
+      {
+        "label": "München",
+        "display": "ca. 1,5 Mio."
+      },
+      {
+        "label": "Berlin",
+        "display": "ca. 3,8 Mio."
+      },
+      {
+        "label": "Tokio",
+        "display": "ca. 14 Mio."
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "⏱️ Ordne die Weltrekorde von KURZ nach LANG (Zeit)",
+    "items": [
+      {
+        "label": "100m-Sprint (Usain Bolt)",
+        "display": "9,58 Sek."
+      },
+      {
+        "label": "Rubik's Cube Weltrekord",
+        "display": "3,13 Sek."
+      },
+      {
+        "label": "Marathon-Weltrekord",
+        "display": "2:00:35 Std."
+      },
+      {
+        "label": "Längstes Tennis-Match (Wimbledon)",
+        "display": "11 Std. 5 Min."
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🍕 Ordne die Fast-Food-Ketten nach Gründungsjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "McDonald's",
+        "display": "1940"
+      },
+      {
+        "label": "Burger King",
+        "display": "1953"
+      },
+      {
+        "label": "Subway",
+        "display": "1965"
+      },
+      {
+        "label": "Chipotle",
+        "display": "1993"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🚀 Ordne die Meilensteine der Raumfahrt (ALT → NEU)",
+    "items": [
+      {
+        "label": "Sputnik 1",
+        "display": "1957"
+      },
+      {
+        "label": "Mondlandung (Apollo 11)",
+        "display": "1969"
+      },
+      {
+        "label": "Hubble-Teleskop Start",
+        "display": "1990"
+      },
+      {
+        "label": "James-Webb-Teleskop Start",
+        "display": "2021"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "📱 Ordne die Social-Media-Plattformen nach Startjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Facebook",
+        "display": "2004"
+      },
+      {
+        "label": "YouTube",
+        "display": "2005"
+      },
+      {
+        "label": "Instagram",
+        "display": "2010"
+      },
+      {
+        "label": "TikTok (international)",
+        "display": "2017"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🏔️ Ordne die Berge nach Höhe (NIEDRIG → HOCH)",
+    "items": [
+      {
+        "label": "Brocken",
+        "display": "1.141 m"
+      },
+      {
+        "label": "Zugspitze",
+        "display": "2.962 m"
+      },
+      {
+        "label": "Mont Blanc",
+        "display": "4.808 m"
+      },
+      {
+        "label": "Mount Everest",
+        "display": "8.848 m"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "🍷 Ordne die Getränke nach typischer Serviertemperatur (KALT → HEISS)",
+    "items": [
+      {
+        "label": "Eiskaffee",
+        "display": "ca. 4 °C"
+      },
+      {
+        "label": "Weißwein",
+        "display": "ca. 9 °C"
+      },
+      {
+        "label": "Rotwein",
+        "display": "ca. 16 °C"
+      },
+      {
+        "label": "Glühwein",
+        "display": "ca. 65 °C"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "😬 Ordne die peinlichen Momente (HARMLOS → ENDLEVEL)",
+    "items": [
+      {
+        "label": "Namen vergessen",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Stolpern in der Fußgängerzone",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "Sprachnachricht an die falsche Person",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Ex betrunken um 3 Uhr anrufen",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "🍻 Ordne die Party-Ausreden (GLAUBWÜRDIG → DREIST)",
+    "items": [
+      {
+        "label": "„Mein Akku war leer“",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "„Die Bahn hatte 2 Stunden Verspätung“",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "„Mein Hund hat den Schlüssel gefressen“",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "„Ich dachte, die Party ist morgen“",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "🔥 Ordne die Flirt-Signale (SUBTIL → SEHR DIREKT)",
+    "items": [
+      {
+        "label": "Längerer Augenkontakt",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Zufällige Berührung am Arm",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "„Kommst du noch mit auf einen Drink?“",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Direkt nach dem Kuss fragen",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "🌶️ Ordne die Dating-Red-Flags (KLEIN → SOFORT RENNEN)",
+    "items": [
+      {
+        "label": "Schaut oft aufs Handy",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Redet nur über sich selbst",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "Ist unfreundlich zum Kellner",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Erwähnt beim 1. Date die/den Ex 10x",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "🚗 Ordne die Automarken nach Gründungsjahr (ALT → NEU)",
+    "items": [
+      {
+        "label": "Mercedes-Benz (Benz)",
+        "display": "1886"
+      },
+      {
+        "label": "Ford",
+        "display": "1903"
+      },
+      {
+        "label": "BMW",
+        "display": "1916"
+      },
+      {
+        "label": "Tesla",
+        "display": "2003"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🎵 Ordne die Musik-Trägermedien nach Einführung (ALT → NEU)",
+    "items": [
+      {
+        "label": "Schallplatte (Vinyl LP)",
+        "display": "1948"
+      },
+      {
+        "label": "Kassette",
+        "display": "1963"
+      },
+      {
+        "label": "Audio-CD",
+        "display": "1982"
+      },
+      {
+        "label": "Spotify-Streaming",
+        "display": "2008"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "🛏️ Ordne die Schlafenszeiten (FRÜH → EXTREM SPÄT)",
+    "items": [
+      {
+        "label": "Sonntagabend vor Arbeit",
+        "display": "22:30 Uhr"
+      },
+      {
+        "label": "Normaler Freitagabend",
+        "display": "00:30 Uhr"
+      },
+      {
+        "label": "Gute Hausparty",
+        "display": "03:30 Uhr"
+      },
+      {
+        "label": "Afterhour-Legende",
+        "display": "07:00 Uhr"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "💔 Ordne die Trennungsgründe (NORMAL → KOMPLETT WILD)",
+    "items": [
+      {
+        "label": "Auseinandergelebt",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Umzug in andere Stadt",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "Per WhatsApp-Einzeiler Schluss gemacht",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Nach dem Urlaub einfach geghostet",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "💸 Ordne die Dinge nach typischem Preis (BILLIG → TEUER)",
+    "items": [
+      {
+        "label": "Kugel Eis",
+        "display": "ca. 2 €"
+      },
+      {
+        "label": "Döner",
+        "display": "ca. 7,50 €"
+      },
+      {
+        "label": "Konzertticket",
+        "display": "ca. 90 €"
+      },
+      {
+        "label": "Führerschein",
+        "display": "ca. 3.000 €"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "📺 Ordne die TV-Shows nach Deutschland-Start (ALT → NEU)",
+    "items": [
+      {
+        "label": "Wetten, dass..?",
+        "display": "1981"
+      },
+      {
+        "label": "Wer wird Millionär?",
+        "display": "1999"
+      },
+      {
+        "label": "Germany's Next Topmodel",
+        "display": "2006"
+      },
+      {
+        "label": "LOL: Last One Laughing",
+        "display": "2021"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "🔥 Ordne die Orte fürs Knutschen (ROMANTISCH → GEWAGT)",
+    "items": [
+      {
+        "label": "Auf dem Sofa bei Netflix",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Im Regen unter der Laterne",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "Auf der Club-Tanzfläche",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Im Aufzug zwischen zwei Etagen",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "🏖️ Ordne die Urlaubsländer nach Flugzeit ab Deutschland (KURZ → LANG)",
+    "items": [
+      {
+        "label": "Mallorca (Spanien)",
+        "display": "ca. 2,5 Std."
+      },
+      {
+        "label": "Ägypten (Hurghada)",
+        "display": "ca. 4,5 Std."
+      },
+      {
+        "label": "New York (USA)",
+        "display": "ca. 8,5 Std."
+      },
+      {
+        "label": "Thailand (Bangkok)",
+        "display": "ca. 11 Std."
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "🍸 Ordne die Cocktails nach Alkoholstärke (LEICHT → STARK)",
+    "items": [
+      {
+        "label": "Aperol Spritz",
+        "display": "ca. 8 %"
+      },
+      {
+        "label": "Mojito",
+        "display": "ca. 12 %"
+      },
+      {
+        "label": "Negroni",
+        "display": "ca. 24 %"
+      },
+      {
+        "label": "Long Island Iced Tea",
+        "display": "ca. 28 %"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "🎓 Ordne die Lebensphasen (FRÜH → SPÄT)",
+    "items": [
+      {
+        "label": "Einschulung",
+        "display": "ca. 6 Jahre"
+      },
+      {
+        "label": "Erster Führerschein",
+        "display": "ca. 17–18 Jahre"
+      },
+      {
+        "label": "Erste eigene Wohnung",
+        "display": "ca. 21 Jahre"
+      },
+      {
+        "label": "Rente",
+        "display": "ca. 67 Jahre"
+      }
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "📱 Ordne die Smartphone-Pannen (KLEIN → ALPTRAUM)",
+    "items": [
+      {
+        "label": "Akku bei 1 % ohne Powerbank",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Display-Sprung nach Sturz",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "Handy fällt ins Klo",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Handy im Urlaub verloren (ohne Backup)",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "💋 Ordne die Kuss-Arten (HARMLOS → LEIDENSCHAFTLICH)",
+    "items": [
+      {
+        "label": "Kuss auf die Wange",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Stirnkuss",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "Kurzer Abschiedskuss",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Filmkuss im Regen",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "🎂 Ordne die Meilensteine eines Dates (START → ENDE)",
+    "items": [
+      {
+        "label": "„Bist du gut angekommen?“ schreiben",
+        "display": "Schritt 1"
+      },
+      {
+        "label": "Erster Drink & Smalltalk",
+        "display": "Schritt 2"
+      },
+      {
+        "label": "Lachen über denselben Insider",
+        "display": "Schritt 3"
+      },
+      {
+        "label": "Nachricht: „Wann sehen wir uns wieder?“",
+        "display": "Schritt 4"
+      }
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "🏆 Ordne die Sportarten nach Ballgröße (KLEIN → GROSS)",
+    "items": [
+      {
+        "label": "Golfball",
+        "display": "4,3 cm"
+      },
+      {
+        "label": "Tennisball",
+        "display": "6,7 cm"
+      },
+      {
+        "label": "Fußball",
+        "display": "22 cm"
+      },
+      {
+        "label": "Basketball",
+        "display": "24 cm"
+      }
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "🌶️ Ordne die Party-Spiele nach Eskalationspotenzial (HARMLOS → WILD)",
+    "items": [
+      {
+        "label": "UNO",
+        "display": "Stufe 1"
+      },
+      {
+        "label": "Tabu",
+        "display": "Stufe 2"
+      },
+      {
+        "label": "Ich hab noch nie",
+        "display": "Stufe 3"
+      },
+      {
+        "label": "Wahrheit oder Pflicht (18+)",
+        "display": "Stufe 4"
+      }
+    ],
+    "cat": "hot18"
+  }
+]

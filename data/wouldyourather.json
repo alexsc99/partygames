@@ -1,0 +1,512 @@
+[
+  {
+    "a": "Nie wieder Kaffee trinken",
+    "b": "Nie wieder Musik hören",
+    "cat": "party"
+  },
+  {
+    "a": "Auf jeder Party einschlafen",
+    "b": "Auf jeder Party zu laut singen",
+    "cat": "party"
+  },
+  {
+    "a": "Gedanken lesen können",
+    "b": "Unsichtbar werden können",
+    "cat": "party"
+  },
+  {
+    "a": "Nie wieder Pizza",
+    "b": "Nie wieder Burger",
+    "cat": "party"
+  },
+  {
+    "a": "Nur noch Schlager hören",
+    "b": "Nur noch Opernmusik hören",
+    "cat": "party"
+  },
+  {
+    "a": "Auf einer einsamen Insel mit WLAN aber leerem Akku",
+    "b": "Mit vollem Akku aber ohne Netz",
+    "cat": "party"
+  },
+  {
+    "a": "Einen Monat ohne Handy",
+    "b": "Einen Monat ohne warmes Wasser",
+    "cat": "party"
+  },
+  {
+    "a": "Nur noch kaltes Essen essen",
+    "b": "Nur noch lauwarmes Wasser trinken",
+    "cat": "party"
+  },
+  {
+    "a": "Jedes Mal rülpsen, wenn du lachst",
+    "b": "Jedes Mal niesen, wenn jemand deinen Namen sagt",
+    "cat": "party"
+  },
+  {
+    "a": "Immer flüstern müssen",
+    "b": "Immer schreien müssen",
+    "cat": "party"
+  },
+  {
+    "a": "Ein Jahr lang nur Socken in Sandalen tragen",
+    "b": "Ein Jahr lang nur Neon-Outfits tragen",
+    "cat": "party"
+  },
+  {
+    "a": "Für immer auf Festivals zelten",
+    "b": "Für immer nur Club-VIP ohne Sitzplatz",
+    "cat": "party"
+  },
+  {
+    "a": "Immer 10 Minuten zu spät kommen",
+    "b": "Immer 30 Minuten zu früh sein",
+    "cat": "party"
+  },
+  {
+    "a": "Immer sagen müssen, was du gerade denkst",
+    "b": "Nie wieder sprechen dürfen",
+    "cat": "party"
+  },
+  {
+    "a": "Mit deinem besten Freund eine WG teilen",
+    "b": "Mit deinem besten Freund zusammen arbeiten",
+    "cat": "party"
+  },
+  {
+    "a": "Alle deine Freunde wissen immer deinen Standort",
+    "b": "Du darfst nie wieder jemanden anrufen",
+    "cat": "party"
+  },
+  {
+    "a": "Immer der Fahrer sein müssen",
+    "b": "Immer die Party aufräumen müssen",
+    "cat": "party"
+  },
+  {
+    "a": "Nie wieder Geheimnisse behalten können",
+    "b": "Nie wieder jemandem ein Geheimnis erzählen dürfen",
+    "cat": "party"
+  },
+  {
+    "a": "Eine Woche Roadtrip mit 5 Leuten im Kleinwagen",
+    "b": "Eine Woche allein im Luxushotel",
+    "cat": "party"
+  },
+  {
+    "a": "Immer vergessen, wo dein Schlüssel ist",
+    "b": "Immer vergessen, wie neue Leute heißen",
+    "cat": "party"
+  },
+  {
+    "a": "Deinem besten Freund immer die schonungslose Wahrheit sagen",
+    "b": "Nie wieder Kritik äußern dürfen",
+    "cat": "party"
+  },
+  {
+    "a": "Jeden Geburtstag deiner Freunde vergessen",
+    "b": "Niemand erinnert sich an deinen Geburtstag",
+    "cat": "party"
+  },
+  {
+    "a": "Im Sommer immer Winterjacke tragen",
+    "b": "Im Winter immer kurze Hose tragen",
+    "cat": "party"
+  },
+  {
+    "a": "Ein Jahr lang kein Internet",
+    "b": "Ein Jahr lang kein Auto/ÖPNV (nur laufen & Rad)",
+    "cat": "party"
+  },
+  {
+    "a": "Alle deine Chats werden öffentlich",
+    "b": "Dein gesamter Browserverlauf wird öffentlich",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Jeden Morgen um 5 Uhr aufstehen",
+    "b": "Jeden Tag erst um 2 Uhr nachts schlafen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Jedes Mal rot werden, wenn du lügst",
+    "b": "Jedes Mal stottern, wenn du nervös bist",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Nie wieder schummeln können",
+    "b": "Bei jeder kleinen Lüge sofort erwischt werden",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Aus Versehen ein Peinlich-Selfie an deinen Chef schicken",
+    "b": "Aus Versehen ein Peinlich-Selfie in die Familiengruppe schicken",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Nie wieder 'Schlummern' drücken dürfen",
+    "b": "Jeden Tag ohne Kaffee auskommen müssen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Beim ersten Date laut pupsen",
+    "b": "Beim ersten Date das Essen über den Tisch kippen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Dein Tagebuch wird im Radio vorgelesen",
+    "b": "Deine letzten 10 Sprachnachrichten laufen über Lautsprecher",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Ein Jahr lang kein Fast Food",
+    "b": "Ein Jahr lang keine Süßigkeiten",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Immer laut vorlesen müssen, was du gerade tippst",
+    "b": "Immer ohne Autokorrektur schreiben",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Mit 10-fach zu lautem Klingelton im Kino angerufen werden",
+    "b": "Im stillen Zug über einen sehr privaten Chat laut lachen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Einen Monat lang nur noch mit Sprachnachrichten antworten",
+    "b": "Einen Monat lang nur noch mit Emojis antworten",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Nie wieder Bier trinken",
+    "b": "Nie wieder Schnaps/Shots trinken",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Jedes Wochenende einen Filmriss haben",
+    "b": "Nie wieder Alkohol trinken dürfen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Morgens um 4 Uhr nur noch kalte Pizza bekommen",
+    "b": "Morgens um 4 Uhr nur noch trockenes Toastbrot bekommen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Betrunken deiner Ex schreiben",
+    "b": "Betrunken deinen Chef anrufen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Nach jedem zweiten Drink direkt einschlafen",
+    "b": "Nach jedem zweiten Drink sofort Karaoke singen wollen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Immer nur warmes Bier trinken",
+    "b": "Immer nur Tequila ohne Salz und Zitrone trinken",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Auf der Party die Schuhe verlieren",
+    "b": "Auf der Party die Jacke verlieren",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Den ganzen Abend nur Pfeffi trinken",
+    "b": "Den ganzen Abend nur Jägermeister trinken",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Einen Kater haben, der 3 Tage dauert",
+    "b": "Während der Party 3 Stunden lang nur Schluckauf haben",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Im Club beim Tanzen auf die Nase fallen",
+    "b": "Beim Anstoßen dem Schwarm das Glas über die Hose kippen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Barfuß nach Hause laufen müssen",
+    "b": "Im Kostüm (als Banane) nach Hause fahren müssen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Nur noch Radler trinken",
+    "b": "Nur noch alkoholfreien Wein trinken",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Nie wieder küssen",
+    "b": "Nie wieder kuscheln",
+    "cat": "hot18"
+  },
+  {
+    "a": "One-Night-Stand mit jemandem aus der Runde",
+    "b": "Nie wieder Sex für 1 Jahr",
+    "cat": "hot18"
+  },
+  {
+    "a": "Licht komplett an",
+    "b": "Stockdunkel",
+    "cat": "hot18"
+  },
+  {
+    "a": "Jemanden daten, der 10 Jahre älter ist",
+    "b": "Jemanden daten, der 10 Jahre jünger ist (ab 18+)",
+    "cat": "hot18"
+  },
+  {
+    "a": "Immer extrem laut beim Sex sein",
+    "b": "Immer absolut still sein wie eine Statue",
+    "cat": "hot18"
+  },
+  {
+    "a": "Von den Eltern erwischt werden",
+    "b": "Vom Mitbewohner erwischt werden",
+    "cat": "hot18"
+  },
+  {
+    "a": "Nur noch Quickies",
+    "b": "Nur noch stundenlange Sessions (aber nur 1x im Monat)",
+    "cat": "hot18"
+  },
+  {
+    "a": "Handschellen benutzen",
+    "b": "Augenbinde benutzen",
+    "cat": "hot18"
+  },
+  {
+    "a": "Den Ex / die Ex im Bett versehentlich beim falschen Namen nennen",
+    "b": "Selbst beim falschen Namen genannt werden",
+    "cat": "hot18"
+  },
+  {
+    "a": "Sexy Sprachnachricht an den Falschen schicken",
+    "b": "Sexy Foto aus Versehen in die Story posten",
+    "cat": "hot18"
+  },
+  {
+    "a": "Schlechter Küsser + mega im Bett",
+    "b": "Mega Küsser + langweilig im Bett",
+    "cat": "hot18"
+  },
+  {
+    "a": "Erstes Date direkt zuhause",
+    "b": "Erstes Date im noblen Restaurant mit viel Flirt-Spannung",
+    "cat": "hot18"
+  },
+  {
+    "a": "Frühaufsteher sein",
+    "b": "Nachteule sein",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Urlaub in den Bergen",
+    "b": "Urlaub am Meer",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Lieber ein Jahr lang reisen",
+    "b": "Lieber ein Traumhaus bauen",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Ein Leben lang nur noch süß essen",
+    "b": "Ein Leben lang nur noch herzhaft essen",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "In der Großstadt wohnen",
+    "b": "Auf dem ruhigen Land wohnen",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Einen großen Freundeskreis haben",
+    "b": "Nur 2–3 extrem enge Freunde haben",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Immer wissen, was andere über dich denken",
+    "b": "Es lieber nie wissen",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Ein ruhiger Spieleabend zuhause",
+    "b": "Eine lange Nacht im Club",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Berühmt und reich, aber kaum Privatsphäre",
+    "b": "Normaler Job, aber völlige Freiheit",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Spontan ohne Plan in den Urlaub fahren",
+    "b": "Alles bis ins kleinste Detail durchplanen",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Im Café Kaffee trinken gehen",
+    "b": "Entspannt im Wald spazieren gehen",
+    "cat": "date"
+  },
+  {
+    "a": "Romantischer Spaziergang bei Sonnenuntergang",
+    "b": "Gemütlicher Kino- & Serienabend",
+    "cat": "date"
+  },
+  {
+    "a": "Gemeinsam zuhause kochen",
+    "b": "Schick im Restaurant essen gehen",
+    "cat": "date"
+  },
+  {
+    "a": "Italienisch essen gehen (Pizza/Pasta)",
+    "b": "Sushi oder asiatisch essen gehen",
+    "cat": "date"
+  },
+  {
+    "a": "Überraschungs-Date planen lassen",
+    "b": "Alles gemeinsam aussuchen",
+    "cat": "date"
+  },
+  {
+    "a": "Tagsüber ein Ausflug ins Grüne",
+    "b": "Abends in eine gemütliche Bar",
+    "cat": "date"
+  },
+  {
+    "a": "Beim ersten Date viel reden und tiefgründig werden",
+    "b": "Lieber zusammen etwas Aktives unternehmen",
+    "cat": "date"
+  },
+  {
+    "a": "Ein Date auf dem Rummel / Jahrmarkt",
+    "b": "Ein Date im Museum oder Zoo",
+    "cat": "date"
+  },
+  {
+    "a": "Picknick am See",
+    "b": "Frühstücken / Brunchen gehen",
+    "cat": "date"
+  },
+  {
+    "a": "Zusammen einen Sonnenaufgang anschauen",
+    "b": "Zusammen Sterne beobachten",
+    "cat": "date"
+  },
+  {
+    "a": "Vor der ganzen Familie laut einen peinlichen Chat vorlesen",
+    "b": "Deinen kompletten Suchverlauf der letzten 30 Tage auf dem TV zeigen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Einen Tag lang eine deutlich sichtbare Schweißflecken-Hose tragen",
+    "b": "Einen Tag lang Spinat zwischen den Zähnen haben und niemand sagt es dir",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Dem Ex um 2 Uhr nachts schreiben",
+    "b": "Dem Chef aus Versehen ein Herz-Emoji schicken",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Beim Niesen immer laut furzen",
+    "b": "Beim Lachen immer wie ein Seehund klatschen",
+    "cat": "peinlich"
+  },
+  {
+    "a": "10.000 € sofort bekommen, aber dein bester Freund verliert 1.000 €",
+    "b": "Nichts bekommen, aber ihr bleibt quitt",
+    "cat": "party"
+  },
+  {
+    "a": "Immer die ungeschminkte Wahrheit sagen müssen",
+    "b": "Jedes Mal lügen müssen, wenn du nach deinem Befinden gefragt wirst",
+    "cat": "party"
+  },
+  {
+    "a": "Nie wieder lügen können",
+    "b": "Sofort merken, wenn dich jemand anlügt",
+    "cat": "party"
+  },
+  {
+    "a": "Eine Woche lang jede Entscheidung per Münzwurf treffen",
+    "b": "Eine Woche lang alle Entscheidungen von dieser Gruppe treffen lassen",
+    "cat": "party"
+  },
+  {
+    "a": "Genau wissen, wann du stirbst",
+    "b": "Genau wissen, wie du stirbst",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Alle deine Fehler rückgängig machen können",
+    "b": "Einmal für 5 Minuten in deine Zukunft sehen",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Ein ruhiges, sicheres Leben führen",
+    "b": "Ein wildes Leben voller Höhen und Tiefen",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Nie wieder etwas bereuen müssen",
+    "b": "Alles noch einmal zum ersten Mal erleben",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Nur noch im Dunkeln Sex haben",
+    "b": "Nur noch bei vollem Licht mit Spiegel an der Decke",
+    "cat": "hot18"
+  },
+  {
+    "a": "Einen Abend lang nur mit Handschellen ans Bett",
+    "b": "Einen Abend lang komplett die Kontrolle abgeben und Augen verbinden",
+    "cat": "hot18"
+  },
+  {
+    "a": "Immer nach 2 Minuten fertig sein",
+    "b": "Zwei Stunden brauchen und nie sicher sein, ob es klappt",
+    "cat": "hot18"
+  },
+  {
+    "a": "Von den Nachbarn beim Stöhnen gehört werden",
+    "b": "Die Nachbarn jedes Wochenende laut hören müssen",
+    "cat": "hot18"
+  },
+  {
+    "a": "Einen richtig heißen One-Night-Stand mit jemandem aus der Runde",
+    "b": "Nie wieder Sex haben, aber 100.000 € kassieren",
+    "cat": "hot18"
+  },
+  {
+    "a": "Immer nur noch spontan und wild im Auto oder draußen",
+    "b": "Nur noch sonntags um 10 Uhr morgens ganz ruhig im Bett",
+    "cat": "hot18"
+  },
+  {
+    "a": "Alle deine intimen Chats werden in der Gruppe vorgelesen",
+    "b": "Du musst eine Woche lang komplett nackt in einer Glaswohnung leben",
+    "cat": "hot18"
+  },
+  {
+    "a": "Jedes Mal beim Orgasmus laut den Namen deines Ex schreien",
+    "b": "Immer komplett still bleiben müssen, egal wie gut es ist",
+    "cat": "hot18"
+  },
+  {
+    "a": "Mit deinem größten Schwarm eine Nacht verbringen, aber er/sie vergisst es sofort",
+    "b": "Eine Nacht mit jemandem, den du gar nicht magst, aber es war der beste Sex deines Lebens",
+    "cat": "hot18"
+  },
+  {
+    "a": "Ein Jahr lang kein Vorspiel mehr",
+    "b": "Ein Jahr lang nur Vorspiel und nie zum Abschluss kommen",
+    "cat": "hot18"
+  }
+]

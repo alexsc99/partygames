@@ -1,0 +1,430 @@
+[
+  {
+    "q": "Wer würde am ehesten auf einer Party als Erstes einschlafen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten beim Karaoke das Mikrofon nicht mehr hergeben?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten die eigene Party sprengen und die Nachbarn aufwecken?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten auf dem Tisch tanzen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten eine Woche ohne Handy nicht überleben?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten bei einer Quizshow die erste Frage verhauen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten im Lotto gewinnen und es sofort wieder ausgeben?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten beim Horrorfilm am lautesten schreien?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten als DJ die Playlist kapern?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten mit Konfetti in den Haaren zur Arbeit gehen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten auf einer Hochzeit den Brautstrauß fangen (oder drum kämpfen)?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten im Urlaub seinen Reisepass verlieren?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten zu seiner eigenen Hochzeit zu spät kommen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten ein Geheimnis aus Versehen direkt ausplaudern?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten morgens um 3 Uhr für einen Freund ans andere Ende der Stadt fahren?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten seinen eigenen Geburtstag vergessen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten ein Haustier anschaffen, ohne vorher nachzudenken?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten bei einem Spieleabend die Regeln zu seinen Gunsten biegen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten heimlich einen ganzen Kuchen alleine aufessen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten im Gruppenchat 20 Sprachnachrichten am Stück schicken?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten einen Roadtrip ohne Plan und Navi starten?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten beim Umzug helfen – aber nur zum Pizzaessen kommen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten für die ganze Gruppe das Restaurant aussuchen müssen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten ein Möbelstück ohne Anleitung aufbauen und Teile übrig haben?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten aus Versehen eine Peinlichkeit in die Familiengruppe schicken?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten bei der Polizei wegen einer Lappalie diskutieren?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten mit Socken in Sandalen in die Stadt gehen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten im Kino über den eigenen Witz am lautesten lachen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten eine rote Ampel übersehen, weil er/sie aufs Handy schaut?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten so tun, als hätte er/sie die Nachricht nicht gesehen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten etwas im Supermarkt fallen lassen und schnell weitergehen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten einen falschen Namen beim Café angeben?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten den Wecker 10-mal wegdrücken und trotzdem zu spät kommen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten ein Paket vom Nachbarn annehmen und eine Woche vergessen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten beim Arzt im Wartezimmer einschlafen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten die eigene EC-Karte im Automaten stecken lassen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten morgens um 4 Uhr noch Döner holen gehen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten nach einem Glas schon behaupten, völlig nüchtern zu sein?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten besoffen seinem Ex / seiner Ex schreiben?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten im Club seine Freunde verlieren und neue Adoptiv-Freunde finden?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten am nächsten Morgen mit einem Verkehrsschild im Zimmer aufwachen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten auf dem Heimweg im Bus/Zug einschlafen und bis zur Endstation fahren?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten betrunken versuchen, einen Rückwärtssalto zu machen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten eine ganze Runde Shots für Fremde bestellen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten beim Vorglühen schon zu viel Gas geben?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten am nächsten Tag eine peinliche Instagram-Story löschen müssen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten betrunken mit dem Türsteher philosophieren?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten den Haustürschlüssel verlieren und vor der Tür pennen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten beim ersten Date direkt übernachten?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten einen heimlichen Crush in dieser Runde haben?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten auf einer Party mit jemandem im Flur verschwinden?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten ein Nacktbild aus Versehen an die falsche Person schicken?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten bei 'Wahrheit oder Pflicht' immer die extremste Pflicht wählen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten einen Dreier zumindest nicht kategorisch ausschließen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten beim Flirten völlig offensichtlich übertreiben?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten in der Öffentlichkeit knutschen, ohne dass es ihm/ihr peinlich ist?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten einen OnlyFans-Account aus reiner Neugier testen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten ein Sexspielzeug im Handgepäck beim Flughafen vergessen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten jemanden nur wegen der Stimme attraktiv finden?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten einen One-Night-Stand am nächsten Morgen mit Frühstück überraschen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten beim ersten Treffen sofort seine ganze Lebensgeschichte erzählen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten ein Buch über sein eigenes Leben schreiben?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten alles stehen und liegen lassen, um spontan auszuwandern?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten bei einem traurigen Film heimlich weinen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten ein Jahr lang komplett auf Social Media verzichten können?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten ein Tier aus dem Tierheim adoptieren, obwohl er/sie eigentlich keins wollte?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten einen fremden Menschen auf der Straße einfach ansprechen und anfreunden?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten sein Hobby zum Beruf machen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten im Lotto gewinnen und niemandem davon erzählen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten für eine neue Liebe in eine völlig fremde Stadt ziehen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten beim ersten Date total nervös werden und sich verplappern?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten beim Date den ersten Schritt machen?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten ein super kitschiges Überraschungs-Date planen?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten beim ersten Date zu viel Parfüm auflegen?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten nach einem guten Date direkt nach dem nächsten Treffen fragen?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten beim Essen auf dem Date etwas auf das eigene Shirt kleckern?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten sich beim ersten Blick sofort vergucken?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten auf einem Date drei Stunden länger bleiben als geplant?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten beim Abschied viel zu lange überlegen, ob Umarmung oder Kuss?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten heimlich eine Playlist für den anderen erstellen?",
+    "cat": "date"
+  },
+  {
+    "q": "Wer würde am ehesten aus Versehen eine Sprachnachricht an die falsche Person schicken?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten zurückwinken, obwohl jemand hinter ihm gemeint war?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten auf dem Klo das Handy fallen lassen und behaupten, es sei nur runtergefallen?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten beim ersten Date direkt einen peinlichen Spitznamen vergeben?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten im Supermarkt laut mit sich selbst diskutieren?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wer würde am ehesten für 500 € eine Woche lang ohne Schuhe rumlaufen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten einen gefundenen Geldschein behalten, ohne nach dem Besitzer zu suchen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten ein Geheimnis aus Versehen in der falschen WhatsApp-Gruppe ausplaudern?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten bei Monopoly das Spielbrett umwerfen?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten im Urlaub spontan den Rückflug verpassen, um länger zu bleiben?",
+    "cat": "party"
+  },
+  {
+    "q": "Wer würde am ehesten um 3 Uhr nachts über den Sinn des Lebens philosophieren?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten alles stehen und liegen lassen und in ein anderes Land auswandern?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten in 10 Jahren ein komplett anderes Leben führen als heute?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten einem alten Freund nach Jahren einfach so verzeihen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wer würde am ehesten beim Flaschendrehen alle Grenzen sprengen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten schon mal ein eindeutiges Foto verschickt und es sofort bereut haben?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten einen geheimen Kink haben, von dem niemand hier ahnt?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten auf einer Party im abgeschlossenen Bad verschwinden – und nicht allein?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten einen One-Night-Stand am nächsten Morgen mit falschem Namen verabschieden?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten bei einer heißen Nachricht an die falsche Person einen Herzinfarkt kriegen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten mit dem Ex von einem guten Freund rummachen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten nackt im See oder Pool baden gehen, wenn alle zuschauen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten eine Affäre oder Freundschaft-Plus geheim halten, obwohl es jeder merkt?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten beim ersten Date direkt nach Hause mitgehen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten auf einer Party jemanden küssen, nur um eine Wette zu gewinnen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten eine versteckte Schublade mit Spielzeug zu Hause haben?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wer würde am ehesten beim Feiern den kompletten Abend mit jemand Fremdem im Eck verschwinden?",
+    "cat": "hot18"
+  }
+]

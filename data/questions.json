@@ -1,0 +1,1168 @@
+[
+  {
+    "q": "Was trinkt man traditionell zu Silvester in Deutschland?",
+    "a": [
+      "Sekt",
+      "Glühwein",
+      "Bier",
+      "Eistee"
+    ],
+    "c": 0,
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Beine hat eine Spinne?",
+    "a": [
+      "6",
+      "8",
+      "10",
+      "12"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Welches Land hat die meisten Einwohner?",
+    "a": [
+      "USA",
+      "Indien",
+      "Brasilien",
+      "Russland"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Wie heißt die Hauptstadt von Australien?",
+    "a": [
+      "Sydney",
+      "Melbourne",
+      "Canberra",
+      "Perth"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Welche Farbe hat der Stern auf der Cola-Dose?",
+    "a": [
+      "Gelb",
+      "Rot",
+      "Gar keiner",
+      "Blau"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Spieler stehen pro Team beim Fußball auf dem Feld?",
+    "a": [
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Wer hat die Mona Lisa gemalt?",
+    "a": [
+      "Michelangelo",
+      "Van Gogh",
+      "Da Vinci",
+      "Picasso"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Was ist das häufigste Karaoke-Lied der Welt?",
+    "a": [
+      "Bohemian Rhapsody",
+      "Atemlos",
+      "Wonderwall",
+      "Despacito"
+    ],
+    "c": 0,
+    "cat": "party"
+  },
+  {
+    "q": "Welches Instrument spielt man beim Luftgitarre-Wettbewerb?",
+    "a": [
+      "Gar keins",
+      "E-Gitarre",
+      "Ukulele",
+      "Bass"
+    ],
+    "c": 0,
+    "cat": "party"
+  },
+  {
+    "q": "Welcher Song startet mit 'Is this the real life?'",
+    "a": [
+      "Hotel California",
+      "Bohemian Rhapsody",
+      "Imagine",
+      "Stairway to Heaven"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Wie hieß der beste Freund von Harry Potter?",
+    "a": [
+      "Draco Malfoy",
+      "Ron Weasley",
+      "Neville Longbottom",
+      "Cedric Diggory"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Hauptcharaktere gibt es in der Serie 'Friends'?",
+    "a": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Welches Brettspiel sorgt statistisch am häufigsten für Streit unter Freunden?",
+    "a": [
+      "Schach",
+      "Monopoly",
+      "Memory",
+      "Mikado"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Wie heißt der treue Begleiter von Shrek?",
+    "a": [
+      "Kater",
+      "Esel",
+      "Drache",
+      "Pferd"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Was bedeutet der Begriff 'Bromance'?",
+    "a": [
+      "Bruderliebe unter Kumpels",
+      "Ein Roman über Rom",
+      "Eine Tanzart",
+      "Ein Cocktail"
+    ],
+    "c": 0,
+    "cat": "party"
+  },
+  {
+    "q": "Welcher Tag ist offizieller Internationaler Tag der Freundschaft (UN)?",
+    "a": [
+      "14. Februar",
+      "1. Mai",
+      "30. Juli",
+      "24. Dezember"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Wie heißt das Lieblingscafé in der Serie 'Friends'?",
+    "a": [
+      "Starbucks",
+      "Central Perk",
+      "MacLaren's",
+      "Monk's"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Was teilt man laut Sprichwort mit wahren Freunden durch zwei?",
+    "a": [
+      "Pech & Leid",
+      "Nur das Geld",
+      "Das Passwort",
+      "Die Steuer"
+    ],
+    "c": 0,
+    "cat": "party"
+  },
+  {
+    "q": "Welches Tier schläft im Stehen?",
+    "a": [
+      "Pferd",
+      "Katze",
+      "Hund",
+      "Schwein"
+    ],
+    "c": 0,
+    "cat": "party"
+  },
+  {
+    "q": "Welches Kartenspiel endet oft mit 'UNO!'?",
+    "a": [
+      "Skat",
+      "Mau-Mau",
+      "UNO",
+      "Poker"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Was ist in Deutschland auf der Autobahn verboten?",
+    "a": [
+      "Überholen",
+      "Ohne Grund stehen bleiben",
+      "Musik hören",
+      "Tempomat nutzen"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Minuten drückt der Durchschnittsmensch morgens auf 'Schlummern'?",
+    "a": [
+      "0 Minuten",
+      "ca. 9 Minuten",
+      "ca. 25 Minuten",
+      "ca. 45 Minuten"
+    ],
+    "c": 2,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was machen laut Umfragen über 60 % aller Menschen heimlich unter der Dusche?",
+    "a": [
+      "Zähne putzen",
+      "Singen",
+      "Kaffee trinken",
+      "Telefonieren"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welche Ausrede hören Lehrer und Chefs am häufigsten?",
+    "a": [
+      "Mein Hund hat es gefressen",
+      "Stau / Bahn ausgefallen",
+      "Stromausfall",
+      "Zeitumstellung vergessen"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie oft entsperrt ein Durchschnittsnutzer sein Handy pro Tag?",
+    "a": [
+      "ca. 15 Mal",
+      "ca. 35 Mal",
+      "ca. 80 Mal",
+      "ca. 250 Mal"
+    ],
+    "c": 2,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was vergessen Reisende laut Hotel-Statistiken am häufigsten im Zimmer?",
+    "a": [
+      "Schuhe",
+      "Ladekabel",
+      "Reisepass",
+      "Koffer"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welches Wort wird beim Tippen am Handy am häufigsten falsch korrigiert?",
+    "a": [
+      "Hallo",
+      "Montag",
+      "Ja",
+      "Und"
+    ],
+    "c": 0,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist in der Schweiz nach 22 Uhr in Mietwohnungen oft unerwünscht/verboten?",
+    "a": [
+      "Lesen",
+      "Lautes Duschen/Baden",
+      "Kochen",
+      "Schlafen"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welcher Tag der Woche hat statistisch die meisten Krankmeldungen?",
+    "a": [
+      "Montag",
+      "Mittwoch",
+      "Freitag",
+      "Samstag"
+    ],
+    "c": 0,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie heißt die Angst, das eigene Handy nicht dabei zu haben?",
+    "a": [
+      "Agoraphobie",
+      "Nomophobie",
+      "Klaustrophobie",
+      "Handyphobie"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welches Getränk wird aus Hopfen und Malz gebraut?",
+    "a": [
+      "Wein",
+      "Bier",
+      "Whisky",
+      "Cider"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was hilft gegen einen Kater am allerbesten?",
+    "a": [
+      "Konterbier",
+      "Wasser & Elektrolyte",
+      "Noch ein Kurzer",
+      "Eiskalt duschen"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viel Prozent Alkohol hat ein klassischer Jägermeister?",
+    "a": [
+      "20 %",
+      "35 %",
+      "40 %",
+      "56 %"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welcher Cocktail besteht aus Rum, Limette, Minze, Zucker und Soda?",
+    "a": [
+      "Caipirinha",
+      "Mojito",
+      "Mai Tai",
+      "Daiquiri"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Ab wie viel Promille spricht man in Deutschland beim Autofahren von absoluter Fahruntüchtigkeit?",
+    "a": [
+      "0,3 ‰",
+      "0,5 ‰",
+      "1,1 ‰",
+      "1,6 ‰"
+    ],
+    "c": 2,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie heißt das größte Bier- und Volksfest der Welt?",
+    "a": [
+      "Cannstatter Wasen",
+      "Oktoberfest",
+      "Cranger Kirmes",
+      "Wacken"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Woraus wird Tequila hauptsächlich hergestellt?",
+    "a": [
+      "Zuckerrohr",
+      "Blaue Agave",
+      "Kartoffeln",
+      "Mais"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was gehört NICHT in einen klassischen Aperol Spritz?",
+    "a": [
+      "Prosecco",
+      "Aperol",
+      "Soda",
+      "Tonic Water"
+    ],
+    "c": 3,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist ein 'Konterbier'?",
+    "a": [
+      "Alkoholfreies Bier",
+      "Ein Bier am Morgen gegen den Kater",
+      "Dunkles Starkbier",
+      "Bier mit Cola"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie heißt der Zustand, wenn man sich am nächsten Morgen an nichts erinnert?",
+    "a": [
+      "Whiteout",
+      "Blackout / Filmriss",
+      "Greyzone",
+      "Shutdown"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welches Hormon wird beim Küssen besonders stark ausgeschüttet und sorgt für Bindung?",
+    "a": [
+      "Insulin",
+      "Oxytocin",
+      "Melatonin",
+      "Cortisol"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Kalorien verbrennt man ungefähr bei 30 Minuten intensivem Küssen?",
+    "a": [
+      "ca. 5 kcal",
+      "ca. 60–90 kcal",
+      "ca. 500 kcal",
+      "ca. 900 kcal"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Woher stammt der Name 'Tinder' (die Dating-App) wörtlich?",
+    "a": [
+      "Zunder / Anzündholz",
+      "Zärtlichkeit",
+      "Donner",
+      "Schmetterling"
+    ],
+    "c": 0,
+    "cat": "hot18"
+  },
+  {
+    "q": "Was ist die häufigste Farbe bei Reizwäsche laut Verkaufsstatistiken?",
+    "a": [
+      "Rot",
+      "Schwarz",
+      "Weiß",
+      "Rosa"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Welches Land hat laut Umfragen den höchsten Konsum von Sexspielzeug pro Kopf?",
+    "a": [
+      "Frankreich",
+      "Deutschland",
+      "Island / Skandinavien",
+      "Japan"
+    ],
+    "c": 2,
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie nennt man es beim Dating, wenn jemand plötzlich ohne Erklärung den Kontakt abbricht?",
+    "a": [
+      "Benching",
+      "Ghosting",
+      "Breadcrumbing",
+      "Catfishing"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Welche Frucht gilt seit der Antike als klassisches Aphrodisiakum?",
+    "a": [
+      "Granatapfel / Feige",
+      "Kartoffel",
+      "Rosenkohl",
+      "Sellerie"
+    ],
+    "c": 0,
+    "cat": "hot18"
+  },
+  {
+    "q": "Was bedeutet 'Netflix & Chill' in der Jugendsprache meistens?",
+    "a": [
+      "Wirklich nur Serien schauen",
+      "Gemeinsam einschlafen",
+      "Ein Date mit romantischen/intimen Absichten",
+      "Kinoabend mit Popcorn"
+    ],
+    "c": 2,
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Muskeln sind bei einem leidenschaftlichen Kuss im Einsatz?",
+    "a": [
+      "ca. 2",
+      "ca. 12",
+      "ca. 34",
+      "ca. 120"
+    ],
+    "c": 2,
+    "cat": "hot18"
+  },
+  {
+    "q": "Was bedeutet 'Swipen nach rechts' bei den meisten Dating-Apps?",
+    "a": [
+      "Gefällt mir / Like",
+      "Gefällt mir nicht",
+      "Blockieren",
+      "Super-Nachricht"
+    ],
+    "c": 0,
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Fragen umfasst der berühmte Psychologie-Fragebogen von Arthur Aron zum gegenseitigen Kennenlernen?",
+    "a": [
+      "12 Fragen",
+      "24 Fragen",
+      "36 Fragen",
+      "50 Fragen"
+    ],
+    "c": 2,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was ist laut Kommunikationsforschung beim ersten Eindruck meist am wichtigsten?",
+    "a": [
+      "Der exakte Wortlaut",
+      "Körpersprache & Ausstrahlung",
+      "Die Schuhmarke",
+      "Das Wetterthema"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welche Frage gilt beim Smalltalk als klassischer Eisbrecher ohne Druck?",
+    "a": [
+      "Wie hoch ist dein Gehalt?",
+      "Was war dein schönstes Erlebnis diese Woche?",
+      "Wie alt bist du genau?",
+      "Wann heiratest du?"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was bedeutet der Begriff 'Active Listening' (Aktives Zuhören)?",
+    "a": [
+      "Schnell unterbrechen",
+      "Aufmerksam zuhören & nachfragen",
+      "Währenddessen aufs Handy schauen",
+      "Nur nicken ohne zuzuhören"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welche 'Love Language' beschreibt Menschen, die Zuneigung vor allem durch gemeinsame Aktivitäten zeigen?",
+    "a": [
+      "Geschenke",
+      "Quality Time (Zweisamkeit)",
+      "Lob & Anerkennung",
+      "Körperliche Nähe"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was schüttet das Gehirn beim herzhaften gemeinsamen Lachen verstärkt aus?",
+    "a": [
+      "Endorphine",
+      "Adrenalin pur",
+      "Melatonin",
+      "Histamin"
+    ],
+    "c": 0,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie nennt man das Phänomen, dass wir Menschen sympathischer finden, die uns ähnlich sind?",
+    "a": [
+      "Halo-Effekt",
+      "Similarity-Attraction-Effekt",
+      "Dunning-Kruger-Effekt",
+      "Placebo-Effekt"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was hilft laut Studien am meisten, um aus Bekannten echte Freunde zu machen?",
+    "a": [
+      "Gemeinsame verbrachte Stunden",
+      "Teure Geschenke",
+      "Nur über Arbeit reden",
+      "Sich möglichst selten sehen"
+    ],
+    "c": 0,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welcher Botenstoff sorgt beim Verliebtsein für das berühmte Kribbeln im Bauch?",
+    "a": [
+      "Dopamin",
+      "Insulin",
+      "Kreatin",
+      "Vitamin C"
+    ],
+    "c": 0,
+    "cat": "date"
+  },
+  {
+    "q": "Wie nennt man das Phänomen, bei dem Menschen auf einem ersten Date besonders nervös sind?",
+    "a": [
+      "Lampenfieber / Dating-Anxiety",
+      "Jetlag",
+      "Platzangst",
+      "Tunnelblick"
+    ],
+    "c": 0,
+    "cat": "date"
+  },
+  {
+    "q": "Was ist laut Umfragen die beliebteste Aktivität für ein erstes Date in Deutschland?",
+    "a": [
+      "Spaziergang oder Café",
+      "Fallschirmspringen",
+      "Möbelhaus-Besuch",
+      "Zahnarzt"
+    ],
+    "c": 0,
+    "cat": "date"
+  },
+  {
+    "q": "Welche Blumenfarbe steht klassisch für Romantik und Leidenschaft?",
+    "a": [
+      "Gelb",
+      "Rot",
+      "Blau",
+      "Grün"
+    ],
+    "c": 1,
+    "cat": "date"
+  },
+  {
+    "q": "Was bedeutet der Begriff 'Butterflies in the stomach'?",
+    "a": [
+      "Schmetterlinge im Bauch",
+      "Hunger haben",
+      "Bauchschmerzen vom Essen",
+      "Schlechte Laune"
+    ],
+    "c": 0,
+    "cat": "date"
+  },
+  {
+    "q": "Wie lange sollte man laut Psychologie beim Flirten ungefähr Blickkontakt halten, um Interesse zu zeigen?",
+    "a": [
+      "0,1 Sekunden",
+      "ca. 3 Sekunden",
+      "2 Minuten ohne Blinzeln",
+      "Gar nicht"
+    ],
+    "c": 1,
+    "cat": "date"
+  },
+  {
+    "q": "Was ist ein klassisches 'Green Flag' beim ersten Date?",
+    "a": [
+      "Aufmerksam zuhören & Fragen stellen",
+      "Ununterbrochen aufs Handy schauen",
+      "Nur über den Ex reden",
+      "Zu spät ohne Absage"
+    ],
+    "c": 0,
+    "cat": "date"
+  },
+  {
+    "q": "Welcher Tag gilt statistisch als beliebtester Tag der Woche für Dates?",
+    "a": [
+      "Montag",
+      "Dienstag",
+      "Freitag / Samstag",
+      "Mittwochmittag"
+    ],
+    "c": 2,
+    "cat": "date"
+  },
+  {
+    "q": "Welches Land hat die längste Küstenlinie der Welt?",
+    "a": [
+      "Russland",
+      "Australien",
+      "Kanada",
+      "Indonesien"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Wie heißt die kleinste Zeiteinheit der Physik, die man theoretisch messen kann?",
+    "a": [
+      "Planck-Zeit",
+      "Nanosekunde",
+      "Zeptosekunde",
+      "Attosekunde"
+    ],
+    "c": 0,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welcher Planet in unserem Sonnensystem hat die meisten bekannten Monde?",
+    "a": [
+      "Jupiter",
+      "Saturn",
+      "Uranus",
+      "Neptun"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Aus welchem Land stammt ursprünglich das Gericht Sushi (in seiner modernen Form)?",
+    "a": [
+      "China",
+      "Japan",
+      "Korea",
+      "Thailand"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Herzen hat ein Oktopus?",
+    "a": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "c": 2,
+    "cat": "party"
+  },
+  {
+    "q": "Welches Element hat das chemische Symbol 'Au'?",
+    "a": [
+      "Silber",
+      "Aluminium",
+      "Gold",
+      "Argon"
+    ],
+    "c": 2,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welcher berühmte Maler schnitt sich einen Teil seines Ohrs ab?",
+    "a": [
+      "Pablo Picasso",
+      "Vincent van Gogh",
+      "Claude Monet",
+      "Salvador Dalí"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welches Tier kann seinen Kopf um bis zu 270 Grad drehen?",
+    "a": [
+      "Adler",
+      "Eule",
+      "Chamäleon",
+      "Faultier"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "In welchem Jahr fiel die Berliner Mauer?",
+    "a": [
+      "1987",
+      "1989",
+      "1990",
+      "1991"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welches Getränke-Unternehmen erfand die heute bekannte rot-weiße Darstellung des Weihnachtsmanns mit?",
+    "a": [
+      "Pepsi",
+      "Coca-Cola",
+      "Fanta",
+      "Red Bull"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Wie heißt das Hormon, das umgangssprachlich als 'Kuschelhormon' bezeichnet wird?",
+    "a": [
+      "Adrenalin",
+      "Cortisol",
+      "Oxytocin",
+      "Melatonin"
+    ],
+    "c": 2,
+    "cat": "date"
+  },
+  {
+    "q": "Was schenkt man traditionell am Valentinstag am häufigsten weltweit?",
+    "a": [
+      "Schmuck",
+      "Rote Rosen",
+      "Parfüm",
+      "Konzerttickets"
+    ],
+    "c": 1,
+    "cat": "date"
+  },
+  {
+    "q": "Welche Stadt gilt weltweit als 'Stadt der Liebe'?",
+    "a": [
+      "Venedig",
+      "Paris",
+      "Wien",
+      "Rom"
+    ],
+    "c": 1,
+    "cat": "date"
+  },
+  {
+    "q": "Wie nennt man das Phänomen, wenn man sich auf Anhieb extrem sympathisch ist?",
+    "a": [
+      "Chemie",
+      "Gravitation",
+      "Resonanz",
+      "Symbiose"
+    ],
+    "c": 0,
+    "cat": "date"
+  },
+  {
+    "q": "Welcher italienische Liebesfilm spielt rund um ein berühmtes Dinner mit Spaghetti?",
+    "a": [
+      "Titanic",
+      "Susi und Strolch",
+      "Notting Hill",
+      "Pretty Woman"
+    ],
+    "c": 1,
+    "cat": "date"
+  },
+  {
+    "q": "Was bedeutet der Dating-Begriff 'Breadcrumbing'?",
+    "a": [
+      "Jemanden zum Essen einladen",
+      "Kleine Hoffnungs-Häppchen geben ohne echtes Interesse",
+      "Nach dem 1. Date direkt zusammenziehen",
+      "Den Namen des Dates vergessen"
+    ],
+    "c": 1,
+    "cat": "date"
+  },
+  {
+    "q": "Was versteht man unter 'Benching' beim Online-Dating?",
+    "a": [
+      "Auf einer Parkbank treffen",
+      "Jemanden warmhalten, falls nichts Besseres kommt",
+      "Gemeinsam Sport machen",
+      "Profilbild fälschen"
+    ],
+    "c": 1,
+    "cat": "date"
+  },
+  {
+    "q": "Welcher Geruch wirkt laut Studien bei vielen Menschen besonders anziehend?",
+    "a": [
+      "Vanille",
+      "Frischer Knoblauch",
+      "Benzin",
+      "Chlor"
+    ],
+    "c": 0,
+    "cat": "date"
+  },
+  {
+    "q": "Was passiert im Körper bei Verliebtheit zuerst?",
+    "a": [
+      "Dopamin und Adrenalin steigen",
+      "Körpertemperatur fällt auf 34 °C",
+      "Man verliert den Geschmackssinn",
+      "Man schläft doppelt so viel"
+    ],
+    "c": 0,
+    "cat": "date"
+  },
+  {
+    "q": "Wie nennt man es, wenn man jemanden nach längerem Schreiben plötzlich kommentarlos blockiert/ignoriert?",
+    "a": [
+      "Haunting",
+      "Ghosting",
+      "Orbiting",
+      "Submarining"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welcher Suchbegriff führt Silvester/Neujahr in Suchmaschinen regelmäßig steil nach oben?",
+    "a": [
+      "Wie werde ich einen Kater los?",
+      "Steuererklärung",
+      "Winterreifen wechseln",
+      "Haus kaufen"
+    ],
+    "c": 0,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist laut Studien der häufigste Grund für peinliche WhatsApp-Nachrichten?",
+    "a": [
+      "Autokorrektur",
+      "Falschen Chat ausgewählt",
+      "Sprachnachricht in der Hosentasche",
+      "Alle drei zusammen"
+    ],
+    "c": 3,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie nennt man das Gefühl, sich für die Peinlichkeit einer anderen Person zu schämen?",
+    "a": [
+      "Mitgefühl",
+      "Fremdscham",
+      "Nostalgie",
+      "Euphorie"
+    ],
+    "c": 1,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welches Lebensmittel sorgt statistisch für die meisten Flecken auf weißen Party-Shirts?",
+    "a": [
+      "Rotwein",
+      "Tomatensoße",
+      "Kaffee",
+      "Schokolade"
+    ],
+    "c": 0,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welche Ausrede benutzen Menschen laut Umfragen am häufigsten, um eine Verabredung abzusagen?",
+    "a": [
+      "Kopfschmerzen / unwohl",
+      "Auto kaputt",
+      "Haustier krank",
+      "Uhr stehengeblieben"
+    ],
+    "c": 0,
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was bedeutet der Begriff 'Situationship'?",
+    "a": [
+      "Feste Ehe",
+      "Mehr als Freundschaft, aber ohne klares Label",
+      "Fernbeziehung über Kontinente",
+      "Beziehung am Arbeitsplatz"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Was bedeutet 'Netflix and Chill' im Internet-Slang meistens?",
+    "a": [
+      "Dokumentation schauen und schlafen",
+      "Vorwand für Intimität / Rumknutschen",
+      "Gemeinsam kochen",
+      "Serie bewerten"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Welche Frucht wird als Emoji am häufigsten zweideutig in Flirt-Chats benutzt?",
+    "a": [
+      "🍎 Apfel",
+      "🍆 Aubergine",
+      "🥦 Brokkoli",
+      "🥔 Kartoffel"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Was versteht man unter 'Friends with Benefits'?",
+    "a": [
+      "Freunde mit gemeinsamem Rabatt-Abo",
+      "Freundschaft plus körperliche Intimität ohne Beziehung",
+      "Arbeitskollegen im selben Team",
+      "Nachbarn mit Hund"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie nennt man es umgangssprachlich, wenn man am nächsten Morgen in den Party-Klamotten nach Hause läuft?",
+    "a": [
+      "Morning Jog",
+      "Walk of Shame",
+      "Catwalk",
+      "Afterhour-Run"
+    ],
+    "c": 1,
+    "cat": "hot18"
+  },
+  {
+    "q": "Welcher Drink gilt als Klassiker für James Bond ('geschüttelt, nicht gerührt')?",
+    "a": [
+      "Mojito",
+      "Wodka Martini",
+      "Whiskey Sour",
+      "Gin Tonic"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Wie heißt das bekannte Trinkspiel mit roten Plastikbechern und Tischtennisball?",
+    "a": [
+      "Flunkyball",
+      "Bierpong",
+      "Kings Cup",
+      "Looping Louie"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Welches Brettspiel ist dafür berühmt, dass man durch die 'Schlossallee' Freunde verliert?",
+    "a": [
+      "Risiko",
+      "Monopoly",
+      "Siedler von Catan",
+      "Mensch ärgere Dich nicht"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Karten hat ein klassisches Skat-Blatt?",
+    "a": [
+      "24",
+      "32",
+      "36",
+      "52"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Welcher Monat hat in Deutschland statistisch die wenigsten Regentage im Durchschnitt (regional unterschiedlich, aber oft Spitzenreiter)?",
+    "a": [
+      "November",
+      "April",
+      "Juli / August",
+      "Februar"
+    ],
+    "c": 3,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie nennt man die Angst, etwas auf Partys oder Events zu verpassen?",
+    "a": [
+      "JOMO",
+      "FOMO",
+      "YOLO",
+      "ASMR"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was bedeutet die Abkürzung 'TL;DR' im Internet?",
+    "a": [
+      "Too Long; Didn't Read",
+      "Today's Latest; Daily Report",
+      "Take Life; Don't Rush",
+      "True Love; Deep Romance"
+    ],
+    "c": 0,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Stunden dauert ein vollständiger Schlafzyklus beim Menschen im Schnitt?",
+    "a": [
+      "ca. 45 Minuten",
+      "ca. 90 Minuten",
+      "ca. 3 Stunden",
+      "ca. 5 Stunden"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welche Farbe hat die Zunge einer Giraffe?",
+    "a": [
+      "Rosa",
+      "Blau-schwarz",
+      "Gelb",
+      "Weiß"
+    ],
+    "c": 1,
+    "cat": "party"
+  },
+  {
+    "q": "Welches Organ des Menschen kann sich als einziges inneres Organ fast vollständig selbst regenerieren?",
+    "a": [
+      "Niere",
+      "Leber",
+      "Lunge",
+      "Milz"
+    ],
+    "c": 1,
+    "cat": "kennenlernen"
+  }
+]

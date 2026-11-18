@@ -1,0 +1,354 @@
+[
+  {
+    "q": "Was war dein größter Kindheits-Traumjob und was ist daraus geworden?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welches Talent hättest du gerne sofort – ohne dafür üben zu müssen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was ist dein absolutes Comfort-Food, wenn es dir mal nicht so gut geht?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Worüber kannst du stundenlang reden, ohne dass es dir langweilig wird?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was war der beste Urlaub oder Ausflug deines Lebens?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welche kleine Angewohnheit an dir nervt dich manchmal selbst?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was ist dein geheimes Guilty Pleasure (Film, Song, Serie oder Snack)?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welche Eigenschaft schätzt du an einem Menschen am allermeisten?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wofür bist du in deinem Leben bisher am dankbarsten?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welcher Moment hat dich in den letzten Jahren am meisten verändert?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was war der erste Eindruck, den Leute oft falsch von dir haben?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wenn du morgen für ein Jahr irgendwohin auswandern müsstest – wohin?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was ist eine Sache auf deiner Bucket-List, die du unbedingt noch erleben willst?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welches Buch, welcher Film oder welche Serie hat dich nachhaltig beeindruckt?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was bringt dich innerhalb von Sekunden zum Lachen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie sieht ein perfekter freier Sonntag für dich aus?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Worauf bist du heimlich richtig stolz, erzählst es aber selten?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welchen Ratschlag würdest du deinem 16-jährigen Ich geben?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was ist die spontanste Aktion, die du jemals durchgezogen hast?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was muss jemand tun oder sagen, damit du dich sofort wohlfühlst?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welcher Song bringt dich auf jeder Party sofort auf die Tanzfläche?",
+    "cat": "party"
+  },
+  {
+    "q": "Was war die beste Party, auf der du jemals warst?",
+    "cat": "party"
+  },
+  {
+    "q": "Was ist dein Standard-Getränk, wenn du ausgehst?",
+    "cat": "party"
+  },
+  {
+    "q": "Was darf auf deiner Traum-Geburtstagsparty auf keinen Fall fehlen?",
+    "cat": "party"
+  },
+  {
+    "q": "Woran merkst du, dass jemand ein richtig guter Freund für dich ist?",
+    "cat": "party"
+  },
+  {
+    "q": "Was war das schönste Erlebnis, das du je mit Freunden geteilt hast?",
+    "cat": "party"
+  },
+  {
+    "q": "Welche Rolle hast du meistens in deiner Freundesgruppe?",
+    "cat": "party"
+  },
+  {
+    "q": "Was ist für dich ein absolutes No-Go in einer Freundschaft?",
+    "cat": "party"
+  },
+  {
+    "q": "Was ist das Peinlichste, das dir in der Schule oder Arbeit passiert ist?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welche Ausrede benutzt du am häufigsten, wenn du keine Lust auf ein Treffen hast?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was hast du als Kind geglaubt, was völlig absurd war?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist der seltsamste Gegenstand, den du aktuell in deiner Tasche oder Wohnung hast?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was war der legendärste Kater-Snack deines Lebens?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welche kuriose Geschichte ist dir mal nach ein paar Drinks passiert?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welches Getränk rührst du nach einer schlechten Erfahrung nie wieder an?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was machst du immer, wenn du leicht angetrunken bist?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist für dich bei einem ersten Date ein absoluter Pluspunkt?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Was ist die unromantischste Sache, die dir beim Daten je passiert ist?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Welche Eigenschaft findest du an jemandem sofort anziehend?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Was ist für dich ein sofortiges Red Flag beim Kennenlernen?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Was wäre für dich ein richtig gutes erstes Date?",
+    "cat": "date"
+  },
+  {
+    "q": "Wo wäre für dich der perfekte Ort für ein erstes Date?",
+    "cat": "date"
+  },
+  {
+    "q": "Was würdest du bei einem Date am liebsten essen gehen?",
+    "cat": "date"
+  },
+  {
+    "q": "Welche Aktivität findest du für ein Date besser als klassisches Essen gehen?",
+    "cat": "date"
+  },
+  {
+    "q": "Wie sieht für dich ein perfekter gemütlicher Abend zu zweit aus?",
+    "cat": "date"
+  },
+  {
+    "q": "Womit kann man dir bei einem Date sofort eine Freude machen?",
+    "cat": "date"
+  },
+  {
+    "q": "Welche Jahreszeit findest du für Dates am schönsten und warum?",
+    "cat": "date"
+  },
+  {
+    "q": "Was wäre für dich ein absolutes No-Go-Ort für ein erstes Date?",
+    "cat": "date"
+  },
+  {
+    "q": "Welche kleine Geste findest du im Alltag besonders aufmerksam oder romantisch?",
+    "cat": "date"
+  },
+  {
+    "q": "Was ist dir bei einem Menschen am wichtigsten, wenn man sich näher kennenlernt?",
+    "cat": "date"
+  },
+  {
+    "q": "Welche Musik oder Stimmung passt für dich perfekt zu einem entspannten Abend?",
+    "cat": "date"
+  },
+  {
+    "q": "Was darf bei einem Picknick oder Ausflug zu zweit auf keinen Fall fehlen?",
+    "cat": "date"
+  },
+  {
+    "q": "Welche Jahreszeit oder welches Wetter findest du für ein Date am gemütlichsten?",
+    "cat": "date"
+  },
+  {
+    "q": "Was ist ein kleines Detail, durch das ein ganz normaler Tag richtig schön wird?",
+    "cat": "date"
+  },
+  {
+    "q": "Welche Küche (z. B. italienisch, asiatisch, mexikanisch) geht bei dir immer?",
+    "cat": "date"
+  },
+  {
+    "q": "Was würdest du lieber machen: einen ganzen Tag in einer fremden Stadt treiben lassen oder in die Natur?",
+    "cat": "date"
+  },
+  {
+    "q": "Welcher Film oder welche Serie wäre für einen entspannten Couch-Abend deine erste Wahl?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was ist eine Sache, die du früher gehasst hast und heute richtig magst?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welches Konzert, Festival oder Event möchtest du unbedingt mal besuchen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wenn du dir für einen Tag ein beliebiges Hobby aussuchen könntest – welches wäre es?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was ist der beste Kaffee, Drink oder Snack, den du in letzter Zeit entdeckt hast?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welcher Geruch weckt bei dir sofort schöne Erinnerungen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Worüber kannst du dich immer wieder wie ein kleines Kind freuen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Welche App nutzt du am meisten und auf welche könntest du sofort verzichten?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was war die beste spontane Entscheidung, die du dieses Jahr getroffen hast?",
+    "cat": "party"
+  },
+  {
+    "q": "Welche Tradition mit Freunden oder Familie liebst du besonders?",
+    "cat": "party"
+  },
+  {
+    "q": "Welcher Song läuft bei dir gerade rauf und runter?",
+    "cat": "party"
+  },
+  {
+    "q": "Was ist dein absolutes Lieblings-Fingerfood auf Partys?",
+    "cat": "party"
+  },
+  {
+    "q": "Was war der peinlichste Moment deines Lebens, über den du heute noch lachen (oder weinen) kannst?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welche peinliche Ausrede hast du schon mal benutzt, die tatsächlich geglaubt wurde?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist die unangenehmste Nachricht, die du jemals an die falsche Person geschickt hast?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welcher Trend von früher ist dir heute auf Fotos extrem unangenehm?",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist die chaotischste Aktion, die du je spontan durchgezogen hast?",
+    "cat": "party"
+  },
+  {
+    "q": "Was würdest du tun, wenn du für genau 24 Stunden völlig unsichtbar wärst?",
+    "cat": "party"
+  },
+  {
+    "q": "Welche Regel brichst du im Alltag fast immer, weil sie dir egal ist?",
+    "cat": "party"
+  },
+  {
+    "q": "Welcher Ratschlag hat dein Leben am meisten geprägt?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wovor hast du insgeheim am meisten Angst, obwohl es nach außen niemand merkt?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was würdest du deinem 16-jährigen Ich heute in einem Satz sagen?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wann warst du das letzte Mal so richtig stolz auf dich?",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Was ist dein größtes No-Go im Bett?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Was war der ungewöhnlichste Ort, an dem du jemals intim warst?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Welche Fantasie würdest du dich trauen, hier anonym zuzugeben?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Was macht für dich jemanden sofort extrem anziehend?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Was ist das Mutigste oder Wildeste, das du je im Schlafzimmer (oder draußen) ausprobiert hast?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Welcher Film- oder Serien-Charakter ist dein heimlicher Crush?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Was ist dein absoluter Turn-On, den man dir auf den ersten Blick nicht ansieht?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Was war dein peinlichstes oder witzigstes Erlebnis beim Rummachen oder Sex?",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wann und wo hattest du deinen bisher besten Kuss?",
+    "cat": "hot18"
+  }
+]

@@ -1,0 +1,572 @@
+[
+  {
+    "q": "Wie hoch ist der Eiffelturm inklusive Antenne (in Metern)?",
+    "answer": 330,
+    "unit": "m",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Minuten dauert die längste bekannte Filmfassung von Titanic?",
+    "answer": 195,
+    "unit": "Minuten",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Tasten hat ein Standard-Klavier?",
+    "answer": 88,
+    "unit": "Tasten",
+    "cat": "party"
+  },
+  {
+    "q": "In welchem Jahr erschien das erste iPhone?",
+    "answer": 2007,
+    "unit": "",
+    "cat": "party"
+  },
+  {
+    "q": "Wie lang ist ein Marathon in Kilometern (gerundet auf ganze km)?",
+    "answer": 42,
+    "unit": "km",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Länder gibt es ungefähr auf der Welt (UN-Mitglieder)?",
+    "answer": 193,
+    "unit": "Länder",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Meter ist die Zugspitze hoch?",
+    "answer": 2962,
+    "unit": "m",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Kilometer liegt der Mond im Schnitt von der Erde entfernt?",
+    "answer": 384400,
+    "unit": "km",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Knochen hat ein erwachsener Mensch?",
+    "answer": 206,
+    "unit": "Knochen",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Zähne hat ein erwachsener Mensch normalerweise (mit Weisheitszähnen)?",
+    "answer": 32,
+    "unit": "Zähne",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Sekunden hat ein ganzer Tag?",
+    "answer": 86400,
+    "unit": "Sekunden",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Bundesländer hat Deutschland?",
+    "answer": 16,
+    "unit": "Bundesländer",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Wochen hat ein Jahr?",
+    "answer": 52,
+    "unit": "Wochen",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Inseln hat Schweden ungefähr?",
+    "answer": 267570,
+    "unit": "Inseln",
+    "cat": "party"
+  },
+  {
+    "q": "Wie schwer ist ein ausgewachsener Blauwal im Schnitt (in Tonnen)?",
+    "answer": 140,
+    "unit": "Tonnen",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Folgen hat die US-Serie 'Friends' insgesamt?",
+    "answer": 236,
+    "unit": "Folgen",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viel Prozent der Menschen geben zu, schon mal unter der Dusche gepinkelt zu haben?",
+    "answer": 75,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Lügen erzählt ein Mensch statistisch im Schnitt pro Woche?",
+    "answer": 11,
+    "unit": "Lügen",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Stunden verbringt der Durchschnittsmensch pro Jahr im Stau (in Deutschland)?",
+    "answer": 40,
+    "unit": "Stunden",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Tage verbringt ein Mensch im Leben durchschnittlich auf der Toilette?",
+    "answer": 92,
+    "unit": "Tage",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Jahre seines Lebens verschläft ein Mensch im Durchschnitt?",
+    "answer": 24,
+    "unit": "Jahre",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele verschiedene Passwörter hat der Durchschnittsnutzer ungefähr?",
+    "answer": 25,
+    "unit": "Passwörter",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viel Prozent der Deutschen drücken morgens regelmäßig auf 'Schlummern'?",
+    "answer": 57,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Nachrichten werden weltweit pro Tag über WhatsApp verschickt (in Milliarden)?",
+    "answer": 100,
+    "unit": "Mrd.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Liter Bier werden in Deutschland pro Kopf und Jahr ca. getrunken?",
+    "answer": 88,
+    "unit": "Liter",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Millionen Maß Bier werden auf dem Oktoberfest in einem normalen Jahr ausgeschenkt?",
+    "answer": 7,
+    "unit": "Mio. Maß",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viel Prozent Alkohol hat ein klassischer Stroh-Rum (Stroh 80)?",
+    "answer": 80,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Döner werden in Deutschland ungefähr pro Tag gegessen (in Millionen)?",
+    "answer": 2,
+    "unit": "Mio.",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Kalorien hat ein halber Liter Helles Bier ungefähr?",
+    "answer": 215,
+    "unit": "kcal",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Milliliter passen in eine Standard-Weinflasche?",
+    "answer": 750,
+    "unit": "ml",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viel Prozent Alkohol hat ein typisches Pils in Deutschland?",
+    "answer": 5,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Minuten braucht der Körper im Schnitt, um 0,15 Promille Alkohol abzubauen?",
+    "answer": 60,
+    "unit": "Minuten",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Stunden dauert der Weltrekord im Dauerküssen (gerundet auf ganze Stunden)?",
+    "answer": 58,
+    "unit": "Stunden",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viel Prozent der Menschen hatten laut Umfragen schon einmal einen One-Night-Stand?",
+    "answer": 56,
+    "unit": "%",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Sekunden dauert ein durchschnittlicher Kuss?",
+    "answer": 12,
+    "unit": "Sekunden",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viel Prozent der Deutschen haben schon mal eine Dating-App genutzt?",
+    "answer": 35,
+    "unit": "%",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Kalorien verbrennt man ungefähr bei 30 Minuten leidenschaftlichem Küssen?",
+    "answer": 75,
+    "unit": "kcal",
+    "cat": "hot18"
+  },
+  {
+    "q": "In welchem Alter haben Menschen in Deutschland im Schnitt ihr erstes Mal?",
+    "answer": 17,
+    "unit": "Jahre",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Matches entstehen auf Tinder ungefähr pro Tag weltweit (in Millionen)?",
+    "answer": 26,
+    "unit": "Mio.",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viel Prozent der Paare küssen sich laut Studien beim Küssen mit nach rechts geneigtem Kopf?",
+    "answer": 65,
+    "unit": "%",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Sekunden dauert es laut Studien ungefähr, bis wir uns einen ersten Eindruck von einer Person bilden?",
+    "answer": 7,
+    "unit": "Sekunden",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele enge Freunde hat ein Erwachsener in Deutschland im Durchschnitt?",
+    "answer": 4,
+    "unit": "Freunde",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Minuten pro Tag verbringt der Durchschnittsmensch mit Lachen (in Minuten)?",
+    "answer": 15,
+    "unit": "Minuten",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Fragen stellt das berühmte psychologische Experiment von Arthur Aron, um zwischen zwei Fremden Nähe zu schaffen?",
+    "answer": 36,
+    "unit": "Fragen",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Wörter spricht ein Mensch im Durchschnitt ungefähr pro Tag (in Tausend)?",
+    "answer": 16,
+    "unit": "Tsd.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Stunden Schlaf pro Nacht brauchen Erwachsene im Durchschnitt mindestens (in Stunden)?",
+    "answer": 7,
+    "unit": "Stunden",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Länder bereist der durchschnittliche Deutsche in seinem Leben ungefähr?",
+    "answer": 10,
+    "unit": "Länder",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viel Prozent unserer täglichen Entscheidungen treffen wir laut Psychologie unbewusst aus Gewohnheit?",
+    "answer": 45,
+    "unit": "%",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Minuten dauert laut Umfragen im Schnitt ein erfolgreiches erstes Date?",
+    "answer": 120,
+    "unit": "Minuten",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viel Prozent der Menschen verlieben sich laut Studien schon beim ersten Blick?",
+    "answer": 20,
+    "unit": "%",
+    "cat": "date"
+  },
+  {
+    "q": "Nach wie vielen Dates küssen sich Paare in Deutschland statistisch im Durchschnitt zum ersten Mal?",
+    "answer": 2,
+    "unit": "Dates",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viele Sekunden dauert es laut Forschung, bis Verliebte beim tiefen Blickkontakt ihren Herzschlag angleichen?",
+    "answer": 180,
+    "unit": "Sekunden",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viel Prozent der Deutschen wünschen sich beim ersten Date, dass die Rechnung geteilt wird?",
+    "answer": 60,
+    "unit": "%",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viele rote Rosen gelten klassisch als Symbol für 'Ich liebe dich'?",
+    "answer": 12,
+    "unit": "Rosen",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viel Prozent der Paare lernen sich heute laut Umfragen über Freunde oder Bekannte kennen?",
+    "answer": 30,
+    "unit": "%",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viele Dates hat ein Mensch in Deutschland im Schnitt, bis er eine feste Beziehung eingeht?",
+    "answer": 5,
+    "unit": "Dates",
+    "cat": "date"
+  },
+  {
+    "q": "Wie hoch ist der Berliner Fernsehturm inklusive Antenne (in Metern)?",
+    "answer": 368,
+    "unit": "m",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Knochen hat ein neugeborenes Baby ungefähr?",
+    "answer": 300,
+    "unit": "Knochen",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Liter Wasser verbraucht ein durchschnittlicher Deutscher pro Tag?",
+    "answer": 125,
+    "unit": "Liter",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Kilometer lang ist die Chinesische Mauer insgesamt (inkl. aller Abschnitte)?",
+    "answer": 21196,
+    "unit": "km",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Herzschläge macht ein menschliches Herz im Schnitt pro Tag?",
+    "answer": 100000,
+    "unit": "Schläge",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Jahre kann eine Riesenschildkröte maximal ungefähr alt werden?",
+    "answer": 180,
+    "unit": "Jahre",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "In welchem Jahr wurde WhatsApp gegründet?",
+    "answer": 2009,
+    "unit": "",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Tasten hat eine klassische deutsche PC-Tastatur (Full-Size)?",
+    "answer": 105,
+    "unit": "Tasten",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Kalorien verbrennt man ungefähr bei 30 Minuten intensivem Küssen?",
+    "answer": 68,
+    "unit": "kcal",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viel Prozent der Paare küssen beim Küssen den Kopf nach rechts geneigt?",
+    "answer": 65,
+    "unit": "%",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viele Sekunden dauert ein durchschnittlicher erster Kuss laut Studien?",
+    "answer": 12,
+    "unit": "Sekunden",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viel Prozent der Deutschen haben sich schon einmal im Internet in jemanden verliebt?",
+    "answer": 35,
+    "unit": "%",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viele Dates braucht es im Schnitt bis zum ersten „Ich liebe dich“ (in Monaten)?",
+    "answer": 3,
+    "unit": "Monate",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viel Prozent der Erwachsenen geben zu, schon einmal eine Person heimlich gegoogelt zu haben vor dem 1. Date?",
+    "answer": 77,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viel Prozent der Deutschen haben schon einmal betrunken eine Nachricht bereut?",
+    "answer": 62,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Minuten verbringt der Durchschnittsmensch pro Tag auf dem Klo?",
+    "answer": 25,
+    "unit": "Minuten",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie oft schaut der Durchschnittsmensch täglich aufs Smartphone?",
+    "answer": 85,
+    "unit": "Mal",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viel Prozent der Menschen singen heimlich unter der Dusche?",
+    "answer": 70,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Kalorien hat ein klassischer Döner Kebap im Fladenbrot ungefähr?",
+    "answer": 650,
+    "unit": "kcal",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Liter Bier passen in ein klassisches Maßkrug-Glas auf dem Oktoberfest?",
+    "answer": 1,
+    "unit": "Liter",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Millionen Pizzen werden in Deutschland ungefähr pro Tag gegessen?",
+    "answer": 2,
+    "unit": "Mio.",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Minuten dauert Sex im Durchschnitt laut internationalen Studien (ohne Vorspiel)?",
+    "answer": 7,
+    "unit": "Minuten",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viel Prozent der Paare haben schon einmal im Urlaub am Strand oder Meer geknutscht/mehr?",
+    "answer": 48,
+    "unit": "%",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viel Prozent der Deutschen haben schon einmal bei „Wahrheit oder Pflicht“ gelogen?",
+    "answer": 58,
+    "unit": "%",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viel Prozent der Menschen finden Humor beim Flirten wichtiger als Aussehen?",
+    "answer": 74,
+    "unit": "%",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viele Stunden schläft ein Mensch im Durchschnitt insgesamt in einem ganzen Jahr?",
+    "answer": 2700,
+    "unit": "Std.",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viele Emojis gibt es insgesamt ungefähr im aktuellen Unicode-Standard?",
+    "answer": 3780,
+    "unit": "Emojis",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viel Prozent der Deutschen haben schon einmal einen Krankentag genommen, obwohl sie nur verkatert waren?",
+    "answer": 24,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Schritte geht ein durchschnittlicher Mensch pro Tag in Deutschland?",
+    "answer": 5200,
+    "unit": "Schritte",
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Wie viel Prozent der Menschen haben schon einmal eine „versehentliche“ Nachricht absichtlich geschickt?",
+    "answer": 31,
+    "unit": "%",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Zähne hat ein erwachsener Hund?",
+    "answer": 42,
+    "unit": "Zähne",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Sekunden hält ein Mensch im Schnitt die Luft an (untrainiert)?",
+    "answer": 45,
+    "unit": "Sekunden",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viel Prozent der Menschen schlafen mindestens einmal pro Woche mit Socken ein?",
+    "answer": 33,
+    "unit": "%",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viele Tage dauert die längste bekannte Umarmung laut Guinness-Buch (in Stunden)?",
+    "answer": 36,
+    "unit": "Stunden",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viel Prozent der Paare teilen sich mindestens ein Streaming-Passwort?",
+    "answer": 82,
+    "unit": "%",
+    "cat": "date"
+  },
+  {
+    "q": "Wie viele Kalorien hat ein durchschnittlicher Shot Wodka (40 ml)?",
+    "answer": 90,
+    "unit": "kcal",
+    "cat": "peinlich"
+  },
+  {
+    "q": "Wie viel Prozent der Menschen haben schon einmal nackt geschlafen?",
+    "answer": 52,
+    "unit": "%",
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie viele Gramm wiegt ein standardmäßiger Tischtennisball?",
+    "answer": 2.7,
+    "unit": "g",
+    "cat": "party"
+  },
+  {
+    "q": "Wie viele Meter ist der höchste Bungee-Jump der Welt hoch (Zhangjiajie Glass Bridge)?",
+    "answer": 260,
+    "unit": "m",
+    "cat": "party"
+  }
+]

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>PartyGame · Lobby-Übersicht</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+<style>
+  body { padding: 16px; max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .card { background: #2d2266; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn { background: #1b1340; color: #fff; border: 1px solid rgba(255,255,255,.15); padding: 9px 13px; border-radius: 10px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 14px; }
+  .btn.primary { background: #4b3a9e; border-color: #ffd33d; }
+  .btn.danger { background: #e21b3c; border-color: transparent; }
+  .btn.go { background: #26890c; border-color: transparent; }
+  .code { font-size: 22px; font-weight: 900; letter-spacing: 3px; color: #ffd33d; }
+  .meta { font-size: 13px; opacity: .82; margin: 4px 0 10px; }
+  input { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: #1b1340; color: #fff; font-size: 15px; }
+</style></head>
+<body>
+  <h1><span>🏠 Aktive Lobbys (/rooms)</span>
+    <span class="row">
+      <button class="btn primary" onclick="loadRooms()">🔄 Aktualisieren</button>
+      <button class="btn go" onclick="createRoom()">➕ Neuer Raum</button>
+    </span>
+  </h1>
+  <div id="authBox" class="card" style="display:none">
+    <div style="font-weight:700;margin-bottom:8px">🔐 Host-PIN erforderlich (.host-secret)</div>
+    <div class="row">
+      <input id="pinInp" type="password" placeholder="Host-PIN" style="flex:1;min-width:160px" onkeydown="if(event.key==='Enter')savePin()">
+      <button class="btn primary" onclick="savePin()">Entsperren</button>
+    </div>
+    <div id="authErr" style="color:#ff8fa3;font-size:13px;margin-top:6px"></div>
+  </div>
+  <div id="list"></div>
+<script>
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+let pin = sessionStorage.getItem('pg_rooms_pin') || '';
+
+function savePin() {
+  pin = (document.getElementById('pinInp').value || '').trim();
+  sessionStorage.setItem('pg_rooms_pin', pin);
+  loadRooms();
+}
+
+async function loadRooms() {
+  const authBox = document.getElementById('authBox');
+  const authErr = document.getElementById('authErr');
+  const listEl = document.getElementById('list');
+  if (!pin) { authBox.style.display = 'block'; listEl.innerHTML = ''; return; }
+  try {
+    const res = await fetch('/api/rooms', { headers: { 'x-host-secret': pin } });
+    if (res.status === 401) {
+      authBox.style.display = 'block';
+      authErr.textContent = 'Ungültiger Host-PIN.';
+      listEl.innerHTML = '';
+      return;
+    }
+    authBox.style.display = 'none';
+    authErr.textContent = '';
+    const data = await res.json();
+    const rooms = data.rooms || [];
+    if (!rooms.length) {
+      listEl.innerHTML = '<div class="card" style="opacity:.8;text-align:center">Aktuell keine aktiven Lobbys.</div>';
+      return;
+    }
+    listEl.innerHTML = rooms.map(r => `
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <span class="code">${esc(r.code)}</span>
+          <span style="font-size:13px;opacity:.85">${esc(r.mode)} · ${esc(r.phase)} · ${r.playerCount} Spieler (${r.sockets} verbunden) · Idle: ${r.idleMin}m</span>
+        </div>
+        <div class="meta">Spieler: ${r.players.length ? r.players.map(esc).join(', ') : '—'}</div>
+        <div class="row">
+          <a class="btn" href="/host?room=${encodeURIComponent(r.code)}" target="_blank">📺 TV (/host)</a>
+          <a class="btn primary" href="/admin?room=${encodeURIComponent(r.code)}" target="_blank">🎛️ Admin</a>
+          <a class="btn" href="/?room=${encodeURIComponent(r.code)}" target="_blank">🚪 Beitreten</a>
+          <button class="btn danger" onclick="closeRoom('${esc(r.code)}')">🗑️ Schließen</button>
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    listEl.innerHTML = '<div class="card">Fehler beim Laden.</div>';
+  }
+}
+
+async function createRoom() {
+  const res = await fetch('/api/rooms', { method: 'POST' });
+  const d = await res.json();
+  if (d && d.code) {
+    if (d.hostToken) localStorage.setItem('pg_host_' + d.code, d.hostToken);
+    loadRooms();
+  }
+}
+
+async function closeRoom(code) {
+  await fetch('/api/rooms/' + encodeURIComponent(code), { method: 'DELETE', headers: { 'x-host-secret': pin } });
+  loadRooms();
+}
+
+loadRooms();
+</script>
+</body></html>

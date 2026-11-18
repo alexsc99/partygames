@@ -1,0 +1,892 @@
+[
+  {
+    "q": "Zu welchem Essens-Team gehörst du?",
+    "a": [
+      "🥙 Döner",
+      "🍕 Pizza",
+      "🍝 Pasta",
+      "🌭 Currywurst"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Getränke-Team gehörst du?",
+    "a": [
+      "☕ Kaffee",
+      "🍵 Tee",
+      "🥤 Cola / Limo",
+      "💧 Nur Wasser"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Urlaubs-Team gehörst du?",
+    "a": [
+      "🏖️ Strand & Meer",
+      "⛰️ Berge & Wandern",
+      "🏙️ Städtetrip",
+      "🏕️ Camping"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Frühstücks-Team gehörst du?",
+    "a": [
+      "🥐 Süß",
+      "🍳 Herzhaft",
+      "🥣 Müsli / Bowl",
+      "☕ Nur Kaffee"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Feierabend-Team gehörst du?",
+    "a": [
+      "🎬 Film / Serie",
+      "🎮 Zocken",
+      "🍻 Rausgehen",
+      "📖 Lesen / Chillen"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Jahreszeiten-Team gehörst du?",
+    "a": [
+      "🌸 Frühling",
+      "☀️ Sommer",
+      "🍂 Herbst",
+      "❄️ Winter"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Musik-Team gehörst du?",
+    "a": [
+      "🎸 Rock / Indie",
+      "🎧 Pop / Charts",
+      "🎤 Hip-Hop / Rap",
+      "🎛️ Techno / Elektro"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Tier-Team gehörst du?",
+    "a": [
+      "🐶 Hund",
+      "🐱 Katze",
+      "🐰 Kleintier",
+      "🌿 Lieber keins"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Schlaf-Team gehörst du?",
+    "a": [
+      "🐦 Frühaufsteher",
+      "🦉 Nachteule",
+      "😴 Power-Napper",
+      "☕ Immer müde"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Snack-Team gehörst du?",
+    "a": [
+      "🍿 Popcorn",
+      "🥨 Chips / Salzig",
+      "🍫 Schokolade",
+      "🍓 Obst"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Eis-Team gehörst du?",
+    "a": [
+      "🍫 Schokolade",
+      "🍓 Fruchtig",
+      "🍦 Vanille / Stracciatella",
+      "🌰 Nuss / Pistazie"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Date-Team gehörst du?",
+    "a": [
+      "☕ Café",
+      "🌳 Waldspaziergang",
+      "🍝 Restaurant",
+      "🎳 Aktiv (Bowling etc.)"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Date-Essen-Team gehörst du?",
+    "a": [
+      "🍕 Italienisch",
+      "🍣 Sushi / Asiatisch",
+      "🍔 Burger",
+      "🥗 Tapas / Bowls"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Abend-Team gehörst du beim Date?",
+    "a": [
+      "🌅 Sonnenuntergang",
+      "🎬 Kino / Couch",
+      "🍸 Cocktailbar",
+      "🍳 Gemeinsam kochen"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Ausflug-Team gehörst du?",
+    "a": [
+      "🎡 Rummel / Freizeitpark",
+      "🖼️ Museum / Ausstellung",
+      "🧺 Picknick am See",
+      "🚲 Radtour"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Party-Getränk-Team gehörst du?",
+    "a": [
+      "🍺 Bier",
+      "🍷 Wein / Spritz",
+      "🍹 Cocktails",
+      "🥤 Alkoholfrei"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Ausgeh-Team gehörst du?",
+    "a": [
+      "🍻 Gemütliche Kneipe",
+      "🍸 Cocktailbar",
+      "🕺 Club / Tanzen",
+      "🛋️ Hausparty"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Kater-Essen-Team gehörst du?",
+    "a": [
+      "🥙 Döner",
+      "🍕 Pizza",
+      "🍔 Burger & Pommes",
+      "🥐 Konter-Frühstück"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Zu welchem Freundes-Team gehörst du?",
+    "a": [
+      "🗓️ Der Planer",
+      "🎭 Der Entertainer",
+      "👂 Der Zuhörer",
+      "⏰ Der Zuspätkommer"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Fortbewegungs-Team gehörst du?",
+    "a": [
+      "🚗 Auto",
+      "🚲 Fahrrad",
+      "🚆 Bahn / ÖPNV",
+      "🚶 Zu Fuß"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Kino-Team gehörst du?",
+    "a": [
+      "😂 Komödie",
+      "😱 Thriller / Horror",
+      "🚀 Sci-Fi / Action",
+      "❤️ Romanze / Drama"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Wetter-Team gehörst du?",
+    "a": [
+      "☀️ 30°C & Sonne",
+      "🌤️ 20°C & leicht windig",
+      "🌧️ Gemütlicher Regen",
+      "❄️ Schnee & Kälte"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Sonntags-Team gehörst du?",
+    "a": [
+      "🛌 Ausschlafen bis mittags",
+      "🥐 Großes Frühstück",
+      "🌲 Raus in die Natur",
+      "🧹 Wohnung aufräumen"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Pizza-Belag-Team gehörst du?",
+    "a": [
+      "🧀 Margherita",
+      "🍖 Salami / Schinken",
+      "🥬 Rucola / Gemüse",
+      "🍍 Hawaii (mit Ananas!)"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Serien-Team gehörst du?",
+    "a": [
+      "🍿 Alles an einem Wochenende",
+      "📺 1 Folge pro Abend",
+      "🔁 Immer wieder die Lieblingsserie",
+      "🚫 Schaue kaum Serien"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Kaffee-Team gehörst du?",
+    "a": [
+      "☕ Schwarz / Espresso",
+      "🥛 Cappuccino / Latte",
+      "🧊 Iced Coffee",
+      "🍵 Gar kein Kaffee"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Date-Dessert-Team gehörst du?",
+    "a": [
+      "🍨 Eisbecher",
+      "🍰 Kuchen / Tiramisu",
+      "🧇 Waffeln / Crêpes",
+      "🍓 Lieber was Herzhaftes"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Spieleabend-Team gehörst du?",
+    "a": [
+      "🃏 Kartenspiele",
+      "🎲 Brettspiele",
+      "🎮 Konsole / Party-Games",
+      "🗣️ Nur quatschen"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Tanz-Team gehörst du?",
+    "a": [
+      "🕺 Mitten auf der Fläche",
+      "🍹 Erst nach 2 Drinks",
+      "🎶 Wippe nur mit dem Kopf",
+      "🪑 Bleibe sitzen"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Welcher Mitternachts-Snack rettet die Party?",
+    "a": [
+      "🥙 Döner",
+      "🍕 Pizza",
+      "🍟 Pommes",
+      "🥨 Chips & Dips"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Welche Musik darf auf keiner Party fehlen?",
+    "a": [
+      "🎸 90er/2000er Hits",
+      "🎧 Techno / Electro",
+      "🎤 Deutschrap / Hip-Hop",
+      "💃 Schlager & Mitsing-Hits"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Wo stehst du auf einer Hausparty meistens?",
+    "a": [
+      "🍳 In der Küche",
+      "💃 Auf der Tanzfläche",
+      "🛋️ Auf dem Sofa",
+      "🌿 Auf dem Balkon"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Welches Trinkspiel ist am besten?",
+    "a": [
+      "🏓 Bierpong",
+      "🃏 Busfahrer",
+      "👑 Kings Cup",
+      "🎲 Einfach frei trinken"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Wann gehst du meistens nach Hause?",
+    "a": [
+      "🕚 Früh & vernünftig",
+      "🕐 Nach dem Höhepunkt",
+      "🕒 Mit dem letzten Bus",
+      "🌅 Wenn die Sonne aufgeht"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Wie bereitest du dich auf eine lange Nacht vor?",
+    "a": [
+      "🍝 Ordentlich vorher essen",
+      "😴 Powernap machen",
+      "☕ Espresso / Energy",
+      "🚀 Gar nicht, einfach los"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Was ist das beste Kater-Frühstück?",
+    "a": [
+      "🥓 Rührei & Speck",
+      "🍕 Kalte Pizza von gestern",
+      "💊 Ibuprofen & Wasser",
+      "🥗 Alles nur kein Fett"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was bereust du am nächsten Morgen am meisten?",
+    "a": [
+      "📱 Peinliche Nachrichten",
+      "🎤 Karaoke-Auftritt",
+      "💸 Kontostand checken",
+      "🕺 Tanzvideos auf Insta"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welche Ausrede nutzt du fürs Absagen am liebsten?",
+    "a": [
+      "🤒 „Fühl mich etwas kränklich“",
+      "😴 „Bin komplett platt“",
+      "📅 „Total vergessen, hab schon was“",
+      "👻 Gar nicht erst antworten"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was passiert bei dir nach dem dritten Drink?",
+    "a": [
+      "🗣️ Rede mit jedem Fremden",
+      "💃 Tanze wie ein Weltmeister",
+      "📸 Mache peinliche Selfies",
+      "😴 Werd langsam müde"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welcher Typ bist du bei peinlichen Momenten?",
+    "a": [
+      "😂 Einfach drüber lachen",
+      "🍅 Sofort knallrot werden",
+      "🏃 Schnell Thema wechseln",
+      "🙈 So tun als wär nichts gewesen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was hast du schon mal im Suff verloren?",
+    "a": [
+      "🔑 Schlüssel",
+      "📱 Handy",
+      "🧥 Jacke",
+      "🧠 Meine Würde"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Welcher Song zwingt dich peinlicherweise immer zum Mitsingen?",
+    "a": [
+      "👑 Bohemian Rhapsody",
+      "💃 Atemlos",
+      "🎤 Skandal im Sperrbezirk",
+      "🕺 Backstreet Boys"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist dein peinlichstes Hobby / Guilty Pleasure?",
+    "a": [
+      "📺 Trash-TV schauen",
+      "🎮 Nächtelang zocken",
+      "📱 Stundenlang Reels scrollen",
+      "🎤 Unter der Dusche Konzerte geben"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Was ist die größte Red Flag beim ersten Date?",
+    "a": [
+      "📱 Dauernd am Handy",
+      "🗣️ Redet nur über den/die Ex",
+      "😒 Unhöflich zum Personal",
+      "⏰ 30 Minuten zu spät ohne Nachricht"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Wo würdest du am liebsten jemanden kennenlernen?",
+    "a": [
+      "☕ Im Café / Alltag",
+      "🎉 Auf einer Hausparty",
+      "📱 Über eine Dating-App",
+      "✈️ Im Urlaub"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Wer sollte beim ersten Date zahlen?",
+    "a": [
+      "🤝 Geteilt (50/50)",
+      "💌 Wer eingeladen hat",
+      "🍽️ Einer zahlt Essen, der andere Drinks",
+      "🎁 Ich lade gerne ein"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Was macht ein Date sofort unvergesslich?",
+    "a": [
+      "😂 Non-stop lachen",
+      "🌅 Gemeinsamer Sonnenuntergang",
+      "🍕 Spontane Planänderung",
+      "💬 Deep Talk bis spät nachts"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Wie schnell merkst du, ob es funkt?",
+    "a": [
+      "⚡ In den ersten 5 Minuten",
+      "☕ Nach dem ersten Date",
+      "📅 Erst nach 2–3 Treffen",
+      "🐢 Brauche lange Vertrauen"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Wann bist du am ehesten in Stimmung?",
+    "a": [
+      "☀️ Direkt morgens",
+      "🌆 Nachmittags spontan",
+      "🌙 Spät abends",
+      "🎉 Nach einer Party"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Welche Beleuchtung ist ideal?",
+    "a": [
+      "🕯️ Nur Kerzenlicht",
+      "💡 Gedimmtes Licht",
+      "☀️ Gerne komplett hell",
+      "🌑 Komplett dunkel"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Was ist der beste Flirt-Move?",
+    "a": [
+      "👀 Intensiver Blickkontakt",
+      "😏 Frecher Spruch",
+      "🥂 Auf einen Drink einladen",
+      "💃 Zusammen tanzen"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Was ist ein absolutes No-Go im Schlafzimmer?",
+    "a": [
+      "🧦 Socken anlassen",
+      "📱 Handy checken",
+      "🐱 Haustier guckt zu",
+      "⏰ Auf die Uhr schauen"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Wo wäre ein Date-Abend am spannendsten?",
+    "a": [
+      "🏨 Schickes Hotel",
+      "🛁 Wellness & Sauna",
+      "🏖️ Einsamer Strand",
+      "🏠 Ganz klassisch zuhause"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Was zählt für dich am meisten bei Anziehung?",
+    "a": [
+      "🧠 Humor & Ausstrahlung",
+      "👀 Blick & Lächeln",
+      "🗣️ Stimme & Geruch",
+      "💪 Körperliche Fitness"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Wie wichtig ist dir Spontaneität in der Liebe?",
+    "a": [
+      "🔥 Extrem wichtig!",
+      "👌 Gute Mischung aus Plan & spontan",
+      "📅 Lieber entspannt & geplant",
+      "🤷 Kommt auf die Person an"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Welcher Kuss-Typ bist du?",
+    "a": [
+      "💋 Leidenschaftlich & lang",
+      "😘 Verspielt & neckend",
+      "⚡ Spontan zwischendurch",
+      "💘 Sanft & romantisch"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Zu welchem Pasta-Team gehörst du?",
+    "a": [
+      "🍝 Carbonara",
+      "🍅 Bolognese",
+      "🌿 Pesto",
+      "🧀 Mac & Cheese"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Reise-Team gehörst du?",
+    "a": [
+      "🏖️ Strand & Pool",
+      "🏔️ Berge & Wandern",
+      "🏙️ Städtetrip",
+      "🚐 Roadtrip"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Haustier-Team gehörst du?",
+    "a": [
+      "🐶 Hund",
+      "🐱 Katze",
+      "🐠 Aquarium / Reptil",
+      "🚫 Gar keins"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Superkraft-Team gehörst du?",
+    "a": [
+      "✈️ Fliegen",
+      "👻 Unsichtbar",
+      "⏳ Zeitreisen",
+      "🧠 Gedanken lesen"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Festival-Team gehörst du?",
+    "a": [
+      "⛺ Vorne in der Menge",
+      "🍻 Am Bierstand",
+      "🛋️ Chillout-Area",
+      "🏠 Lieber zuhause"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Shot-Team gehörst du?",
+    "a": [
+      "🍋 Tequila",
+      "🦌 Jägermeister",
+      "🍒 Berliner Luft",
+      "🚫 Lieber Longdrink"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Club-Team gehörst du?",
+    "a": [
+      "💃 Dauer-Tanzer",
+      "🍹 Bar-Stammgast",
+      "🗣️ Raucherbereich-Talker",
+      "🚕 Um 1 Uhr weg"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Karaoke-Team gehörst du?",
+    "a": [
+      "🎤 Rampensau",
+      "👯 Nur im Duett",
+      "👏 Klatschen reicht",
+      "🙈 Niemals!"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Burger-Team gehörst du?",
+    "a": [
+      "🍔 Classic Cheeseburger",
+      "🥓 Bacon BBQ",
+      "🌱 Veggie / Vegan",
+      "🍗 Crispy Chicken"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Peinlich-Chat-Team gehörst du?",
+    "a": [
+      "🗑️ Schnell löschen",
+      "😅 Drüber lachen",
+      "🫥 Handy weglegen",
+      "📱 Noch schlimmer erklären"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Zu welchem Kater-Morgen-Team gehörst du?",
+    "a": [
+      "🛌 Bis 16 Uhr schlafen",
+      "🍕 Pizza bestellen",
+      "🏃 Direkt Sport (Psycho)",
+      "💊 Elotrans & Wasser"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Zu welchem Handy-Akku-Team gehörst du?",
+    "a": [
+      "🔋 Immer über 80 %",
+      "⚡ Lebt am Ladekabel",
+      "🪫 Dauerhaft 3 %",
+      "🔌 Powerbank-Profi"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Zu welchem Wecker-Team gehörst du?",
+    "a": [
+      "⏰ 1 Wecker reicht",
+      "🔁 5x Schlummern",
+      "📱 15 Wecker im 2-Min-Takt",
+      "☀️ Wach vor dem Wecker"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Zu welchem Gruppenarbeit-Team gehörst du?",
+    "a": [
+      "👑 Alles selbst machen",
+      "🎨 Präsentation designen",
+      "🗣️ Nur vorstellen",
+      "👻 Erst am Abgabetag da"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Zu welchem 1.-Date-Team gehörst du?",
+    "a": [
+      "☕ Entspannter Kaffee",
+      "🍷 Weinbar am Abend",
+      "🎳 Bowling / Aktivität",
+      "🍝 Direkt richtig essen"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Flirt-Typ-Team gehörst du?",
+    "a": [
+      "😏 Sarkastisch necken",
+      "😊 Süße Komplimente",
+      "👀 Nur Blickkontakt",
+      "🧱 Checke gar nichts"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Kuschel-Team gehörst du?",
+    "a": [
+      "🥄 Großer Löffel",
+      "🥄 Kleiner Löffel",
+      "🐙 Oktopus (alles berühren)",
+      "🛌 Jeder seine Seite"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Date-Bezahl-Team gehörst du?",
+    "a": [
+      "💳 Ich lade ein",
+      "🤝 50/50 teilen",
+      "🔄 Abwechselnd",
+      "☕ Einer Kaffee, einer Kuchen"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Romantik-Film-Team gehörst du?",
+    "a": [
+      "😭 Taschentücher bereit",
+      "😂 Rom-Com muss lustig sein",
+      "🎬 Lieber Thriller/Action",
+      "🍿 Hauptsache kuscheln"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Hot-18+-Start-Team gehörst du?",
+    "a": [
+      "🕯️ Langsam & sinnlich",
+      "🔥 Direkt zur Sache",
+      "🍷 Erst ein Glas Wein",
+      "😏 Spielerei & Teasing"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Zu welchem Morgen-Danach-Team gehörst du?",
+    "a": [
+      "☕ Gemeinsam frühstücken",
+      "🥐 Brötchen holen",
+      "🛏️ Nochmal umdrehen",
+      "🏃 Schnell verabschieden"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Zu welchem Licht-Team gehörst du?",
+    "a": [
+      "🌑 Komplett dunkel",
+      "🕯️ Kerzen / Dimmer",
+      "💡 Warmes Licht",
+      "☀️ Egal, Hauptsache Stimmung"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Zu welchem Musik-beim-Knutschen-Team gehörst du?",
+    "a": [
+      "🎵 R&B / Chill",
+      "🔥 Hip-Hop / Bass",
+      "🤫 Lieber komplett still",
+      "📺 Netflix läuft im Hintergrund"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Zu welchem Mutprobe-Team gehörst du?",
+    "a": [
+      "😈 Immer Pflicht",
+      "😇 Immer Wahrheit",
+      "🍻 Lieber trinken",
+      "👀 Nur zuschauen"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Zu welchem Versteck-Ort-Team gehörst du (18+)?",
+    "a": [
+      "🚗 Rückbank",
+      "🏖️ Einsamer Strand",
+      "🛁 Badewanne / Dusche",
+      "🛏️ Klassisch im Bett"
+    ],
+    "cat": "hot18"
+  },
+  {
+    "q": "Zu welchem Sommer-Drink-Team gehörst du?",
+    "a": [
+      "🍹 Aperol Spritz",
+      "🍋 Gin Tonic",
+      "🍺 Kaltes Radler",
+      "🍓 Erdbeer-Limes"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Weihnachtsmarkt-Team gehörst du?",
+    "a": [
+      "🍷 Roter Glühwein",
+      "🍏 Heißer Apfelwein",
+      "🍫 Kakao mit Schuss",
+      "🌰 Nur gebrannte Mandeln"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Gaming-Team gehörst du?",
+    "a": [
+      "🎮 Konsole (Couch)",
+      "🖥️ PC Masterrace",
+      "📱 Handy-Games",
+      "🎲 Lieber Brettspiele"
+    ],
+    "cat": "kennenlernen"
+  },
+  {
+    "q": "Zu welchem Einkaufs-Team gehörst du?",
+    "a": [
+      "📝 Strikt mit Liste",
+      "🛒 Alles was lecker aussieht",
+      "📦 Alles online",
+      "🤷 Immer irgendwas vergessen"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Zu welchem Kino-Snack-Team gehörst du?",
+    "a": [
+      "🍿 Süßes Popcorn",
+      "🧂 Salziges Popcorn",
+      "🧀 Nachos mit Käse",
+      "🍬 Eingeschmuggelte Süßigkeiten"
+    ],
+    "cat": "date"
+  },
+  {
+    "q": "Zu welchem Nachrichten-Team gehörst du?",
+    "a": [
+      "⚡ Antwort in 3 Sekunden",
+      "🗣️ 5-Minuten-Sprachnachricht",
+      "👻 Erst nach 3 Tagen",
+      "👍 Nur Daumen-hoch-Emoji"
+    ],
+    "cat": "peinlich"
+  },
+  {
+    "q": "Zu welchem Silvester-Team gehörst du?",
+    "a": [
+      "🥂 Schick mit Fondue/Raclette",
+      "🎉 Große Club-Party",
+      "🛋️ Gemütlich auf der Couch",
+      "🏔️ Hütte mit Freunden"
+    ],
+    "cat": "party"
+  },
+  {
+    "q": "Zu welchem Liebes-Sprachen-Team gehörst du?",
+    "a": [
+      "🤗 Körperliche Nähe",
+      "💬 Komplimente & Worte",
+      "🎁 Kleine Geschenke",
+      "⏳ Gemeinsame Zeit"
+    ],
+    "cat": "date"
+  }
+]

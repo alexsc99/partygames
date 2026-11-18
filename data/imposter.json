@@ -1,0 +1,352 @@
+[
+  {
+    "a": "Strand",
+    "b": "Schwimmbad",
+    "cat": "party"
+  },
+  {
+    "a": "Pizza",
+    "b": "Flammkuchen",
+    "cat": "party"
+  },
+  {
+    "a": "Kino",
+    "b": "Theater",
+    "cat": "party"
+  },
+  {
+    "a": "DJ",
+    "b": "Liveband",
+    "cat": "party"
+  },
+  {
+    "a": "Konfetti",
+    "b": "Glitzer",
+    "cat": "party"
+  },
+  {
+    "a": "Karaoke",
+    "b": "Playback",
+    "cat": "party"
+  },
+  {
+    "a": "Festival",
+    "b": "Konzert",
+    "cat": "party"
+  },
+  {
+    "a": "Luftballon",
+    "b": "Seifenblase",
+    "cat": "party"
+  },
+  {
+    "a": "Gitarre",
+    "b": "Klavier",
+    "cat": "party"
+  },
+  {
+    "a": "Schokolade",
+    "b": "Gummibärchen",
+    "cat": "party"
+  },
+  {
+    "a": "Kaffee",
+    "b": "Tee",
+    "cat": "party"
+  },
+  {
+    "a": "Hund",
+    "b": "Katze",
+    "cat": "party"
+  },
+  {
+    "a": "Camping",
+    "b": "Hotel",
+    "cat": "party"
+  },
+  {
+    "a": "Fahrrad",
+    "b": "E-Scooter",
+    "cat": "party"
+  },
+  {
+    "a": "WG-Party",
+    "b": "Geburtstag",
+    "cat": "party"
+  },
+  {
+    "a": "Umarmung",
+    "b": "High-Five",
+    "cat": "party"
+  },
+  {
+    "a": "Flugzeug",
+    "b": "Zug",
+    "cat": "party"
+  },
+  {
+    "a": "Fußball",
+    "b": "Handball",
+    "cat": "party"
+  },
+  {
+    "a": "Supermarkt",
+    "b": "Wochenmarkt",
+    "cat": "party"
+  },
+  {
+    "a": "Geheimnis",
+    "b": "Gerücht",
+    "cat": "party"
+  },
+  {
+    "a": "Ausrede",
+    "b": "Lüge",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Strafzettel",
+    "b": "Mahnung",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Wecker",
+    "b": "Klingelton",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Peinlich",
+    "b": "Unangenehm",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Sonnenbrille",
+    "b": "Lesebrille",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Polizei",
+    "b": "Feuerwehr",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Krankenhaus",
+    "b": "Arztpraxis",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Bäckerei",
+    "b": "Konditorei",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Restaurant",
+    "b": "Imbiss",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Tagebuch",
+    "b": "Notizzettel",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Bier",
+    "b": "Wein",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Kneipe",
+    "b": "Club",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Kater",
+    "b": "Kopfschmerz",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Döner",
+    "b": "Currywurst",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Türsteher",
+    "b": "Barkeeper",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Schnaps",
+    "b": "Likör",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Cocktail",
+    "b": "Longdrink",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Sekt",
+    "b": "Champagner",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Filmriss",
+    "b": "Blackout",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Vorglühen",
+    "b": "Afterhour",
+    "cat": "peinlich"
+  },
+  {
+    "a": "Flirt",
+    "b": "Date",
+    "cat": "hot18"
+  },
+  {
+    "a": "Kuss",
+    "b": "Knutschfleck",
+    "cat": "hot18"
+  },
+  {
+    "a": "Dessous",
+    "b": "Bikini",
+    "cat": "hot18"
+  },
+  {
+    "a": "Tinder",
+    "b": "Bumble",
+    "cat": "hot18"
+  },
+  {
+    "a": "One-Night-Stand",
+    "b": "Affäre",
+    "cat": "hot18"
+  },
+  {
+    "a": "Massage",
+    "b": "Streicheln",
+    "cat": "hot18"
+  },
+  {
+    "a": "Handschellen",
+    "b": "Augenbinde",
+    "cat": "hot18"
+  },
+  {
+    "a": "Kerzenschein",
+    "b": "Whirlpool",
+    "cat": "hot18"
+  },
+  {
+    "a": "Kompliment",
+    "b": "Anmachspruch",
+    "cat": "hot18"
+  },
+  {
+    "a": "Ex-Freund",
+    "b": "Schwarm",
+    "cat": "hot18"
+  },
+  {
+    "a": "Frühstück",
+    "b": "Brunch",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Hobby",
+    "b": "Beruf",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Kindheit",
+    "b": "Jugend",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Traumjob",
+    "b": "Karriere",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Lieblingsfilm",
+    "b": "Lieblingsserie",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Heimat",
+    "b": "Zuhause",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Sonntag",
+    "b": "Feiertag",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Urlaub",
+    "b": "Wochenende",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Geburtstag",
+    "b": "Jubiläum",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Buch",
+    "b": "Podcast",
+    "cat": "kennenlernen"
+  },
+  {
+    "a": "Candlelight-Dinner",
+    "b": "Picknick",
+    "cat": "date"
+  },
+  {
+    "a": "Sonnenuntergang",
+    "b": "Sternenhimmel",
+    "cat": "date"
+  },
+  {
+    "a": "Blumenstrauß",
+    "b": "Pralinen",
+    "cat": "date"
+  },
+  {
+    "a": "Händchenhalten",
+    "b": "Umarmung",
+    "cat": "date"
+  },
+  {
+    "a": "Kino",
+    "b": "Autokino",
+    "cat": "date"
+  },
+  {
+    "a": "Kompliment",
+    "b": "Liebesbrief",
+    "cat": "date"
+  },
+  {
+    "a": "Rotwein",
+    "b": "Prosecco",
+    "cat": "date"
+  },
+  {
+    "a": "Spaziergang",
+    "b": "Bootsfahrt",
+    "cat": "date"
+  },
+  {
+    "a": "Schmetterlinge",
+    "b": "Herzklopfen",
+    "cat": "date"
+  },
+  {
+    "a": "Erstes Date",
+    "b": "Jahrestag",
+    "cat": "date"
+  }
+]

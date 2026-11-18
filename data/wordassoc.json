@@ -1,0 +1,346 @@
+[
+  {
+    "w": "Sonntag",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Kindheit",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Urlaub",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Kaffee",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Zuhause",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Freiheit",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Musik",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Regen",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Erstes Date",
+    "cat": "date"
+  },
+  {
+    "w": "Sonnenuntergang",
+    "cat": "date"
+  },
+  {
+    "w": "Romantik",
+    "cat": "date"
+  },
+  {
+    "w": "Kerzenschein",
+    "cat": "date"
+  },
+  {
+    "w": "Picknick",
+    "cat": "date"
+  },
+  {
+    "w": "Schmetterlinge",
+    "cat": "date"
+  },
+  {
+    "w": "Freitagabend",
+    "cat": "party"
+  },
+  {
+    "w": "Festival",
+    "cat": "party"
+  },
+  {
+    "w": "Karaoke",
+    "cat": "party"
+  },
+  {
+    "w": "Mitternacht",
+    "cat": "party"
+  },
+  {
+    "w": "Vertrauen",
+    "cat": "party"
+  },
+  {
+    "w": "Roadtrip",
+    "cat": "party"
+  },
+  {
+    "w": "Lachen",
+    "cat": "party"
+  },
+  {
+    "w": "Kater",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Döner um 4 Uhr",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Flirten",
+    "cat": "hot18"
+  },
+  {
+    "w": "Abenteuer",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Frühling",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Lieblingsort",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Schokolade",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Kino",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Berge",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Meer",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Feierabend",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Waldspaziergang",
+    "cat": "date"
+  },
+  {
+    "w": "Sternenhimmel",
+    "cat": "date"
+  },
+  {
+    "w": "Frühstück",
+    "cat": "date"
+  },
+  {
+    "w": "Italien",
+    "cat": "date"
+  },
+  {
+    "w": "Lagerfeuer",
+    "cat": "party"
+  },
+  {
+    "w": "Spieleabend",
+    "cat": "party"
+  },
+  {
+    "w": "Konfetti",
+    "cat": "party"
+  },
+  {
+    "w": "Sommerabend",
+    "cat": "party"
+  },
+  {
+    "w": "Nachtleben",
+    "cat": "hot18"
+  },
+  {
+    "w": "Verbotenes",
+    "cat": "hot18"
+  },
+  {
+    "w": "Versuchung",
+    "cat": "hot18"
+  },
+  {
+    "w": "One-Night-Stand",
+    "cat": "hot18"
+  },
+  {
+    "w": "Knutschfleck",
+    "cat": "hot18"
+  },
+  {
+    "w": "Fremdscham",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Ausrede",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Sprachnachricht",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Blackout",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Erwischt",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Stolpern",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Notlüge",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Fantasie",
+    "cat": "hot18"
+  },
+  {
+    "w": "Verführung",
+    "cat": "hot18"
+  },
+  {
+    "w": "Hotelzimmer",
+    "cat": "hot18"
+  },
+  {
+    "w": "Leidenschaft",
+    "cat": "hot18"
+  },
+  {
+    "w": "Geheimnis",
+    "cat": "hot18"
+  },
+  {
+    "w": "Nackt",
+    "cat": "hot18"
+  },
+  {
+    "w": "Knisternd",
+    "cat": "hot18"
+  },
+  {
+    "w": "Herzklopfen",
+    "cat": "date"
+  },
+  {
+    "w": "Kompliment",
+    "cat": "date"
+  },
+  {
+    "w": "Zweisamkeit",
+    "cat": "date"
+  },
+  {
+    "w": "Seelenverwandt",
+    "cat": "date"
+  },
+  {
+    "w": "Champagner",
+    "cat": "party"
+  },
+  {
+    "w": "Afterparty",
+    "cat": "party"
+  },
+  {
+    "w": "Bierpong",
+    "cat": "party"
+  },
+  {
+    "w": "Stammkneipe",
+    "cat": "party"
+  },
+  {
+    "w": "DJ-Pult",
+    "cat": "party"
+  },
+  {
+    "w": "Freundeskreis",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Heimat",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Zukunft",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Gewohnheit",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Nostalgie",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Traumjob",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Herzrasen",
+    "cat": "date"
+  },
+  {
+    "w": "Blickkontakt",
+    "cat": "date"
+  },
+  {
+    "w": "Kinoabend",
+    "cat": "date"
+  },
+  {
+    "w": "Händchenhalten",
+    "cat": "date"
+  },
+  {
+    "w": "Verliebt",
+    "cat": "date"
+  },
+  {
+    "w": "Überraschung",
+    "cat": "date"
+  },
+  {
+    "w": "Chatverlauf",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Montagmorgen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Fettnäpfchen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Nachtschicht",
+    "cat": "hot18"
+  },
+  {
+    "w": "Flüstern",
+    "cat": "hot18"
+  },
+  {
+    "w": "Badewanne",
+    "cat": "hot18"
+  }
+]

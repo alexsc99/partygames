@@ -1,0 +1,322 @@
+[
+  {
+    "w": "Pizza",
+    "cat": "party"
+  },
+  {
+    "w": "Gitarre",
+    "cat": "party"
+  },
+  {
+    "w": "Geburtstagstorte",
+    "cat": "party"
+  },
+  {
+    "w": "Popcorn",
+    "cat": "party"
+  },
+  {
+    "w": "Diskokugel",
+    "cat": "party"
+  },
+  {
+    "w": "Konfetti",
+    "cat": "party"
+  },
+  {
+    "w": "Luftballon",
+    "cat": "party"
+  },
+  {
+    "w": "Mikrofon",
+    "cat": "party"
+  },
+  {
+    "w": "Achterbahn",
+    "cat": "party"
+  },
+  {
+    "w": "Krone",
+    "cat": "party"
+  },
+  {
+    "w": "Sonnenuntergang",
+    "cat": "party"
+  },
+  {
+    "w": "Feuerwerk",
+    "cat": "party"
+  },
+  {
+    "w": "Lagerfeuer",
+    "cat": "party"
+  },
+  {
+    "w": "Kaffeemaschine",
+    "cat": "party"
+  },
+  {
+    "w": "Umarmung",
+    "cat": "party"
+  },
+  {
+    "w": "Picknick",
+    "cat": "party"
+  },
+  {
+    "w": "Eiffelturm",
+    "cat": "party"
+  },
+  {
+    "w": "Flugzeug",
+    "cat": "party"
+  },
+  {
+    "w": "Känguru",
+    "cat": "party"
+  },
+  {
+    "w": "Dinosaurier",
+    "cat": "party"
+  },
+  {
+    "w": "Roboter",
+    "cat": "party"
+  },
+  {
+    "w": "Schneemann",
+    "cat": "party"
+  },
+  {
+    "w": "Leuchtturm",
+    "cat": "party"
+  },
+  {
+    "w": "Zelt",
+    "cat": "party"
+  },
+  {
+    "w": "Feuerwehr",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Kaktus",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Ampel",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Waschmaschine",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Regenschirm",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Fallschirm",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Strafzettel",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Wecker",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Tagebuch",
+    "cat": "peinlich"
+  },
+  {
+    "w": "U-Boot",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Pirat",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Schlüssel",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Bierkrug",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Cocktail",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Döner",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Schnapsglas",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Weinflasche",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Korkenzieher",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Einkaufswagen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Verkehrsschild",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Bett",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Kopfschmerz",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Taxi",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Kühlschrank",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Lippenstift",
+    "cat": "hot18"
+  },
+  {
+    "w": "Herz",
+    "cat": "hot18"
+  },
+  {
+    "w": "Handschellen",
+    "cat": "hot18"
+  },
+  {
+    "w": "Champagner",
+    "cat": "hot18"
+  },
+  {
+    "w": "Bikini",
+    "cat": "hot18"
+  },
+  {
+    "w": "Kerze",
+    "cat": "hot18"
+  },
+  {
+    "w": "Kussmund",
+    "cat": "hot18"
+  },
+  {
+    "w": "Rose",
+    "cat": "hot18"
+  },
+  {
+    "w": "Whirlpool",
+    "cat": "hot18"
+  },
+  {
+    "w": "High Heels",
+    "cat": "hot18"
+  },
+  {
+    "w": "Augenbinde",
+    "cat": "hot18"
+  },
+  {
+    "w": "Liebesbrief",
+    "cat": "hot18"
+  },
+  {
+    "w": "Reisepass",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Kaffeetasse",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Kopfhörer",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Fahrrad",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Kamera",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Weltkarte",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Couch",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Kochtopf",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Rucksack",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Tagebuch",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Blumenstrauß",
+    "cat": "date"
+  },
+  {
+    "w": "Candlelight-Dinner",
+    "cat": "date"
+  },
+  {
+    "w": "Schmetterling",
+    "cat": "date"
+  },
+  {
+    "w": "Kinokarte",
+    "cat": "date"
+  },
+  {
+    "w": "Picknickdecke",
+    "cat": "date"
+  },
+  {
+    "w": "Riesenrad",
+    "cat": "date"
+  },
+  {
+    "w": "Pralinen",
+    "cat": "date"
+  },
+  {
+    "w": "Liebesschloss",
+    "cat": "date"
+  },
+  {
+    "w": "Sternschnuppe",
+    "cat": "date"
+  },
+  {
+    "w": "Eisbecher",
+    "cat": "date"
+  }
+]
