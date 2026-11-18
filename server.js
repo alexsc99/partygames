@@ -342,7 +342,7 @@ function validRoomToken(val) {
 
 let state = freshState('quiz');
 let activeCategories = ['party', 'peinlich', 'kennenlernen'];
-let roundLimit = 0; // 0 = Alle, sonst 5 / 10 / 15
+let roundLimit = 10; // 0 = Alle, sonst 5 / 10 / 15 – Standard 10, sonst dauert z. B. das Quiz 70+ Runden
 let teamMode = false;
 let displayMode = 'tv'; // 'tv' | 'notv' | 'onedevice'
 let songLangs = { en: true, de: true };
@@ -435,6 +435,7 @@ function freshState(mode) {
 }
 
 const pVals = () => Object.values(players);
+const pickOf = p => ({ name: p.name, avatar: p.avatar || '😎' });
 const norm = s => String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 const activeMode = () => (state.mode === 'mix' && state.subMode ? state.subMode : state.mode);
 
@@ -536,7 +537,7 @@ function filteredIndices(mode) {
 const totalRounds = () => {
   let n;
   if (state.mode === 'reaction') n = REACTION_ROUNDS;
-  else if (state.mode === 'mix') n = mixRounds;
+  else if (state.mode === 'mix') return mixRounds; // Party-Mix hat eigene Rundenwahl (8/12/16)
   else if (state.mode === 'truthlie') n = state.phase === 'lobby' ? Math.max(pVals().length, 3) : Math.max(state.order.length, 1);
   else if (state.order.length && state.phase !== 'lobby') n = state.order.length;
   else n = filteredIndices(state.mode).length;
@@ -1229,11 +1230,16 @@ function showResult() {
       }
     });
     const counts = q.a.map((_, i) => ps.filter(p => p.answer === i).length);
-    state.result = { correct: q.c, counts };
+    const pickers = q.a.map((_, i) => ps.filter(p => p.answer === i).map(pickOf));
+    state.result = { correct: q.c, counts, pickers };
   } else if (m === 'mostlikely') {
     const counts = Object.fromEntries(ps.map(p => [p.name, 0]));
     ps.forEach(p => { if (typeof p.answer === 'string' && counts[p.answer] !== undefined) counts[p.answer]++; });
-    const votes = Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+    const votes = Object.entries(counts).map(([name, count]) => ({
+      name, count,
+      avatar: (ps.find(p => p.name === name) || {}).avatar || '😎',
+      by: ps.filter(p => p.answer === name).map(pickOf),
+    })).sort((a, b) => b.count - a.count);
     const max = votes[0]?.count || 0;
     const winners = max > 0 ? votes.filter(v => v.count === max).map(v => v.name) : [];
     ps.forEach(p => { if (winners.includes(p.name)) { p.drinks++; p.score++; } });
@@ -1398,7 +1404,8 @@ function showResult() {
       if (drinkers.includes(p.name)) p.drinks++;
     });
     const counts = state.tlStatements.map((_, i) => guessers.filter(p => p.answer === i).length);
-    state.result = { lieIdx: state.tlLieIdx, caughtBy, drinkers, counts, storyteller: state.storytellerName };
+    const pickers = state.tlStatements.map((_, i) => guessers.filter(p => p.answer === i).map(pickOf));
+    state.result = { lieIdx: state.tlLieIdx, caughtBy, drinkers, counts, pickers, storyteller: state.storytellerName };
     autoNextMs = 9000;
   } else if (m === 'wordassoc') {
     const entries = ps.map(p => ({
@@ -1419,7 +1426,8 @@ function showResult() {
       }
     });
     const counts = sq.a.map((_, i) => ps.filter(p => p.answer === i).length);
-    state.result = { correct: sq.c, counts, artist: sq.artist, title: sq.title, year: sq.year, type: sq.type, art: sq.art };
+    const pickers = sq.a.map((_, i) => ps.filter(p => p.answer === i).map(pickOf));
+    state.result = { correct: sq.c, counts, pickers, artist: sq.artist, title: sq.title, year: sq.year, type: sq.type, art: sq.art };
     autoNextMs = 12000;
     const nextSongIdx = state.idx + 1 < totalRounds()
       ? (state.mode === 'songquiz'

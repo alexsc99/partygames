@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><title>Party-Admin</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#1b1340">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css">
 <style>
- body { padding: 16px; max-width: 540px; margin: 0 auto; }
+ body { padding: 16px; padding-bottom: calc(128px + env(safe-area-inset-bottom)); max-width: 540px; margin: 0 auto; }
  h1 { font-size: 22px; margin: 0 0 12px; display: flex; justify-content: space-between; align-items: center; }
  .card { background: #2d2266; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
  .label { font-size: 12px; opacity: .75; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
@@ -26,21 +26,49 @@
  .kick { background: #e21b3c; padding: 5px 10px; font-size: 13px; border-radius: 8px; margin-left: 8px; }
  .badge { font-size: 12px; background: #4b3a9e; padding: 4px 10px; border-radius: 20px; }
  #adminConnBanner { display: none; position: sticky; top: 8px; z-index: 90; background: rgba(226,27,60,.94); color: #fff; font-weight: 700; font-size: 13px; padding: 9px 12px; border-radius: 10px; margin-bottom: 10px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+ /* Einklappbare Einstellungs-Gruppen */
+ details.grp { padding: 0; }
+ details.grp > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 14px; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; border-radius: 14px; }
+ details.grp > summary::-webkit-details-marker { display: none; }
+ details.grp > summary::after { content: '▾'; flex-shrink: 0; font-size: 14px; opacity: .65; transition: transform .2s ease; }
+ details.grp[open] > summary::after { transform: rotate(180deg); }
+ details.grp > summary:focus-visible { outline: 2px solid #ffd33d; outline-offset: -2px; }
+ .gt { font-weight: 700; font-size: 15px; flex-shrink: 0; }
+ .gs { margin-left: auto; min-width: 0; font-size: 13px; opacity: .7; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ .gb { padding: 0 14px 14px; }
+ details.grp[open] > .gb { animation: fadeSlideUp .22s ease both; }
+ .sub { font-size: 12px; opacity: .75; margin: 12px 0 8px; text-transform: uppercase; letter-spacing: .5px; }
+ .sub:first-child { margin-top: 0; }
+ /* Fixierte Aktionsleiste unten */
+ #adminBar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; background: #1b1340; border-top: 1px solid #ffffff1f; box-shadow: 0 -8px 24px rgba(0,0,0,.45); padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); }
+ #adminBar .barInner { max-width: 540px; margin: 0 auto; }
+ #adminBarStatus { font-size: 12px; opacity: .75; text-align: center; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ #adminBar .barRow { display: flex; gap: 8px; align-items: stretch; }
+ #adminMainBtn { flex: 1; min-width: 0; display: flex; }
+ #adminMainBtn .go { margin: 0; padding: 10px; min-height: 56px; font-size: 17px; line-height: 1.2; }
+ #adminBarSide { display: flex; gap: 8px; }
+ .barBtn { width: 62px; min-height: 56px; padding: 6px 2px; background: #4b3a9e; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-weight: 700; }
+ .barBtn span { font-size: 20px; line-height: 1; }
+ .barBtn small { font-size: 11px; line-height: 1.1; }
+ .barBtn.warnBtn { background: #e21b3c; }
 </style></head>
 <body>
  <div id="adminConnBanner">🔄 Verbindung unterbrochen — verbinde neu…</div>
  <div id="app"></div>
- <div class="card" id="qrCard">
-   <div class="label">🔗 QR-Code / Spieler-URL</div>
+<details class="card grp" id="qrCard">
+  <summary><span class="gt">🔗 QR-Code / Spieler-URL</span><span class="gs" id="qrSum">Standard</span></summary>
+  <div class="gb">
    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
      <input id="qrInput" placeholder="https://party.goldens.cloud/" style="flex:1;min-width:180px;padding:10px;border-radius:10px;border:1px solid #ffffff33;background:#1b1340;color:#fff;font-size:14px">
      <button class="go" style="width:auto;margin:0;padding:10px 14px;font-size:14px" onclick="saveQrUrl()">Speichern</button>
      <button class="kick" style="margin:0;padding:10px 12px;background:#4b3a9e" onclick="resetQrUrl()">Standard</button>
    </div>
-   <div id="qrFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
- </div>
- <div class="card" id="customCard">
-   <div class="label">➕ Eigene Insider-Frage hinzufügen</div>
+  <div id="qrFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
+  </div>
+</details>
+<details class="card grp" id="customCard">
+  <summary><span class="gt">➕ Eigene Insider-Frage</span><span class="gs">Wer würde · Entweder-Oder · Tabu</span></summary>
+  <div class="gb">
    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">
      <select id="cMode" onchange="renderCustomFields()" style="flex:1;min-width:140px;padding:9px;border-radius:10px;background:#1b1340;color:#fff;border:1px solid #ffffff33;font-size:14px">
        <option value="mostlikely">🍻 Wer würde am ehesten?</option>
@@ -51,8 +79,15 @@
    </div>
    <div id="cFields"></div>
    <button class="go" style="margin-top:8px;padding:11px;font-size:15px" onclick="addCustom()">Hinzufügen</button>
-   <div id="cFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
- </div>
+  <div id="cFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
+  </div>
+</details>
+<div id="adminBar">
+  <div class="barInner">
+    <div id="adminBarStatus"></div>
+    <div class="barRow"><div id="adminMainBtn"></div><div id="adminBarSide"></div></div>
+  </div>
+</div>
 <script src="/js/ux-helpers.js"></script>
 <script src="/socket.io/socket.io.min.js"></script>
 <script>
@@ -190,6 +225,9 @@ socket.on('state', s => {
     document.getElementById('qrInput').value = s.publicUrl;
     qrInited = true;
   }
+  const qrSum = document.getElementById('qrSum');
+  const qrTxt = s.publicUrl ? s.publicUrl.replace(/^https?:\/\//, '').replace(/\/$/, '') : 'Standard';
+  if (qrSum && qrSum.textContent !== qrTxt) qrSum.textContent = qrTxt;
   render();
 });
 function toggleCat(id) {
@@ -207,12 +245,50 @@ function kick(i) {
   const n = S.players[i] && S.players[i].name;
   if (n && confirm(n + ' entfernen?')) socket.emit('host:kick', n);
 }
+// Offen/zu-Zustand der Einstellungs-Gruppen überlebt innerHTML-Re-Renders.
+const GROUP_DEFAULTS = {
+  game: true, players: true, mix: true, cats: true, imagequiz: true, songquiz: true, rounds: true,
+  presets: false, team: false, display: false, timer: false, options: false, wheel: false,
+};
+const groupOpen = {};
+document.addEventListener('toggle', e => {
+  const d = e.target;
+  if (d && d.tagName === 'DETAILS' && d.dataset && d.dataset.g) groupOpen[d.dataset.g] = d.open;
+}, true);
+function grp(id, title, summary, body) {
+  const open = id in groupOpen ? groupOpen[id] : !!GROUP_DEFAULTS[id];
+  return `<details class="card grp" data-g="${id}"${open ? ' open' : ''}>
+      <summary><span class="gt">${title}</span><span class="gs">${summary}</span></summary>
+      <div class="gb">${body}</div>
+    </details>`;
+}
+function setHtml(el, html) {
+  if (el && el._html !== html) { el.innerHTML = html; el._html = html; }
+}
+function resetToLobby() {
+  if (S && !['lobby', 'end'].includes(S.phase) && !confirm('Laufendes Spiel abbrechen und zurück zur Lobby?')) return;
+  socket.emit('host:reset');
+}
+function renderBar(mainBtn, statusTxt) {
+  const canPause = ['question', 'go', 'result'].includes(S.phase);
+  let primary = mainBtn;
+  let side = '';
+  if (S.paused) {
+    primary = `<button class="go" onclick="socket.emit('host:pause')">▶ Weiter (Pause beenden)</button>`;
+    if (canPause) side += `<button class="barBtn" onclick="socket.emit('host:next')" aria-label="Überspringen"><span>⏭</span><small>${S.phase === 'result' ? 'Nächste' : 'Auswerten'}</small></button>`;
+  } else if (canPause) {
+    side += `<button class="barBtn" onclick="socket.emit('host:pause')" aria-label="Pause"><span>⏸</span><small>Pause</small></button>`;
+  }
+  side += `<button class="barBtn warnBtn" onclick="resetToLobby()" aria-label="Reset (zur Lobby)"><span>🏠</span><small>Lobby</small></button>`;
+  const game = GAMES.find(g => g[0] === S.mode);
+  const barStatus = document.getElementById('adminBarStatus');
+  const statusLine = (game ? game[1] + ' · ' : '') + statusTxt;
+  if (barStatus && barStatus.textContent !== statusLine) barStatus.textContent = statusLine;
+  setHtml(document.getElementById('adminMainBtn'), primary);
+  setHtml(document.getElementById('adminBarSide'), side);
+}
 function render() {
   if (!S) return;
-  const activeEl = document.activeElement;
-  if (activeEl && activeEl.tagName === 'INPUT' && activeEl.type === 'range' && app.contains(activeEl)) {
-    return;
-  }
   const done = S.players.filter(p => p.answered).length;
   let mainBtn = '';
   if (S.phase === 'lobby') mainBtn = `<button class="go" onclick="socket.emit('host:start')">▶ Spiel starten</button>`;
@@ -224,10 +300,19 @@ function render() {
   else if (S.phase === 'result') mainBtn = `<button class="go" onclick="socket.emit('host:next')">▶ Nächste Runde</button>`;
   else mainBtn = `<button class="go" onclick="socket.emit('host:start')">🔄 Nochmal spielen</button>`;
 
-  const statusTxt = S.paused ? '⏸ PAUSE'
-    : S.phase === 'lobby' ? 'Lobby'
-    : S.phase === 'end' ? 'Spiel vorbei'
-    : `Runde ${S.idx + 1}/${S.total} (${S.phase})`;
+  const PHASE_LABELS = { spin: 'Glücksrad', question: 'Frage läuft', go: 'Los!', wait: 'Warten…', write: 'Schreiben', discuss: 'Diskussion', result: 'Auflösung' };
+  const phaseLbl = S.paused ? '⏸ Pausiert' : PHASE_LABELS[S.phase];
+  const statusTxt = S.phase === 'lobby' ? (S.paused ? '⏸ Pausiert' : 'Lobby')
+    : S.phase === 'end' ? 'Ende'
+    : `Runde ${S.idx + 1}/${S.total}${phaseLbl ? ' · ' + phaseLbl : ''}`;
+
+  // Die Aktionsleiste liegt außerhalb von #app und wird immer (diff-basiert) aktualisiert.
+  renderBar(mainBtn, statusTxt);
+
+  const activeEl = document.activeElement;
+  if (activeEl && activeEl.tagName === 'INPUT' && activeEl.type === 'range' && app.contains(activeEl)) {
+    return;
+  }
 
   const mr = S.missionReveal;
   const adminSig = [
@@ -247,7 +332,6 @@ function render() {
 
   if (adminSig === lastAdminSig && document.getElementById('adminMainBtn') && document.getElementById('adminStatus')) {
     document.getElementById('adminStatus').textContent = statusTxt;
-    document.getElementById('adminMainBtn').innerHTML = mainBtn;
     document.querySelectorAll('#adminPlist .ansMark').forEach((el, i) => {
       const want = S.players[i]?.answered ? ' ✓' : '';
       if (el.textContent !== want) el.textContent = want;
@@ -255,22 +339,35 @@ function render() {
     return;
   }
   lastAdminSig = adminSig;
-
-  const canPause = ['question', 'go', 'result'].includes(S.phase);
-  const pauseBtn = canPause
-    ? `<button class="go" style="background:${S.paused ? '#26890c' : '#4b3a9e'}" onclick="socket.emit('host:pause')">${S.paused ? '▶ Weiter' : '⏸ Pause'}</button>`
-    : '';
+  // Aktuellen DOM-Zustand sichern, falls ein toggle-Event noch aussteht.
+  app.querySelectorAll('details[data-g]').forEach(d => { groupOpen[d.dataset.g] = d.open; });
 
   const activeCats = S.categories || [];
   const allActive = CATS.every(([id]) => activeCats.includes(id));
+  const isMix = S.mode === 'mix';
+  const mixArr = S.mixModes || [];
+  const showCats = !['songquiz', 'imagequiz', 'reaction', 'truthlie'].includes(S.mode);
+  const showRounds = S.mode !== 'reaction';
+  const showImageQuiz = S.mode === 'imagequiz' || (isMix && mixArr.includes('imagequiz'));
+  const showSongQuiz = S.mode === 'songquiz' || (isMix && mixArr.includes('songquiz'));
+  const iqThemes = S.imageQuizThemes || ['logos', 'landmarks', 'flags', 'cars'];
+  const iqAll = ['logos', 'landmarks', 'flags', 'cars'].every(t => iqThemes.includes(t));
+  const ruShare = S.effectiveRussianShare ?? S.russianShare ?? 0;
+  const displayMode = S.displayMode || (S.noTvMode ? 'notv' : 'tv');
+  const timerSpeed = S.timerSpeed || 'normal';
+  const gameLabel = (GAMES.find(g => g[0] === S.mode) || [S.mode, S.mode])[1];
+  const optsOn = [S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree].filter(Boolean).length;
+  const songLangSum = [S.songLangs?.en !== false && 'EN', S.songLangs?.de !== false && 'DE'].filter(Boolean).join('+') || '—';
+
+  const nowInfo = [
+    S.phase === 'spin' && S.spin ? `<div class="q" style="color:#ffd33d">🎡 ${esc(S.spin.title)} → ${esc(S.spin.winnerLabel)}</div>` : '',
+    S.phase === 'lobby' && S.lobbyBanner ? `<div class="q" style="color:#ffd33d">${esc(S.lobbyBanner)}</div>` : '',
+    S.q && S.q.q ? `<div class="q">${esc(S.q.q)}</div>` : '',
+    S.mode === 'draw' && S.q && S.q.drawer ? `<div class="q">Maler: ${esc(S.q.drawer)} (${S.q.guessed.length} erraten)</div>` : '',
+  ].join('');
 
   app.innerHTML = `
     <h1><span>🎛️ Admin · Raum <b>${esc(ROOM_CODE)}</b></span><span id="adminStatus" class="badge">${statusTxt}</span></h1>
-    <div class="card cats" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-      <button id="copyLinkBtn" class="active" onclick="copyRoomLink()">📋 Einladungs-Link kopieren</button>
-      <a href="/host?room=${encodeURIComponent(ROOM_CODE)}" target="_blank" style="text-decoration:none"><button type="button">📺 TV öffnen (/host)</button></a>
-      <button type="button" onclick="createAndOpenAdmin()">➕ Neuer Raum</button>
-    </div>
     ${S.phase === 'result' && S.missionReveal ? `
       <div class="card" style="border:1px solid rgba(255,211,61,.45);background:rgba(255,211,61,.08)">
         <div class="label" style="color:#ffd33d">🕵️ Geheime Mission von ${esc(S.missionReveal.playerName)}</div>
@@ -283,132 +380,115 @@ function render() {
             </div>`}
       </div>
     ` : ''}
-    <div class="card">
-      <div class="label">Spiel auswählen (wechselt in Lobby)</div>
-      <div class="modes">${GAMES.map(([id, label]) => `<button class="${S.mode === id ? 'active' : ''}" onclick="socket.emit('host:mode','${id}')">${label}</button>`).join('')}</div>
+    ${nowInfo ? `<div class="card"><div class="label">🎬 Aktuell</div>${nowInfo}</div>` : ''}
+    <div class="card cats" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+      <button id="copyLinkBtn" class="active" onclick="copyRoomLink()">📋 Einladungs-Link kopieren</button>
+      <a href="/host?room=${encodeURIComponent(ROOM_CODE)}" target="_blank" style="text-decoration:none"><button type="button">📺 TV öffnen (/host)</button></a>
+      <button type="button" onclick="createAndOpenAdmin()">➕ Neuer Raum</button>
     </div>
-    ${(() => {
-      const isMix = S.mode === 'mix';
-      const mixArr = S.mixModes || [];
-      const showCats = !['songquiz', 'imagequiz', 'reaction', 'truthlie'].includes(S.mode);
-      const showRounds = S.mode !== 'reaction';
-      const showImageQuiz = S.mode === 'imagequiz' || (isMix && mixArr.includes('imagequiz'));
-      const showSongQuiz = S.mode === 'songquiz' || (isMix && mixArr.includes('songquiz'));
-      const iqThemes = S.imageQuizThemes || ['logos', 'landmarks', 'flags', 'cars'];
-      const iqAll = ['logos', 'landmarks', 'flags', 'cars'].every(t => iqThemes.includes(t));
-      return `<div class="card">
-      <div class="label">🎛️ Schnell-Presets</div>
-      <div class="cats" style="margin-bottom:12px">
+    ${grp('game', '🎮 Spiel', esc(gameLabel), `
+      <div class="sub">Wechselt in der Lobby</div>
+      <div class="modes">${GAMES.map(([id, label]) => `<button class="${S.mode === id ? 'active' : ''}" onclick="socket.emit('host:mode','${id}')">${label}</button>`).join('')}</div>
+    `)}
+    ${grp('presets', '🎛️ Schnell-Presets', 'Klassik · Date · 18+ · Musik · Alkoholfrei', `
+      <div class="cats">
         <button onclick="socket.emit('host:preset','klassik')">🎉 Klassik</button>
         <button onclick="socket.emit('host:preset','date')">💘 Date</button>
         <button class="hot" onclick="socket.emit('host:preset','hot18')">🔥 18+</button>
         <button onclick="socket.emit('host:preset','musik')">🎵 Musik</button>
         <button onclick="socket.emit('host:preset','alkoholfrei')">🥤 Alkoholfrei</button>
       </div>
-      ${isMix ? `
-        <div class="label">🎲 Party-Mix Modi (min. 2)</div>
-        <div class="cats" style="margin-bottom:10px">
-          ${MIX_OPTS.map(([id, lbl]) => `<button class="${mixArr.includes(id) ? 'active' : ''}" onclick="toggleMixMode('${id}')">${lbl}</button>`).join('')}
+    `)}
+    ${isMix ? grp('mix', '🎲 Party-Mix', `${mixArr.length} Modi · ${S.mixRounds || 12} Runden`, `
+      <div class="sub">Modi (min. 2)</div>
+      <div class="cats">
+        ${MIX_OPTS.map(([id, lbl]) => `<button class="${mixArr.includes(id) ? 'active' : ''}" onclick="toggleMixMode('${id}')">${lbl}</button>`).join('')}
+      </div>
+      <div class="sub">🔁 Runden</div>
+      <div class="cats">
+        ${[8, 12, 16].map(n => `<button class="${(S.mixRounds || 12) === n ? 'active' : ''}" onclick="socket.emit('host:mixRounds',${n})">${n} Runden</button>`).join('')}
+      </div>
+    `) : ''}
+    ${showCats ? grp('cats', '🗂️ Fragen-Kategorie', `${allActive ? 'Alle' : activeCats.length + ' von ' + CATS.length} · ${S.total} aktiv`, `
+      <div class="cats">
+        <button class="${allActive ? 'active' : ''}" onclick="toggleCat('all')">🌟 Alle</button>
+        ${CATS.map(([id, label]) => `<button class="${activeCats.includes(id) ? 'active' : ''} ${id === 'hot18' ? 'hot' : ''}" onclick="toggleCat('${id}')">${label}</button>`).join('')}
+      </div>
+    `) : ''}
+    ${showImageQuiz ? grp('imagequiz', '🖼️ Bild-Quiz Themen', `${iqAll ? 'Alle' : iqThemes.length + ' von 4'} · ${S.total} aktiv`, `
+      <div class="cats">
+        <button class="${iqAll ? 'active' : ''}" onclick="socket.emit('host:imageQuizThemes',['logos','landmarks','flags','cars'])">🌟 Alle</button>
+        <button class="${iqThemes.includes('logos') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'logos',on:${!iqThemes.includes('logos')}})">🏢 Firmen-Logos</button>
+        <button class="${iqThemes.includes('landmarks') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'landmarks',on:${!iqThemes.includes('landmarks')}})">🗼 Sehenswürdigkeiten</button>
+        <button class="${iqThemes.includes('flags') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'flags',on:${!iqThemes.includes('flags')}})">🏁 Flaggen</button>
+        <button class="${iqThemes.includes('cars') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'cars',on:${!iqThemes.includes('cars')}})">🚗 Automarken</button>
+      </div>
+    `) : ''}
+    ${showSongQuiz ? grp('songquiz', '🎵 Erkenne den Song', `${songLangSum}${ruShare ? ' · RU ' + ruShare + '%' : ''}${S.songOnlyArtistTitle ? ' · Interpret & Titel' : ''} · ${S.total} aktiv`, `
+      <div class="cats">
+        <button class="${S.songLangs?.en !== false ? 'active' : ''}" onclick="socket.emit('host:songLang',{lang:'en',on:${S.songLangs?.en === false}})">🇬🇧 Englisch</button>
+        <button class="${S.songLangs?.de !== false ? 'active' : ''}" onclick="socket.emit('host:songLang',{lang:'de',on:${S.songLangs?.de === false}})">🇩🇪 Deutsch</button>
+      </div>
+      <div style="margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:.9rem;margin-bottom:6px">
+          <span>🇷🇺 Russisch-Anteil</span>
+          <strong id="ru-share-lbl">${ruShare === 0 ? '0% (Aus)' : (ruShare === 100 ? '100% (Nur Russisch)' : ruShare + '%')}</strong>
         </div>
-        <div class="label">🔁 Party-Mix Runden</div>
-        <div class="cats" style="margin-bottom:12px">
-          ${[8, 12, 16].map(n => `<button class="${(S.mixRounds || 12) === n ? 'active' : ''}" onclick="socket.emit('host:mixRounds',${n})">${n} Runden</button>`).join('')}
-        </div>
-      ` : ''}
-      ${showCats ? `
-        <div class="label">Fragen-Kategorie (${S.total} Runden aktiv)</div>
-        <div class="cats" style="margin-bottom:12px">
-          <button class="${allActive ? 'active' : ''}" onclick="toggleCat('all')">🌟 Alle</button>
-          ${CATS.map(([id, label]) => `<button class="${activeCats.includes(id) ? 'active' : ''} ${id === 'hot18' ? 'hot' : ''}" onclick="toggleCat('${id}')">${label}</button>`).join('')}
-        </div>
-      ` : ''}
-      ${showImageQuiz ? `
-        <div class="label">🖼️ Bild-Quiz Themen (${S.total} Runden aktiv)</div>
-        <div class="cats" style="margin-bottom:12px">
-          <button class="${iqAll ? 'active' : ''}" onclick="socket.emit('host:imageQuizThemes',['logos','landmarks','flags','cars'])">🌟 Alle</button>
-          <button class="${iqThemes.includes('logos') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'logos',on:${!iqThemes.includes('logos')}})">🏢 Firmen-Logos</button>
-          <button class="${iqThemes.includes('landmarks') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'landmarks',on:${!iqThemes.includes('landmarks')}})">🗼 Sehenswürdigkeiten</button>
-          <button class="${iqThemes.includes('flags') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'flags',on:${!iqThemes.includes('flags')}})">🏁 Flaggen</button>
-          <button class="${iqThemes.includes('cars') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'cars',on:${!iqThemes.includes('cars')}})">🚗 Automarken</button>
-        </div>
-      ` : ''}
-      ${showSongQuiz ? `
-        <div class="label">🎵 Erkenne den Song (${S.total} Runden aktiv)</div>
-        <div class="cats">
-          <button class="${S.songLangs?.en !== false ? 'active' : ''}" onclick="socket.emit('host:songLang',{lang:'en',on:${S.songLangs?.en === false}})">🇬🇧 Englisch</button>
-          <button class="${S.songLangs?.de !== false ? 'active' : ''}" onclick="socket.emit('host:songLang',{lang:'de',on:${S.songLangs?.de === false}})">🇩🇪 Deutsch</button>
-        </div>
-        <div style="margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)">
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.9rem;margin-bottom:6px">
-            <span>🇷🇺 Russisch-Anteil</span>
-            <strong id="ru-share-lbl">${(S.effectiveRussianShare ?? S.russianShare ?? 0) === 0 ? '0% (Aus)' : ((S.effectiveRussianShare ?? S.russianShare ?? 0) === 100 ? '100% (Nur Russisch)' : (S.effectiveRussianShare ?? S.russianShare ?? 0) + '%')}</strong>
-          </div>
-          <input type="range" min="0" max="100" step="10" value="${S.effectiveRussianShare ?? S.russianShare ?? 0}"
-            oninput="const v=Number(this.value);document.getElementById('ru-share-lbl').textContent=v===0?'0% (Aus)':(v===100?'100% (Nur Russisch)':v+'%')"
-            onchange="socket.emit('host:russianShare',Number(this.value))"
-            style="width:100%;accent-color:var(--accent,#ff4d6d);cursor:pointer">
-        </div>
-        <div class="cats" style="margin-top:10px;margin-bottom:12px">
-          <button class="${!S.songOnlyArtistTitle ? 'active' : ''}" onclick="socket.emit('host:songDifficulty',false)">🎯 Alle Fragetypen</button>
-          <button class="${S.songOnlyArtistTitle ? 'active' : ''}" onclick="socket.emit('host:songDifficulty',true)">🎤 Nur Interpret & Titel</button>
-        </div>
-      ` : ''}
-      ${showRounds ? `
-        <div class="label">Runden-Limit</div>
-        <div class="cats" style="margin-bottom:12px">
-          ${[[0, 'Alle'], [5, '5 Runden'], [10, '10 Runden'], [15, '15 Runden']].map(([n, lbl]) => `<button class="${(S.roundLimit || 0) === n ? 'active' : ''}" onclick="socket.emit('host:rounds',${n})">${lbl}</button>`).join('')}
-        </div>
-      ` : ''}
-      <div class="label">Spielmodus</div>
-      <div class="cats" style="margin-bottom:12px">
+        <input type="range" min="0" max="100" step="10" value="${ruShare}"
+          oninput="const v=Number(this.value);document.getElementById('ru-share-lbl').textContent=v===0?'0% (Aus)':(v===100?'100% (Nur Russisch)':v+'%')"
+          onchange="socket.emit('host:russianShare',Number(this.value))"
+          style="width:100%;accent-color:var(--accent,#ff4d6d);cursor:pointer">
+      </div>
+      <div class="cats" style="margin-top:10px">
+        <button class="${!S.songOnlyArtistTitle ? 'active' : ''}" onclick="socket.emit('host:songDifficulty',false)">🎯 Alle Fragetypen</button>
+        <button class="${S.songOnlyArtistTitle ? 'active' : ''}" onclick="socket.emit('host:songDifficulty',true)">🎤 Nur Interpret & Titel</button>
+      </div>
+    `) : ''}
+    ${showRounds ? grp('rounds', '🔢 Runden-Limit', (S.roundLimit || 0) ? `${S.roundLimit} Runden` : 'Alle', `
+      <div class="cats">
+        ${[[0, 'Alle'], [5, '5 Runden'], [10, '10 Runden'], [15, '15 Runden']].map(([n, lbl]) => `<button class="${(S.roundLimit || 0) === n ? 'active' : ''}" onclick="socket.emit('host:rounds',${n})">${lbl}</button>`).join('')}
+      </div>
+    `) : ''}
+    ${grp('team', '👥 Spielmodus', S.teamMode ? 'Team-Spiel' : 'Einzelspieler', `
+      <div class="cats">
         <button class="${!S.teamMode ? 'active' : ''}" onclick="socket.emit('host:teamMode',false)">👤 Einzelspieler</button>
         <button class="${S.teamMode ? 'active' : ''}" onclick="socket.emit('host:teamMode',true)">👥 Team-Spiel</button>
       </div>
-      <div class="label">Anzeige</div>
-      <div class="cats" style="margin-bottom:12px">
-        <button class="${(S.displayMode || (S.noTvMode ? 'notv' : 'tv')) === 'tv' ? 'active' : ''}" onclick="socket.emit('host:displayMode','tv')">📺 Mit TV (/host)</button>
+    `)}
+    ${grp('display', '📺 Anzeige', esc({ tv: 'Mit TV', notv: 'Ohne TV', onedevice: 'Ein Gerät' }[displayMode] || displayMode), `
+      <div class="cats">
+        <button class="${displayMode === 'tv' ? 'active' : ''}" onclick="socket.emit('host:displayMode','tv')">📺 Mit TV (/host)</button>
         <button class="${S.displayMode === 'notv' ? 'active' : ''}" onclick="socket.emit('host:displayMode','notv')">📱 Ohne TV (jeder am Handy)</button>
         <button class="${S.displayMode === 'onedevice' ? 'active' : ''}" onclick="socket.emit('host:displayMode','onedevice')">🤝 Ein Gerät (Pass & Play)</button>
       </div>
-      <div class="label">⏱️ Timer-Tempo</div>
-      <div class="cats" style="margin-bottom:12px">
-        ${[['fast', '⚡ Schnell'], ['normal', '⏱️ Normal'], ['relaxed', '🐢 Entspannt']].map(([sp, lbl]) => `<button class="${(S.timerSpeed || 'normal') === sp ? 'active' : ''}" onclick="socket.emit('host:timerSpeed','${sp}')">${lbl}</button>`).join('')}
+    `)}
+    ${grp('timer', '⏱️ Timer-Tempo', esc({ fast: 'Schnell', normal: 'Normal', relaxed: 'Entspannt' }[timerSpeed] || timerSpeed), `
+      <div class="cats">
+        ${[['fast', '⚡ Schnell'], ['normal', '⏱️ Normal'], ['relaxed', '🐢 Entspannt']].map(([sp, lbl]) => `<button class="${timerSpeed === sp ? 'active' : ''}" onclick="socket.emit('host:timerSpeed','${sp}')">${lbl}</button>`).join('')}
       </div>
-      <div class="label">⚡ Spiel-Optionen</div>
+    `)}
+    ${grp('options', '⚡ Spiel-Optionen', `${optsOn} von 4 an`, `
       <div class="cats">
         <button class="${S.finalDouble ? 'active' : ''}" onclick="socket.emit('host:finalDouble',!S.finalDouble)">🔥 Finalrunde 2× Punkte: ${S.finalDouble ? 'An' : 'Aus'}</button>
         <button class="${S.wheelEnabled !== false ? 'active' : ''}" onclick="socket.emit('host:wheelEnabled',S.wheelEnabled===false)">🎡 Drehrad-Animation: ${S.wheelEnabled !== false ? 'An' : 'Aus'}</button>
         <button class="${S.secretMissions ? 'active' : ''}" onclick="socket.emit('host:secretMissions',!S.secretMissions)">🕵️ Geheime Missionen: ${S.secretMissions ? 'An' : 'Aus'}</button>
         <button class="${S.alcoholFree ? 'active' : ''}" onclick="socket.emit('host:alcoholFree',!S.alcoholFree)">🥤 Alkoholfrei: ${S.alcoholFree ? 'An' : 'Aus'}</button>
       </div>
-      ${S.phase === 'lobby' ? `
-        <div class="label" style="margin-top:12px">🎰 Glücksrad direkt drehen (Lobby)</div>
-        <div class="cats">
-          <button class="active" onclick="socket.emit('host:spinWheel','mode')">🎰 Zufalls-Spiel drehen</button>
-          <button class="active" ${S.players.length < 1 ? 'disabled style="opacity:.45"' : ''} onclick="socket.emit('host:spinWheel','player')">🎡 Spieler auslosen</button>
-        </div>
-      ` : ''}
-    </div>`;
-    })()}
-    <div class="card">
-      <div class="label">Steuerung</div>
-      ${S.phase === 'spin' && S.spin ? `<div class="q" style="color:#ffd33d">🎡 ${esc(S.spin.title)} → ${esc(S.spin.winnerLabel)}</div>` : ''}
-      ${S.phase === 'lobby' && S.lobbyBanner ? `<div class="q" style="color:#ffd33d">${esc(S.lobbyBanner)}</div>` : ''}
-      ${S.q && S.q.q ? `<div class="q">${esc(S.q.q)}</div>` : ''}
-      ${S.mode === 'draw' && S.q && S.q.drawer ? `<div class="q">Maler: ${esc(S.q.drawer)} (${S.q.guessed.length} erraten)</div>` : ''}
-      <div id="adminMainBtn">${mainBtn}</div>
-      ${pauseBtn}
-      <button class="warn" onclick="socket.emit('host:reset')">🏠 Reset (zur Lobby)</button>
-    </div>
-    <div class="card">
-      <div class="label">Spieler (${S.players.length})</div>
+    `)}
+    ${S.phase === 'lobby' ? grp('wheel', '🎰 Glücksrad', 'Spiel / Spieler auslosen', `
+      <div class="cats">
+        <button class="active" onclick="socket.emit('host:spinWheel','mode')">🎰 Zufalls-Spiel drehen</button>
+        <button class="active" ${S.players.length < 1 ? 'disabled style="opacity:.45"' : ''} onclick="socket.emit('host:spinWheel','player')">🎡 Spieler auslosen</button>
+      </div>
+    `) : ''}
+    ${grp('players', '🙋 Spieler', `${S.players.length} Spieler${S.teamMode ? ' · Teams' : ''}`, `
       <div id="adminPlist" class="plist">${S.players.length ? S.players.map((p, i) => `
         <div class="prow">
           <span>${S.teamMode && p.team ? ({ red: '🔴', blue: '🔵', yellow: '🟡', green: '🟢', purple: '🟣', orange: '🟠', pink: '🩷', teal: '🩵' }[p.team] || '⚪') + ' ' : ''}${p.avatar ? esc(p.avatar) + ' ' : ''}${esc(p.name)}<span class="ansMark">${p.answered ? ' ✓' : ''}</span></span>
           <span><b>${p.score} Pkt</b><button class="kick" onclick="kick(${i})">✕</button></span>
         </div>`).join('') : '<div style="opacity:.6">Noch keine Spieler</div>'}
       </div>
-    </div>`;
+    `)}`;
 }
 </script>
 </body></html>

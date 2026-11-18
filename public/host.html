@@ -8,24 +8,89 @@
 <link rel="stylesheet" href="/style.css">
 <style>
  body { padding: clamp(12px, 2.5vh, 28px) clamp(14px, 3.5vw, 48px) clamp(10px, 2vh, 22px); font-size: clamp(14px, 2.1vmin, 24px); display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; overflow-x: hidden; }
- #app { flex: 1; min-width: 0; }
+ #app { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+ #app > * { flex-shrink: 0; }
+ #app.drawing { flex: 0 0 auto; }
+ /* Spielansichten: Inhalt unter dem Kopf vertikal ausbalancieren (wachsende Elemente fressen den Freiraum zuerst) */
+ #app.game > .hdrEnd + * { margin-top: auto; }
+ #app.game > :last-child { margin-bottom: auto; }
+ .hdrInfo { font-size: clamp(14px, 2.2vmin, 28px); }
  h1 { font-size: clamp(24px, 5.2vmin, 68px); margin: 0 0 1.6vh; line-height: 1.15; }
  .row { display: flex; gap: clamp(16px, 3.5vw, 48px); align-items: flex-start; }
- .lobby > div:first-child { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
- .lobby > div:last-child { min-width: 0; flex: 1; }
- .lobby img { width: min(38vh, 34vw, 360px); height: auto; max-width: 100%; background: #fff; padding: clamp(6px, 1vmin, 12px); border-radius: 12px; display: block; }
  .big { font-size: clamp(18px, 4.2vmin, 52px); font-weight: 700; line-height: 1.25; }
  .url { font-size: clamp(13px, 2.4vmin, 30px); opacity: .8; margin-top: 1vh; overflow-wrap: anywhere; text-align: center; }
  .chips { display: flex; flex-wrap: wrap; gap: .6vh .6vw; }
  .chips span { display: inline-block; background: #4b3a9e; border-radius: 30px; padding: clamp(5px, .8vh, 12px) clamp(12px, 1.6vw, 24px); font-size: clamp(14px, 2.5vmin, 30px); animation: popIn .25s ease-out both; }
  .chips span.seen { animation: none; }
- .q { font-size: clamp(20px, 4.8vmin, 62px); font-weight: 700; margin: 1.5vh 0 2.2vh; line-height: 1.2; animation: fadeSlideUp .3s ease-out both; }
+ /* Lobby */
+ .lobbyWrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+ .lobbyWrap h1 { margin-bottom: 1.2vh; }
+ .row.lobby { flex: 1; align-items: stretch; gap: clamp(16px, 3.5vw, 64px); }
+ .lobbyJoin { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(8px, 2vh, 28px); background: rgba(45, 34, 102, .55); border: 2px solid #ffffff1a; border-radius: 24px; padding: clamp(12px, 2.5vh, 32px) clamp(12px, 2vw, 36px); }
+ .lobbyJoin .qr-copy { display: flex; flex-direction: column; align-items: center; }
+ .lobby img { width: min(38vh, 30vw, 480px); height: auto; max-width: 100%; background: #fff; padding: clamp(6px, 1vmin, 14px); border-radius: 14px; display: block; }
+ .joinBox { text-align: center; }
+ .joinLbl { font-size: clamp(12px, 1.9vmin, 22px); text-transform: uppercase; letter-spacing: .22em; opacity: .7; font-weight: 800; }
+ .joinCode { font-size: clamp(40px, 10vmin, 140px); font-weight: 900; letter-spacing: .14em; padding-left: .14em; color: #ffd33d; line-height: 1.05; text-shadow: 0 6px 24px rgba(0,0,0,.45); }
+ .joinHint { font-size: clamp(14px, 2.4vmin, 30px); line-height: 1.3; max-width: min(42vh, 32vw, 520px); margin: .6vh auto 0; }
+ .joinHint b { color: #ffd33d; overflow-wrap: anywhere; }
+ .lobbyMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: clamp(10px, 2vh, 28px); }
+ .lobbyRules { background: #2d2266; border-left: 6px solid #ffd33d; border-radius: 14px; padding: clamp(10px, 1.8vh, 24px) clamp(12px, 1.8vw, 28px); font-size: clamp(15px, 2.6vmin, 32px); line-height: 1.35; animation: fadeSlideUp .3s ease-out both; }
+ .lobbyRules b { color: #ffd33d; }
+ .lobbyCountRow { display: flex; align-items: baseline; flex-wrap: wrap; gap: .4vh 2vw; }
+ .lobbyCount { font-size: clamp(18px, 3.8vmin, 48px); font-weight: 900; }
+ .lobbyRounds { font-size: clamp(14px, 2.3vmin, 28px); opacity: .75; font-weight: 700; }
+ .lobbyPlayers { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(96px, 10vw, 180px), 1fr)); gap: clamp(8px, 1.4vmin, 18px); align-content: start; }
+ .pCard { position: relative; min-width: 0; background: #4b3a9e; border: 2px solid #ffffff1f; border-radius: 18px; padding: clamp(8px, 1.4vh, 18px) clamp(6px, .6vw, 12px) clamp(6px, 1.1vh, 14px); text-align: center; box-shadow: 0 6px 18px rgba(0,0,0,.3); animation: popIn .35s ease-out both; }
+ .pCard.seen { animation: none; }
+ .pCard .pAv { font-size: clamp(34px, 7.5vmin, 100px); line-height: 1.1; }
+ .pCard .pName { font-size: clamp(13px, 2.3vmin, 28px); font-weight: 800; margin-top: .6vh; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ .pCard .pTeam { position: absolute; top: .5vh; right: .4vw; font-size: clamp(14px, 2.4vmin, 28px); }
+ .lobbyPlayers.many { grid-template-columns: repeat(auto-fill, minmax(clamp(80px, 7.5vw, 132px), 1fr)); }
+ .lobbyPlayers.many .pAv { font-size: clamp(26px, 5vmin, 64px); }
+ .lobbyPlayers.many .pName { font-size: clamp(12px, 1.8vmin, 22px); }
+ .pWait { grid-column: 1 / -1; text-align: center; opacity: .6; font-size: clamp(16px, 3vmin, 36px); padding: 3vh 2vw; border: 2px dashed #ffffff33; border-radius: 18px; }
+ /* Fragen & Antwort-Kacheln */
+ .q { font-size: clamp(22px, 6vmin, 80px); font-weight: 700; margin: 1.5vh 0 2.4vh; line-height: 1.18; text-wrap: balance; animation: fadeSlideUp .3s ease-out both; }
+ .q.sm { font-size: clamp(20px, 4.8vmin, 62px); }
  .iqWrap { display: flex; justify-content: center; margin: .8vh 0 2vh; animation: popIn .3s ease-out both; }
- .iqImg { max-height: 30vh; max-width: 72vw; border-radius: 16px; object-fit: contain; box-shadow: 0 10px 28px rgba(0,0,0,.45); }
- .iqImg.iqLogo { background: #fff; padding: clamp(14px, 2.6vh, 28px); width: min(26vh, 45vw); height: min(26vh, 45vw); }
- .answers { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(10px, 1.8vmin, 24px); }
+ .iqImg { max-height: 34vh; max-width: 72vw; border-radius: 16px; object-fit: contain; box-shadow: 0 10px 28px rgba(0,0,0,.45); }
+ .iqImg.iqLogo { background: #fff; padding: clamp(14px, 2.6vh, 28px); width: min(28vh, 45vw); height: min(28vh, 45vw); }
+ .answers { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: clamp(10px, 1.8vmin, 24px); }
+ #app.game:not(.res) > .answers { flex: 1 1 auto; max-height: 58vh; }
  .ans { padding: clamp(14px, 3.6vh, 48px) clamp(14px, 2vw, 30px); border-radius: 14px; font-size: clamp(16px, 3.6vmin, 44px); font-weight: 700; position: relative; animation: fadeSlideUp .28s ease-out both; transition: opacity .35s ease, transform .25s ease; }
- .ans.dim { opacity: .25; transform: scale(.97); } .ans .n { float: right; margin-left: 12px; }
+ /* Eigene Endzustand-Animation, damit die Füllung von fadeSlideUp die Abdunklung nicht überschreibt */
+ @keyframes ansDimIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: .25; transform: scale(.97); } }
+ .ans.dim { opacity: .25; transform: scale(.97); animation: ansDimIn .3s ease-out both; } .ans .n { float: right; margin-left: 12px; }
+ .ans.tile { display: flex; align-items: center; gap: clamp(10px, 1.2vw, 22px); min-height: clamp(64px, 14vh, 200px); font-size: clamp(18px, 4.6vmin, 60px); line-height: 1.15; padding: clamp(10px, 2vh, 30px) clamp(14px, 1.8vw, 32px); box-shadow: 0 8px 22px rgba(0,0,0,.28); }
+ .ans.tile .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+ .ans.tile .n { float: none; margin-left: auto; flex-shrink: 0; background: rgba(0,0,0,.25); border-radius: 99px; padding: .1em .55em; font-size: .8em; font-variant-numeric: tabular-nums; }
+ .ans .shape { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 1.5em; height: 1.5em; border-radius: 50%; background: rgba(0,0,0,.22); font-size: .85em; line-height: 1; text-shadow: 0 2px 6px rgba(0,0,0,.35); }
+ .answers.compact .ans.tile { min-height: clamp(52px, 9vh, 130px); font-size: clamp(16px, 3.8vmin, 48px); }
+ #app.game:not(.res) > .answers.compact { max-height: 40vh; }
+ .answers.tl { grid-template-columns: 1fr; }
+ .answers.tl .ans.tile { min-height: clamp(52px, 10vh, 150px); font-size: clamp(16px, 3.8vmin, 48px); }
+ .ansCell { display: flex; flex-direction: column; gap: clamp(4px, .8vh, 10px); min-width: 0; }
+ .ansCell > .ans { flex: 1; }
+ /* Wer hat was gewählt: kleine Avatar-Badges */
+ .pickers { display: flex; flex-wrap: wrap; gap: clamp(4px, .6vh, 8px) clamp(4px, .5vw, 8px); }
+ .pk { display: inline-flex; align-items: center; gap: .35em; max-width: 100%; background: rgba(45, 34, 102, .92); border: 1.5px solid #ffffff2e; border-radius: 99px; padding: .2em .75em .2em .3em; font-size: clamp(12px, 2vmin, 24px); font-weight: 700; animation: popIn .3s ease-out both; }
+ .pk i { font-style: normal; font-size: 1.3em; line-height: 1; }
+ .pk b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ .winner + .pickers .pk { border-color: #ffd33d; }
+ .resSplit { display: flex; flex-direction: column; gap: clamp(10px, 2vh, 28px); }
+ .resSplit h2 { margin: 0 0 .6vh; font-size: clamp(18px, 3.2vmin, 38px); }
+ .voteChips { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(8px, 1.4vmin, 18px); }
+ .voteChips span { display: inline-flex; align-items: center; gap: .4em; background: #4b3a9e; border: 2px solid #ffffff1f; border-radius: 99px; padding: .35em 1em .35em .45em; font-size: clamp(18px, 3.4vmin, 44px); font-weight: 700; animation: popIn .3s ease-out both; }
+ .voteChips i { font-style: normal; font-size: 1.35em; line-height: 1; }
+ .mlVotes > div { align-items: center; }
+ .mlVotes .mlWho { display: inline-flex; align-items: center; gap: .4em; flex-shrink: 0; }
+ .mlVotes .mlWho i { font-style: normal; font-size: 1.4em; line-height: 1; }
+ .mlVotes .pickers { flex: 1; justify-content: flex-end; }
+ .mlVotes .pk { font-size: clamp(11px, 1.8vmin, 20px); }
+ .mlVotes > div > b { flex-shrink: 0; }
+ .emptyRes { text-align: center; background: #2d2266; border: 2px dashed #ffffff33; border-radius: 22px; padding: clamp(18px, 5vh, 60px) 3vw; margin: 2vh 0; font-size: clamp(22px, 5vmin, 64px); font-weight: 800; animation: popIn .35s ease-out both; }
+ .emptyRes small { display: block; font-size: .45em; font-weight: 600; opacity: .75; margin-top: 1vh; }
  .bar { height: clamp(8px, 1.4vh, 16px); background: #fff3; border-radius: 10px; margin-bottom: 1.8vh; overflow: hidden; }
  .bar div { height: 100%; background: #ffd33d; transform-origin: left center; transition: transform .1s linear; will-change: transform; }
  .lb div { display: flex; justify-content: space-between; gap: 12px; background: #2d2266; border-radius: 12px; padding: clamp(8px, 1.2vh, 16px) clamp(12px, 1.8vw, 24px); margin: .7vh 0; font-size: clamp(15px, 2.8vmin, 34px); animation: fadeSlideUp .28s ease-out both; }
@@ -64,16 +129,27 @@
  #wheelCanvas { width: min(48vh, 72vw); height: min(48vh, 72vw); }
  .wheelWinner { min-height: 7.5vh; margin-top: 1.5vh; display: flex; align-items: center; justify-content: center; }
  .wheelWinnerBadge { background: linear-gradient(135deg, #26890c, #1b6b08); border: 3px solid #ffd33d; border-radius: 18px; padding: clamp(8px, 1.4vh, 18px) clamp(16px, 3.5vw, 42px); font-size: clamp(18px, 3.6vmin, 44px); font-weight: 900; color: #fff; animation: popIn .3s ease-out both, winnerGlow 1.2s ease-in-out infinite; }
+ /* Steuerleiste blendet sich außerhalb der Lobby nach Inaktivität aus (QR-Ecke bleibt) – kein display-Wechsel, kein Layout-Sprung */
+ .footer > :not(#qrCorner) { transition: opacity .35s ease, visibility 0s linear 0s, transform .12s ease, background .2s ease, border-color .15s ease; }
+ .footer.ctlHidden > :not(#qrCorner) { opacity: 0 !important; visibility: hidden; pointer-events: none; transition: opacity .6s ease, visibility 0s linear .6s; }
+ body.ctlIdle { cursor: none; }
+ @media (min-width: 1000px) and (min-aspect-ratio: 5/4) {
+  .resSplit.side { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); align-items: start; gap: clamp(16px, 2.5vw, 48px); }
+ }
  @media (max-width: 820px), (max-aspect-ratio: 1/1) {
   .row.lobby { flex-direction: column; align-items: center; text-align: center; }
-  .lobby > div:last-child { width: 100%; }
+  .lobbyMain { width: 100%; }
   .lobby img { width: min(32vh, 58vw, 260px); }
+  .joinHint { max-width: none; }
+  .lobbyRules { text-align: left; }
   .chips { justify-content: center; }
+  .mlVotes > div { flex-wrap: wrap; }
   #drawWrap { flex-direction: column; }
   #tvCanvas { width: 100%; max-height: 44vh; }
  }
  @media (max-width: 640px) {
   .answers, .cols { grid-template-columns: 1fr; }
+  #app.game:not(.res) > .answers, #app.game:not(.res) > .answers.compact { max-height: none; }
  }
 </style></head>
 <body>
@@ -99,6 +175,7 @@
 <script src="/js/ux-helpers.js"></script>
 <script src="/socket.io/socket.io.min.js"></script>
 <script>
+let hostWakeActive = false;
 function updateWakeBtnUi(st) {
   const wb = document.getElementById('wakeBtn');
   if (!wb) return;
@@ -118,6 +195,9 @@ function updateWakeBtnUi(st) {
     wb.style.color = '#111';
     wb.style.opacity = '1';
   }
+  hostWakeActive = !!st.active;
+  // Erst nach dem Initialisieren auswerten (pgInitWakeLock ruft synchron zurück, bevor S & Co. existieren)
+  setTimeout(() => ctlSync(), 0);
 }
 pgInitWakeLock({ videoFallback: true, onChange: updateWakeBtnUi });
 function activateHostDevice() {
@@ -138,6 +218,27 @@ const TITLES = {
   scale: '📊 Skala 1–10', truthlie: '🎭 2 Wahrheiten, 1 Lüge',
   wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song',
   imagequiz: '🖼️ Bild-Quiz', mix: '🎲 Party-Mix',
+};
+// Kurzregeln für die Lobby („So geht's“)
+const RULES = {
+  quiz: 'Die Frage steht auf dem TV – tippe am Handy die richtige Antwort (Farbe & Form passen zum TV). Je schneller du richtig liegst, desto mehr Punkte.',
+  mostlikely: 'Eine Frage, alle stimmen ab: Wer aus eurer Runde würde das am ehesten tun? Wer die meisten Stimmen bekommt, ist dran.',
+  wouldyourather: 'Zwei Optionen, eine Wahl: Entscheide dich am Handy für eine Seite. Die kleinere Gruppe hat verloren.',
+  estimate: 'Schätze die gesuchte Zahl und tippe sie am Handy ein. Wer am nächsten dran ist, bekommt 1000 Punkte.',
+  reaction: 'Warte, bis der Bildschirm grün wird – dann drück so schnell du kannst. Wer zu früh drückt, fliegt raus!',
+  neverhavei: '„Ich hab noch nie …“ – gib am Handy ehrlich an, ob du das schon mal gemacht hast.',
+  imposter: 'Alle bekommen ein geheimes Wort, der Imposter ein anderes. Sagt reihum ein Stichwort und stimmt dann ab, wer der Imposter ist.',
+  draw: 'Eine Person malt am Handy einen Begriff, alle anderen raten per Texteingabe. Wer richtig rät, punktet.',
+  taboo: 'Eine Person erklärt einen Begriff, ohne ihn zu nennen. Alle anderen tippen ihre Lösung am Handy ein.',
+  sort: 'Bring die Begriffe am Handy in die richtige Reihenfolge. Jede richtige Position bringt Punkte.',
+  icebreaker: 'Beantworte die Frage am Handy – die Antworten erscheinen anonym auf dem TV. Danach tauscht ihr euch aus.',
+  teams: 'Wähle am Handy, zu welchem Team du gehörst. Der TV zeigt danach, wer zu wem passt.',
+  scale: 'Bewerte die Frage am Handy auf einer Skala von 1 bis 10 – danach seht ihr, wie eure Runde tickt.',
+  truthlie: 'Eine Person schreibt 2 Wahrheiten und 1 Lüge. Alle anderen tippen auf die Lüge – wer sie entlarvt, punktet.',
+  wordassoc: 'Ein Wort erscheint auf dem TV – tippe sofort das erste Wort ein, das dir dazu einfällt.',
+  songquiz: 'Ein Song läuft über den TV – erkenne ihn und tippe am Handy die richtige Antwort. Schnell sein lohnt sich!',
+  imagequiz: 'Ein Bild erscheint auf dem TV – tippe am Handy die richtige Antwort. Je schneller, desto mehr Punkte.',
+  mix: 'Jede Runde wird ein anderes Spiel ausgelost – vor jeder Runde siehst du kurz, was als Nächstes kommt.',
 };
 const MODES = Object.keys(TITLES);
 const ROOM_CODE = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
@@ -208,6 +309,40 @@ function unlockAudio() {
   }
 }
 addEventListener('pointerdown', unlockAudio);
+// Steuerleiste (Ton, Lautstärke, Wach-Modus, Weiter) außerhalb der Lobby nach ~4 s ohne Aktivität ausblenden.
+// Bleibt sichtbar, solange Audio blockiert ist oder der Wach-Modus noch nicht aktiv ist.
+const CTL_IDLE_MS = 4000;
+let ctlHideTimer = 0;
+function ctlMustShow() {
+  return !S || S.phase === 'lobby' || audioBlocked || !hostWakeActive;
+}
+function ctlSetHidden(hidden) {
+  const f = document.querySelector('.footer');
+  if (f) f.classList.toggle('ctlHidden', hidden);
+  document.body.classList.toggle('ctlIdle', hidden);
+}
+function ctlArm() {
+  clearTimeout(ctlHideTimer);
+  ctlHideTimer = setTimeout(() => {
+    ctlHideTimer = 0;
+    if (!ctlMustShow()) ctlSetHidden(true);
+  }, CTL_IDLE_MS);
+}
+function ctlActivity() {
+  ctlSetHidden(false);
+  ctlArm();
+}
+// Nach Zustandswechseln: ggf. sofort einblenden, sonst Ausblend-Timer starten
+function ctlSync() {
+  if (ctlMustShow()) {
+    clearTimeout(ctlHideTimer);
+    ctlHideTimer = 0;
+    ctlSetHidden(false);
+  } else if (!ctlHideTimer && !document.body.classList.contains('ctlIdle')) {
+    ctlArm();
+  }
+}
+for (const ev of ['pointermove', 'pointerdown', 'keydown', 'touchstart']) addEventListener(ev, ctlActivity, { passive: true });
 songAudio.addEventListener('error', () => {
   if ((songAudio.getAttribute('src') || '').includes('/silent.mp3')) return;
   audioError = true; audioBlocked = false; render();
@@ -434,6 +569,37 @@ function renderLiveAvBar(justSet) {
 const infoBanner = (title, sub = '', good = true) => title
   ? `<div class="drink ${good ? 'good' : ''}">${title}${sub ? `<small>${sub}</small>` : ''}</div>`
   : '';
+const emptyRes = (title, sub = '') => `<div class="emptyRes">${title}${sub ? `<small>${sub}</small>` : ''}</div>`;
+
+// Gleiche Formen wie auf den Handys (TV-Modus), damit niemand nur über die Farbe zuordnen muss
+const ANS_SHAPES = ['▲', '◆', '●', '■'];
+const hostAvatarOf = name => {
+  const p = S && S.players ? S.players.find(x => x.name === name) : null;
+  return p && p.avatar ? p.avatar : '😎';
+};
+const namesToPickers = names => (names || []).map(n => ({ name: n, avatar: hostAvatarOf(n) }));
+// Kleine Avatar-Badges („wer hat das gewählt“), gestaffelt per popIn eingeblendet
+function pickerBadges(list, delay0 = 0) {
+  if (!list || !list.length) return '';
+  return `<span class="pickers">${list.map((p, i) => `<span class="pk" style="animation-delay:${delay0 + i * 70}ms"><i>${esc(p.avatar || '😎')}</i><b>${esc(p.name)}</b></span>`).join('')}</span>`;
+}
+// Eine Antwort-Kachel; im Ergebnis mit Zähler und Pickern darunter.
+// o: { res, state ('winner'|'dim'|''), cls, shape, prefix (HTML), count, pickers, style }
+function ansTile(i, label, o = {}) {
+  const shape = o.shape ? `<span class="shape" aria-hidden="true">${ANS_SHAPES[i] || ''}</span>` : '';
+  const style = o.style || (o.res ? '' : `animation-delay:${i * 65}ms`);
+  return `<div class="ansCell"><div class="ans tile ${o.cls || `c${i}`} ${o.state || ''}"${style ? ` style="${style}"` : ''}>${shape}<span class="txt">${o.prefix || ''}${esc(label)}</span>${o.res ? `<span class="n">${o.count || 0}</span>` : ''}</div>${o.res ? pickerBadges(o.pickers, 300 + i * 140) : ''}</div>`;
+}
+// Index-basierte Antworten (Quiz, Bild-Quiz, Song-Quiz): Formen + Ergebnis mit Pickern
+function indexAnswers(labels, r, res, compact) {
+  return `<div class="answers${compact ? ' compact' : ''}">${labels.map((a, i) => ansTile(i, a, {
+    res, shape: true,
+    state: res ? (i === r.correct ? 'winner' : 'dim') : '',
+    prefix: res && i === r.correct ? '✔ ' : '',
+    count: res ? r.counts[i] : 0,
+    pickers: res && r.pickers ? r.pickers[i] : null,
+  })).join('')}</div>`;
+}
 
 let wheelStop = () => {}, activeSpinId = -1;
 
@@ -457,28 +623,53 @@ function startWheelAnim(spin) {
   });
 }
 
-// Lobby: Gerüst (QR, Titel) nur bei URL-/Modus-Wechsel neu bauen, sonst nur Banner/Zähler/Chips.
+// Lobby: Gerüst (QR, Code, Titel, Regeln) nur bei URL-/Modus-Wechsel neu bauen, sonst nur Banner/Zähler/Spielerkarten.
 let lobbySeenChips = new Set();
 function renderLobby(title) {
-  const shellSig = `lobby:${title}:${url}:${S.teamMode}`;
+  const ruleKey = S.isMix ? 'mix' : S.mode;
+  const shellSig = `lobby:${title}:${url}:${S.teamMode}:${ruleKey}`;
   if (lastRenderSig !== shellSig || !document.getElementById('lobbyChips')) {
     lastRenderSig = shellSig;
     lobbySeenChips = new Set();
-    app.innerHTML = `<h1>${title} <span style="background:rgba(255,211,61,0.16);border:1px solid #ffd33d;color:#ffd33d;padding:4px 14px;border-radius:12px;font-size:.65em;margin-left:10px">Raum: ${esc(ROOM_CODE)}</span></h1><div id="lobbyBanner"></div><div class="row lobby"><div class="qr-copy" onclick="copyJoinLink()" title="Klicken, um den Beitritts-Link zu kopieren"><img src="/qr.png?room=${encodeURIComponent(ROOM_CODE)}&v=${encodeURIComponent(url)}"><div class="url">${esc(url)}</div><div style="font-size:clamp(11px,1.4vmin,15px);opacity:.55;margin-top:.3vh">📋 Klicken zum Link kopieren</div><div id="qrCopiedBadge" class="qr-copied-badge">✅ Link kopiert!</div></div>
-      <div><div class="big">${S.teamMode ? '👥 Team-Spiel: Wählt euer Team am Handy!' : 'Scanne den QR-Code und mach mit!'}</div><p id="lobbyCount"></p>
-      <div class="chips" id="lobbyChips"></div></div></div>`;
+    let joinHost = '';
+    try { joinHost = url ? new URL(url).host : ''; } catch {}
+    if (!joinHost) joinHost = location.host;
+    const rule = RULES[ruleKey];
+    app.innerHTML = `<div class="lobbyWrap"><h1>${title}</h1><div id="lobbyBanner"></div>
+      <div class="row lobby">
+        <div class="lobbyJoin">
+          <div class="qr-copy" onclick="copyJoinLink()" title="Klicken, um den Beitritts-Link zu kopieren"><img src="/qr.png?room=${encodeURIComponent(ROOM_CODE)}&v=${encodeURIComponent(url)}" alt="QR-Code zum Beitreten"><div class="url">${esc(url)}</div><div style="font-size:clamp(11px,1.4vmin,15px);opacity:.55;margin-top:.3vh">📋 Klicken zum Link kopieren</div><div id="qrCopiedBadge" class="qr-copied-badge">✅ Link kopiert!</div></div>
+          <div class="joinBox"><div class="joinLbl">Raumcode</div><div class="joinCode">${esc(ROOM_CODE)}</div>
+            <div class="joinHint">📱 Öffne <b>${esc(joinHost)}</b> und gib den Code ein – oder scanne den QR-Code.</div></div>
+        </div>
+        <div class="lobbyMain">
+          <div class="big">${S.teamMode ? '👥 Team-Spiel: Wählt euer Team am Handy!' : 'Scanne den QR-Code und mach mit!'}</div>
+          ${rule ? `<div class="lobbyRules"><b>💡 So geht's:</b> ${esc(rule)}</div>` : ''}
+          <div class="lobbyCountRow"><span id="lobbyCount" class="lobbyCount"></span><span id="lobbyRounds" class="lobbyRounds"></span></div>
+          <div class="lobbyPlayers" id="lobbyChips"></div>
+        </div>
+      </div></div>`;
   }
   const bannerEl = document.getElementById('lobbyBanner');
   const bannerHtml = S.lobbyBanner ? `<div class="drink good" style="margin:0 0 2vh;padding:1.6vh 2vw;font-size:3.8vh">${esc(S.lobbyBanner)}</div>` : '';
   if (bannerEl.dataset.v !== bannerHtml) { bannerEl.dataset.v = bannerHtml; bannerEl.innerHTML = bannerHtml; }
-  pgSetText(document.getElementById('lobbyCount'), `${S.players.length} Spieler dabei`);
+  pgSetText(document.getElementById('lobbyCount'), `👥 ${S.players.length} Spieler dabei`);
+  pgSetText(document.getElementById('lobbyRounds'), S.total > 0 ? `🔁 ${S.total} Runden` : '');
   const chipsEl = document.getElementById('lobbyChips');
-  const keys = S.players.map(p => `${S.teamMode && p.team ? T_ICON[p.team] + ' ' : ''}${p.avatar ? p.avatar + ' ' : ''}${p.name}`);
+  const cards = S.players.map(p => ({
+    team: S.teamMode && p.team ? (T_ICON[p.team] || '') : '',
+    avatar: p.avatar || '😎',
+    name: p.name,
+  }));
+  const keys = cards.map(c => `${c.team}\u0002${c.avatar}\u0002${c.name}`);
   const sig = keys.join('\u0001');
   if (chipsEl.dataset.sig === sig) return;
   chipsEl.dataset.sig = sig;
+  chipsEl.classList.toggle('many', cards.length > 12);
   // Nur neue Spieler bekommen die popIn-Animation
-  chipsEl.innerHTML = keys.map(k => `<span${lobbySeenChips.has(k) ? ' class="seen"' : ''}>${esc(k)}</span>`).join('');
+  chipsEl.innerHTML = cards.length
+    ? cards.map((c, i) => `<div class="pCard${lobbySeenChips.has(keys[i]) ? ' seen' : ''}">${c.team ? `<span class="pTeam">${esc(c.team)}</span>` : ''}<div class="pAv">${esc(c.avatar)}</div><div class="pName">${esc(c.name)}</div></div>`).join('')
+    : '<div class="pWait">📱 Warte auf die ersten Spieler…</div>';
   lobbySeenChips = new Set(keys);
 }
 
@@ -503,6 +694,7 @@ function render() {
     updateTimerUI();
     animateScores();
   });
+  ctlSync();
 }
 
 function renderView() {
@@ -516,7 +708,12 @@ function renderView() {
     hostNextBtn.textContent = S.phase === 'lobby' ? '▶ Spiel starten' : S.phase === 'end' ? '🔄 Nochmal' : '▶ Weiter';
   }
   qrUrl.textContent = url;
-  drawWrap.style.display = (S.mode === 'draw' && S.phase === 'question') ? 'flex' : 'none';
+  const drawing = S.mode === 'draw' && S.phase === 'question';
+  drawWrap.style.display = drawing ? 'flex' : 'none';
+  app.classList.toggle('drawing', drawing);
+  // Spielansichten (nicht Lobby/Ende/Drehrad) nutzen das vertikale Ausbalancieren
+  app.classList.toggle('game', !['lobby', 'end'].includes(S.phase) && !(S.phase === 'spin' && S.spin));
+  app.classList.toggle('res', S.phase === 'result');
   const title = S.isMix && S.phase !== 'lobby' && S.phase !== 'end'
     ? `🎲 Party-Mix · ${TITLES[S.mode] || S.mode}`
     : (TITLES[S.mode] || 'PartyGame');
@@ -575,7 +772,9 @@ function renderView() {
     ? `<div id="liveAvBar" class="liveAvBar">${renderLiveAvBar(justAnswered)}</div>`
     : '';
   const header = `<div class="bar"><div id="bar" style="width:100%"></div></div>
-    <div>${title} &nbsp;|&nbsp; Runde ${S.idx + 1} / ${S.total} &nbsp;|&nbsp; <span id="doneCnt">${done}/${S.players.length} fertig</span>${finalTag}<span id="sec" style="float:right;font-weight:700"></span></div>${liveBarHtml}`;
+    <div class="hdrInfo">${title} &nbsp;|&nbsp; Runde ${S.idx + 1} / ${S.total} &nbsp;|&nbsp; <span id="doneCnt">${done}/${S.players.length} fertig</span>${finalTag}<span id="sec" style="float:right;font-weight:700"></span></div>${liveBarHtml}<div class="hdrEnd"></div>`;
+  // Kandidaten-Chips mit Avatar für Abstimmungen (Wer würde am ehesten / Imposter)
+  const voteChips = () => `<div class="voteChips">${S.players.map((p, i) => `<span style="animation-delay:${i * 45}ms"><i>${esc(p.avatar || '😎')}</i>${esc(p.name)}</span>`).join('')}</div>`;
 
   // In-place update when only player answer status or skipVote changed
   const mr = S.missionReveal;
@@ -608,28 +807,37 @@ function renderView() {
     if (S.phase === 'go') { app.innerHTML = header + `<div class="react go reactGo">⚡ JETZT DRÜCKEN!</div>`; return; }
     const r = S.result;
     const rows = r.entries.map((e, i) => `<div style="animation:fadeSlideUp .35s ease-out ${i * 70}ms both"><span>${i === 0 && e.ms > 0 ? '⚡ ' : ''}${i + 1}. ${esc(e.name)}</span><b>${e.ms === -1 ? '❌ Zu früh!' : e.ms === null ? '⏰ Keine Antwort' : `${e.ms} ms`}</b></div>`).join('');
-    app.innerHTML = header + infoBanner(r.fastest ? `⚡ Schnellster: ${esc(r.fastest)}` : 'Ergebnis', '', true) + `<div class="lb">${rows}</div>`;
+    const nobody = !r.entries.some(e => e.ms !== null);
+    app.innerHTML = header + (nobody
+      ? emptyRes('🤷 Niemand hat gedrückt')
+      : infoBanner(r.fastest ? `⚡ Schnellster: ${esc(r.fastest)}` : 'Ergebnis', '', true) + `<div class="lb">${rows}</div>`);
     return;
   }
 
   if (S.mode === 'quiz' || S.mode === 'imagequiz') {
     const r = S.result;
     const imgHtml = S.q.img ? `<div class="iqWrap"><img class="iqImg ${(S.q.theme === 'logos' || S.q.theme === 'cars') ? 'iqLogo' : ''}" src="${esc(S.q.img)}" alt=""></div>` : '';
-    app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>${imgHtml}
-      <div class="answers">${S.q.a.map((a, i) => `<div class="ans c${i} ${res ? (i === r.correct ? 'winner' : 'dim') : ''}" style="${res ? '' : `animation-delay:${i * 65}ms`}">${res && i === r.correct ? '✔ ' : ''}${esc(a)}${res ? `<span class="n">${r.counts[i]}</span>` : ''}</div>`).join('')}</div>
-      ${res ? '<h2>Rangliste</h2>' + lb() : ''}`;
+    const ansHtml = indexAnswers(S.q.a, r, res, !!S.q.img);
+    app.innerHTML = header + `<div class="q${S.q.img ? ' sm' : ''}">${esc(S.q.q)}</div>${imgHtml}` +
+      (res ? `<div class="resSplit side"><div>${ansHtml}</div><div><h2>Rangliste</h2>${lb()}</div></div>` : ansHtml);
     return;
   }
 
   if (S.mode === 'mostlikely') {
     if (!res) {
-      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div><div class="chips">${S.players.map(p => `<span>${esc(p.name)}</span>`).join('')}</div>`;
+      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>${voteChips()}`;
     } else {
       const r = S.result;
-      const vlist = r.votes.filter(v => v.count > 0).map(v => `<div><span>${esc(v.name)}</span><b>${v.count} ${v.count === 1 ? 'Stimme' : 'Stimmen'}</b></div>`).join('');
+      const voted = r.votes.filter(v => v.count > 0);
+      if (!voted.length) {
+        app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>` + emptyRes('🤷 Keine Stimmen abgegeben', 'Diesmal hat niemand abgestimmt.');
+        return;
+      }
+      const vlist = voted.map((v, i) => `<div style="animation-delay:${i * 80}ms"><span class="mlWho"><i>${esc(v.avatar || hostAvatarOf(v.name))}</i>${esc(v.name)}</span>${pickerBadges(v.by, 250 + i * 120)}<b>${v.count} ${v.count === 1 ? 'Stimme' : 'Stimmen'}</b></div>`).join('');
+      const winAv = n => esc((r.votes.find(v => v.name === n) || {}).avatar || hostAvatarOf(n));
       app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>` +
-        (r.winners.length ? infoBanner(`🏆 ${r.winners.map(esc).join(' & ')}`, `${r.max} ${r.max === 1 ? 'Stimme' : 'Stimmen'}`, true) : '') +
-        (vlist ? `<div class="lb">${vlist}</div>` : '');
+        (r.winners.length ? infoBanner(`🏆 ${r.winners.map(n => `${winAv(n)} ${esc(n)}`).join(' & ')}`, `${r.max} ${r.max === 1 ? 'Stimme' : 'Stimmen'}`, true) : '') +
+        `<div class="lb mlVotes">${vlist}</div>`;
     }
     return;
   }
@@ -641,23 +849,22 @@ function renderView() {
       const tot = r.aNames.length + r.bNames.length;
       const pctA = tot ? Math.round((r.aNames.length / tot) * 100) : 50;
       const pctB = 100 - pctA;
-      const avOf = n => { const p = S.players.find(x => x.name === n); return p && p.avatar ? p.avatar : '😎'; };
       tugHtml = `<div class="tugWrap">
         <div class="tugTrack">
           <div class="tugSideA" style="width:${pctA}%">${pctA >= 12 ? `${pctA}%` : ''}</div>
           <div class="tugSideB" style="width:${pctB}%">${pctB >= 12 ? `${pctB}%` : ''}</div>
         </div>
-        <div class="tugAvatars">
-          <div class="tugAvGroup">${r.aNames.map((n, i) => `<span style="animation-delay:${i * 60}ms;border:1.5px solid #e21b3c">${esc(avOf(n))} ${esc(n)}</span>`).join('') || '<span style="opacity:.5">—</span>'}</div>
-          <div class="tugAvGroup" style="justify-content:flex-end">${r.bNames.map((n, i) => `<span style="animation-delay:${i * 60}ms;border:1.5px solid #1368ce">${esc(avOf(n))} ${esc(n)}</span>`).join('') || '<span style="opacity:.5">—</span>'}</div>
-        </div>
       </div>`;
     }
+    const side = (i, label, names, loseKey, winKey) => ansTile(i, label, {
+      res,
+      state: res ? (r.loser === loseKey ? 'dim' : r.loser === winKey ? 'winner' : '') : '',
+      count: res ? names.length : 0,
+      pickers: res ? namesToPickers(names) : null,
+    });
     app.innerHTML = header + `<div class="q">Entweder … oder?</div>
-      <div class="answers">
-        <div class="ans c0 ${res && r.loser === 'B' ? 'dim' : res && r.loser === 'A' ? 'winner' : ''}">${esc(S.q.a)}${res ? `<span class="n">${r.aNames.length}</span>` : ''}</div>
-        <div class="ans c1 ${res && r.loser === 'A' ? 'dim' : res && r.loser === 'B' ? 'winner' : ''}">${esc(S.q.b)}${res ? `<span class="n">${r.bNames.length}</span>` : ''}</div>
-      </div>${tugHtml}`;
+      <div class="answers">${side(0, S.q.a, res ? r.aNames : [], 'A', 'B')}${side(1, S.q.b, res ? r.bNames : [], 'B', 'A')}</div>${tugHtml}` +
+      (res && !r.aNames.length && !r.bNames.length ? emptyRes('🤷 Keine Stimmen abgegeben', 'Diesmal hat sich niemand entschieden.') : '');
     return;
   }
 
@@ -667,11 +874,16 @@ function renderView() {
     } else {
       const r = S.result;
       const valid = r.entries.filter(e => e.val !== null);
+      if (!valid.length) {
+        app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>` +
+          infoBanner(`🎯 Lösung: ${r.answer} ${esc(r.unit || '')}`, '', true) + emptyRes('🤷 Keine Schätzungen abgegeben');
+        return;
+      }
       const vals = [r.answer, ...valid.map(e => e.val)];
       const minV = Math.min(...vals), maxV = Math.max(...vals);
       const span = maxV - minV || Math.max(1, Math.abs(r.answer) * 0.2);
       const posOf = v => Math.max(4, Math.min(96, ((v - (minV === maxV ? minV - span / 2 : minV)) / span) * 92 + 4));
-      const avOf = n => { const p = S.players.find(x => x.name === n); return p && p.avatar ? p.avatar : '😎'; };
+      const avOf = hostAvatarOf;
       const pinsHtml = valid.map((e, i) => `<div class="estPin ${e.name === r.best ? 'best' : ''}" style="left:${posOf(e.val)}%;animation-delay:${i * 90}ms"><span>${esc(avOf(e.name))} ${esc(e.name)}: ${e.val}</span></div>`).join('');
       const radarHtml = `<div class="estRadar"><div class="estAxis">${pinsHtml}<div class="estTarget" style="left:${posOf(r.answer)}%"><span>🎯 Lösung: ${r.answer} ${esc(r.unit || '')}</span></div></div></div>`;
       const rows = r.entries.map((e, i) => `<div><span>${i === 0 && e.val !== null ? '🥇 ' : ''}${esc(avOf(e.name))} ${esc(e.name)}</span><b>${e.val !== null ? e.val + ' ' + esc(r.unit || '') : '—'}</b></div>`).join('');
@@ -686,9 +898,11 @@ function renderView() {
       app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>`;
     } else {
       const r = S.result;
-      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>` +
-        `<div class="cols"><div class="card"><h2>🙌 Hab ich schon</h2><div class="chips">${r.yes.map(n => `<span>${esc(n)}</span>`).join('') || '—'}</div></div>
-        <div class="card"><h2>😇 Noch nie</h2><div class="chips">${r.no.map(n => `<span>${esc(n)}</span>`).join('') || '—'}</div></div></div>`;
+      const nameChips = list => list.map(n => `<span>${esc(hostAvatarOf(n))} ${esc(n)}</span>`).join('') || '—';
+      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>` + (!r.yes.length && !r.no.length
+        ? emptyRes('🤷 Keine Antworten abgegeben')
+        : `<div class="cols"><div class="card"><h2>🙌 Hab ich schon</h2><div class="chips">${nameChips(r.yes)}</div></div>
+        <div class="card"><h2>😇 Noch nie</h2><div class="chips">${nameChips(r.no)}</div></div></div>`);
     }
     return;
   }
@@ -697,15 +911,16 @@ function renderView() {
     if (S.phase === 'discuss') {
       app.innerHTML = header + `<div class="q">🕵️ Schaut auf eure Handys!</div><div class="big">Jeder sagt reihum ein kurzes Stichwort zu seinem Wort.</div>`;
     } else if (!res) {
-      app.innerHTML = header + `<div class="q">🗳️ Wer ist der Imposter?</div><div class="chips">${S.players.map(p => `<span>${p.avatar ? esc(p.avatar) + ' ' : ''}${esc(p.name)}</span>`).join('')}</div>`;
+      app.innerHTML = header + `<div class="q">🗳️ Wer ist der Imposter?</div>${voteChips()}`;
     } else {
       const r = S.result;
-      const accusedTxt = r.accused && r.accused.length ? r.accused.map(esc).join(' & ') : 'Niemand';
+      const hasAccused = r.accused && r.accused.length;
+      const accusedTxt = hasAccused ? `🔎 ${r.accused.map(n => `${esc(hostAvatarOf(n))} ${esc(n)}`).join(' & ')}` : '🤷 Keine Stimmen abgegeben';
       const sub = `🕵️ Imposter: ${r.imposters.map(esc).join(', ')} · Wort: „${esc(r.words[1])}“ vs. „${esc(r.words[0])}“`;
       app.innerHTML = header + `<div class="flipScene"><div class="flipCard">
         <div class="flipFace flipFront">
           <div style="font-size:2.8vh;opacity:.85">🗳️ Die Gruppe verdächtigt…</div>
-          <div style="font-size:5.6vh;font-weight:900;color:#ffd33d;margin-top:1vh">🔎 ${accusedTxt}</div>
+          <div style="font-size:5.6vh;font-weight:900;color:#ffd33d;margin-top:1vh">${accusedTxt}</div>
         </div>
         <div class="flipFace flipBack ${r.caught ? 'good' : 'bad'}">
           <div style="font-size:5.2vh;font-weight:900">${r.caught ? '✅ IMPOSTER ENTTARNT!' : '😈 IMPOSTER ENTKOMMEN!'}</div>
@@ -739,7 +954,7 @@ function renderView() {
   if (S.mode === 'sort') {
     if (!res) {
       app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>` +
-        `<div class="answers">${S.q.items.map((it, i) => `<div class="ans c${i}">${esc(it.label)}</div>`).join('')}</div>`;
+        `<div class="answers">${S.q.items.map((it, i) => `<div class="ans tile c${i}" style="animation-delay:${i * 65}ms"><span class="txt">${esc(it.label)}</span></div>`).join('')}</div>`;
     } else {
       const r = S.result;
       const orderHtml = r.items.map((it, i) => `<div class="card sortCard" style="display:flex;justify-content:space-between;align-items:center;font-size:3.2vh;animation-delay:${i * 140}ms"><span><b style="color:#ffd33d">${i + 1}.</b> ${esc(it.label)}</span><b style="color:#3dd68c">${esc(it.display)}</b></div>`).join('');
@@ -769,7 +984,7 @@ function renderView() {
     app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>
       <div class="answers">${S.q.a.map((a, i) => {
         const names = res ? r.groups[i] : [];
-        return `<div class="ans c${i} ${res && names.length === 0 ? 'dim' : ''}">${esc(a)}${res ? `<span class="n">${names.length}</span><div style="font-size:2.4vh;font-weight:500;margin-top:1vh;opacity:.9">${names.map(esc).join(', ') || '—'}</div>` : ''}</div>`;
+        return ansTile(i, a, { res, state: res && names.length === 0 ? 'dim' : '', count: names.length, pickers: res ? namesToPickers(names) : null });
       }).join('')}</div>`;
     return;
   }
@@ -785,8 +1000,10 @@ function renderView() {
         <span style="min-width:16vw">${esc(e.name)}</span>
         <div class="scaleTrack"><div class="scaleFill" style="width:${e.val !== null ? e.val * 10 : 0}%"></div></div>
         <b style="min-width:4vw;text-align:right">${e.val !== null ? e.val + '/10' : '—'}</b></div>`).join('');
-      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>` +
-        (r.avg !== null ? `<div class="big" style="color:#ffd33d;margin-bottom:1.5vh">Durchschnitt: ${r.avg} / 10</div>` : '') + rows;
+      const anyVal = r.entries.some(e => e.val !== null);
+      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>` + (!anyVal
+        ? emptyRes('🤷 Keine Antworten abgegeben')
+        : (r.avg !== null ? `<div class="big" style="color:#ffd33d;margin-bottom:1.5vh">Durchschnitt: ${r.avg} / 10</div>` : '') + rows);
     }
     return;
   }
@@ -797,10 +1014,16 @@ function renderView() {
     } else {
       const r = S.result;
       app.innerHTML = header + `<div class="q">🎭 Was ist die Lüge von ${esc(S.q.storyteller)}?</div>
-        <div class="votes" style="display:grid;gap:1.6vh">${S.q.statements.map((st, i) => {
+        <div class="answers tl">${S.q.statements.map((st, i) => {
           const isLie = res && i === r.lieIdx;
-          const cls = res ? (isLie ? 'c0' : 'dim') : `c${i}`;
-          return `<div class="ans ${cls}" style="padding:3vh 2vw;font-size:3.6vh;animation-delay:${i * 70}ms">${isLie ? '🚨 LÜGE: ' : ''}${esc(st)}${res ? `<span class="n">${r.counts[i]}</span>` : ''}</div>`;
+          return ansTile(i, st, {
+            res,
+            state: res ? (isLie ? 'winner' : 'dim') : '',
+            prefix: isLie ? '🚨 LÜGE: ' : '',
+            count: res ? r.counts[i] : 0,
+            pickers: res && r.pickers ? r.pickers[i] : null,
+            style: res ? '' : `animation-delay:${i * 70}ms`,
+          });
         }).join('')}</div>` +
         (res ? infoBanner(r.caughtBy.length ? `Entlarvt von: ${r.caughtBy.map(esc).join(', ')}` : `Niemand hat's gemerkt!`, `+1000 Pkt für ${esc(r.storyteller)}`, r.caughtBy.length > 0) : '');
     }
@@ -852,9 +1075,11 @@ function renderView() {
           ${eqHtml}
           <div style="font-size:3vh;color:#ffd33d;font-weight:700">${!S.q.preview ? '⚠️ Keine Audio-Vorschau verfügbar' : audioError ? '⚠️ Audio konnte nicht geladen werden' : audioBlocked ? '<button onclick="unlockAudio()" style="background:#e21b3c;padding:1.2vh 2vw;font-size:3vh;font-weight:700">▶️ Ton aktivieren (Browser blockiert Autoplay)</button>' : '🔊 Hört genau hin…'}</div>
         </div>`;
-    app.innerHTML = header + `<div class="q" style="margin:1.2vh 0 1.5vh">${esc(S.q.q)}</div>` + songBanner +
-      `<div class="answers">${S.q.a.map((a, i) => `<div class="ans c${i} ${res ? (i === r.correct ? 'winner' : 'dim') : ''}" style="${res ? '' : `animation-delay:${i * 65}ms`}">${res && i === r.correct ? '✔ ' : ''}${esc(a)}${res ? `<span class="n">${r.counts[i]}</span>` : ''}</div>`).join('')}</div>` +
-      (res ? '<div style="text-align:center"><div class="nextBanner">⏭️ Es geht weiter…</div></div><h2>Rangliste</h2>' + lb() : '');
+    const ansHtml = indexAnswers(S.q.a, r, res, true);
+    app.innerHTML = header + `<div class="q sm" style="margin:1.2vh 0 1.5vh">${esc(S.q.q)}</div>` + songBanner +
+      (res
+        ? `<div class="resSplit side"><div>${ansHtml}</div><div><div style="text-align:center"><div class="nextBanner">⏭️ Es geht weiter…</div></div><h2>Rangliste</h2>${lb()}</div></div>`
+        : ansHtml);
   }
   })();
   if (S.phase === 'result' && S.missionReveal) {
