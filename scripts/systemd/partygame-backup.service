@@ -1,0 +1,20 @@
+# Tägliche Datensicherung von PartyGame (data/*.json, Host-PIN) nach /opt/partygame/backups.
+# Installation:
+#   sudo install -m 644 /opt/partygame/scripts/systemd/partygame-backup.service /opt/partygame/scripts/systemd/partygame-backup.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now partygame-backup.timer
+# Manuell auslösen: sudo systemctl start partygame-backup.service; Log: journalctl -u partygame-backup
+[Unit]
+Description=PartyGame Datensicherung
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=games
+Group=games
+WorkingDirectory=/opt/partygame
+ExecStart=/opt/partygame/scripts/backup.sh
+UMask=0007
+NoNewPrivileges=true
+PrivateTmp=true
+TimeoutStartSec=5min

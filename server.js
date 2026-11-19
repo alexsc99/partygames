@@ -4,6 +4,7 @@ const path = require('path');
 const express = require('express');
 const http = require('http');
 const os = require('os');
+const { monitorEventLoopDelay, performance } = require('perf_hooks');
 const QRCode = require('qrcode');
 const { Server } = require('socket.io');
 const { version: APP_VERSION } = require('./package.json');
@@ -111,6 +112,9 @@ app.use(['/api', '/qr.png', '/info'], apiLimiter);
 const server = http.createServer(app);
 const io = new Server(server, {
   maxHttpBufferSize: 1e4,
+  // State-Updates sind ~2,5 KB JSON mit vielen wiederholten Schlüsseln → komprimiert ~4× kleiner (Mobilfunk)
+  perMessageDeflate: { threshold: 1024 },
+  httpCompression: { threshold: 1024 },
   pingInterval: 15000,
   pingTimeout: 20000,
   connectionStateRecovery: {
@@ -131,6 +135,7 @@ const assetHashes = Object.fromEntries(VERSIONED_ASSETS.map(url => [
   crypto.createHash('sha1').update(fs.readFileSync(path.join(PUBLIC_DIR, url))).digest('hex').slice(0, 10),
 ]));
 app.use((req, res, next) => {
+  if (req.path === '/sw.js') res.setHeader('Cache-Control', 'no-cache'); // Service-Worker-Updates sofort ausliefern
   if (VERSIONED_ASSETS.includes(req.path)) {
     res.setHeader('Cache-Control', req.query.v === assetHashes[req.path] ? 'public, max-age=31536000, immutable' : 'no-cache');
   }
@@ -269,6 +274,7 @@ app.post('/api/rooms', (req, res) => {
   const room = createRoom(code, hostToken);
   rooms.set(code, room);
   writeLog('INFO', 'room_created', { code });
+  scheduleRoomsSnapshot();
   res.status(201).json({ ok: true, code, hostToken });
 });
 
@@ -328,7 +334,169 @@ setInterval(() => {
   }
 }, 5 * 60_000).unref();
 
-function createRoom(code, hostToken) {
+// --- Raum-Persistenz: laufende Spiele überleben Neustarts (systemctl restart / Deploy) ---
+// Schnappschuss aller Räume in data/rooms.json: entprellt, asynchron und atomar (tmp-Datei + rename).
+const ROOMS_FILE = path.join(__dirname, 'data', 'rooms.json');
+const ROOMS_SNAPSHOT_DEBOUNCE_MS = 1500;
+const ROOMS_SNAPSHOT_MAX_WAIT_MS = 10_000; // bei Dauer-Aktivität trotzdem spätestens alle 10 s schreiben
+const ROOMS_SNAPSHOT_MAX_AGE_MS = 2 * 60 * 60_000;
+const RESTORE_GRACE_MS = 4000; // Handys brauchen nach dem Neustart ein paar Sekunden zum Wiederverbinden
+const SNAPSHOT_STROKES_MAX = 1500;
+const RESTORED_ID_PREFIX = 'restored:'; // Platzhalter-ID bis der Spieler mit Name + Token zurückkommt
+let roomsPersistEnabled = false; // nur im echten Serverbetrieb (require.main === module), nie in Tests
+let snapshotTimer = null;
+let snapshotFirstDirtyAt = 0;
+let snapshotWriting = false;
+let snapshotPending = false;
+let snapshotFailLoggedAt = 0;
+
+function scheduleRoomsSnapshot() {
+  if (!roomsPersistEnabled) return;
+  const now = Date.now();
+  if (snapshotTimer) {
+    if (now - snapshotFirstDirtyAt < ROOMS_SNAPSHOT_MAX_WAIT_MS) snapshotTimer.refresh();
+    return;
+  }
+  snapshotFirstDirtyAt = now;
+  snapshotTimer = setTimeout(flushRoomsSnapshot, ROOMS_SNAPSHOT_DEBOUNCE_MS);
+  snapshotTimer.unref();
+}
+
+// Räume cachen ihr JSON und serialisieren nur nach Änderungen neu
+function serializeRoomsSnapshot() {
+  const parts = [];
+  for (const room of rooms.values()) parts.push(room.serializeJson());
+  return `{"savedAt":${Date.now()},"rooms":[${parts.join(',')}]}`;
+}
+
+function snapshotRooms() {
+  return JSON.parse(serializeRoomsSnapshot());
+}
+
+function reportSnapshotFailure(err) {
+  const now = Date.now();
+  if (now - snapshotFailLoggedAt < 60_000) return;
+  snapshotFailLoggedAt = now;
+  writeLog('WARN', 'rooms_snapshot_failed', { error: err?.message || String(err) });
+}
+
+async function flushRoomsSnapshot() {
+  snapshotTimer = null;
+  if (!roomsPersistEnabled) return;
+  if (snapshotWriting) { snapshotPending = true; return; }
+  snapshotWriting = true;
+  const tmp = `${ROOMS_FILE}.${process.pid}.tmp`;
+  try {
+    await fs.promises.writeFile(tmp, serializeRoomsSnapshot());
+    // Während des Herunterfahrens schreibt gracefulShutdown den finalen Stand synchron – nicht überschreiben
+    if (roomsPersistEnabled) await fs.promises.rename(tmp, ROOMS_FILE);
+    else await fs.promises.unlink(tmp).catch(() => {});
+  } catch (err) {
+    reportSnapshotFailure(err);
+  } finally {
+    snapshotWriting = false;
+    if (snapshotPending) {
+      snapshotPending = false;
+      scheduleRoomsSnapshot();
+    }
+  }
+}
+
+function writeRoomsSnapshotSync() {
+  clearTimeout(snapshotTimer);
+  snapshotTimer = null;
+  roomsPersistEnabled = false;
+  const tmp = `${ROOMS_FILE}.${process.pid}.sync.tmp`;
+  try {
+    fs.writeFileSync(tmp, serializeRoomsSnapshot());
+    fs.renameSync(tmp, ROOMS_FILE);
+    return true;
+  } catch (err) {
+    writeLog('WARN', 'rooms_snapshot_failed', { error: err?.message || String(err) });
+    return false;
+  }
+}
+
+function restoreRooms(snapshot) {
+  const result = { count: 0, players: 0 };
+  if (!snapshot || typeof snapshot !== 'object' || !Array.isArray(snapshot.rooms)) return result;
+  const ageMs = Date.now() - Number(snapshot.savedAt);
+  if (!(ageMs < ROOMS_SNAPSHOT_MAX_AGE_MS)) {
+    writeLog('INFO', 'rooms_restore_skipped', { reason: 'stale', ageMin: Number.isFinite(ageMs) ? Math.round(ageMs / 60_000) : null });
+    return result;
+  }
+  for (const snap of snapshot.rooms) {
+    const code = normalizeRoomCode(snap && snap.code);
+    const hostToken = snap && typeof snap.hostToken === 'string' ? snap.hostToken : '';
+    if (!code || !hostToken || rooms.has(code) || rooms.size >= MAX_ROOMS) continue;
+    try {
+      rooms.set(code, createRoom(code, hostToken, snap));
+      result.count++;
+      result.players += Array.isArray(snap.players) ? snap.players.length : 0;
+    } catch (err) {
+      writeLog('WARN', 'room_restore_failed', { code, error: err?.message || String(err) });
+    }
+  }
+  writeLog('INFO', 'rooms_restored', result);
+  return result;
+}
+
+function loadRoomsFromDisk() {
+  let raw;
+  try {
+    raw = fs.readFileSync(ROOMS_FILE, 'utf8');
+  } catch (err) {
+    if (err.code !== 'ENOENT') writeLog('WARN', 'rooms_restore_failed', { error: err?.message || String(err) });
+    return { count: 0, players: 0 };
+  }
+  try {
+    return restoreRooms(JSON.parse(raw));
+  } catch (err) {
+    writeLog('WARN', 'rooms_restore_failed', { error: err?.message || String(err) });
+    return { count: 0, players: 0 };
+  }
+}
+
+// --- Laufzeit-Metriken für Grafana/Loki: eine Zeile "metrics" pro Minute ---
+const metrics = { enabled: false, broadcasts: 0, emitBytes: 0 };
+const round1 = x => (Number.isFinite(x) ? Math.round(x * 10) / 10 : 0);
+function startMetrics(intervalMs = 60_000) {
+  if (metrics.enabled || process.env.NODE_ENV === 'test') return;
+  metrics.enabled = true;
+  const eld = monitorEventLoopDelay({ resolution: 10 });
+  eld.enable();
+  let lastCpu = process.cpuUsage();
+  let lastAt = performance.now();
+  setInterval(() => {
+    const now = performance.now();
+    const elapsedMs = Math.max(1, now - lastAt);
+    const cpu = process.cpuUsage();
+    const mem = process.memoryUsage();
+    let players = 0;
+    for (const r of rooms.values()) players += r.getPlayerCount();
+    const perMin = 60_000 / elapsedMs;
+    writeLog('INFO', 'metrics', {
+      rooms: rooms.size,
+      players,
+      sockets: io.of('/').sockets.size,
+      rssMb: Math.round(mem.rss / 1048576),
+      heapMb: Math.round(mem.heapUsed / 1048576),
+      cpuPct: round1(((cpu.user - lastCpu.user) + (cpu.system - lastCpu.system)) / 1000 / elapsedMs * 100),
+      elP50Ms: round1(eld.percentile(50) / 1e6),
+      elP99Ms: round1(eld.percentile(99) / 1e6),
+      elMaxMs: round1(eld.max / 1e6),
+      broadcastsPerMin: Math.round(metrics.broadcasts * perMin),
+      emitKbPerMin: Math.round(metrics.emitBytes / 1024 * perMin),
+    });
+    eld.reset();
+    metrics.broadcasts = 0;
+    metrics.emitBytes = 0;
+    lastCpu = cpu;
+    lastAt = now;
+  }, intervalMs).unref();
+}
+
+function createRoom(code, hostToken, snapshot = null) {
 const ROOM_CHAN = 'room:' + code;
 const roomSockets = new Set();
 let lastActivity = Date.now();
@@ -404,10 +572,14 @@ function finalizePlayerDisconnect(socketId, reason, recovered) {
   const key = p.name.toLowerCase();
   const prev = disconnectedPlayers.get(key);
   if (prev) clearTimeout(prev.timer);
-  const t = setTimeout(() => disconnectedPlayers.delete(key), 900_000);
+  const t = setTimeout(() => { disconnectedPlayers.delete(key); markDirty(); }, 900_000);
   if (t.unref) t.unref();
   disconnectedPlayers.set(key, {
-    data: { avatar: p.avatar, team: p.team, score: p.score, drinks: p.drinks, stats: p.stats, reconnectToken: p.reconnectToken, answer: p.answer, answeredAt: p.answeredAt, roundSeq },
+    data: {
+      name: p.name, avatar: p.avatar, team: p.team, score: p.score, prevScore: p.prevScore, lastGain: p.lastGain, streak: p.streak,
+      drinks: p.drinks, stats: p.stats, reconnectToken: p.reconnectToken, answer: p.answer, answeredAt: p.answeredAt, roundSeq,
+      prevId: socketId, // für das Umhängen der Imposter-Rolle beim Rejoin
+    },
     timer: t,
   });
   writeLog('INFO', 'player_disconnected', { name: p.name, socketId, reason, recovered });
@@ -534,17 +706,31 @@ function filteredIndices(mode) {
   return matching.length ? matching : pool.map((_, i) => i);
 }
 
+// totalRounds() läuft bei jedem pub(): in der Lobby nicht jedes Mal den ganzen Fragenpool filtern
+let filteredCountKey = '';
+let filteredCountVal = 0;
+function filteredCount(mode) {
+  const key = mode === 'songquiz' ? `songquiz|${songLangs.en}|${songLangs.de}|${effectiveRussianShare()}`
+    : mode === 'imagequiz' ? `imagequiz|${imageQuizThemes.join(',')}`
+    : `${mode}|${activeCategories.join(',')}|${roomCustom[mode] ? roomCustom[mode].length : 0}`;
+  if (key !== filteredCountKey) {
+    filteredCountVal = filteredIndices(mode).length;
+    filteredCountKey = key;
+  }
+  return filteredCountVal;
+}
+
 const totalRounds = () => {
   let n;
   if (state.mode === 'reaction') n = REACTION_ROUNDS;
   else if (state.mode === 'mix') return mixRounds; // Party-Mix hat eigene Rundenwahl (8/12/16)
   else if (state.mode === 'truthlie') n = state.phase === 'lobby' ? Math.max(pVals().length, 3) : Math.max(state.order.length, 1);
   else if (state.order.length && state.phase !== 'lobby') n = state.order.length;
-  else n = filteredIndices(state.mode).length;
+  else n = filteredCount(state.mode);
   return roundLimit > 0 ? Math.min(n, roundLimit) : n;
 };
 
-const list = () => pVals()
+const list = (ps = pVals()) => ps
   .map(p => ({
     name: p.name,
     avatar: p.avatar || '😎',
@@ -590,7 +776,7 @@ function currentQuestion() {
   }
 }
 
-function getNextPreloadAssets(m) {
+function getNextPreloadAssets(m, total) {
   let nextImg = null;
   let nextAudio = null;
   let nextArt = null;
@@ -603,7 +789,7 @@ function getNextPreloadAssets(m) {
     }
     return { nextImg, nextAudio, nextArt };
   }
-  if ((state.phase === 'question' || state.phase === 'result') && nextIdx < totalRounds()) {
+  if ((state.phase === 'question' || state.phase === 'result') && nextIdx < total) {
     if (state.mode === 'imagequiz' && DATA.imagequiz[state.order[nextIdx]]) {
       nextImg = '/iq/' + DATA.imagequiz[state.order[nextIdx]].img;
     } else if (state.mode === 'songquiz') {
@@ -625,7 +811,11 @@ function getNextPreloadAssets(m) {
   return { nextImg, nextAudio, nextArt };
 }
 
-const isFinalRound = () => finalDouble && state.phase !== 'lobby' && state.phase !== 'end' && totalRounds() > 1 && state.idx === totalRounds() - 1;
+const isFinalRound = (total) => {
+  if (!finalDouble || state.phase === 'lobby' || state.phase === 'end') return false;
+  const n = total ?? totalRounds();
+  return n > 1 && state.idx === n - 1;
+};
 
 function computeAwards() {
   if (state.phase !== 'end') return [];
@@ -656,10 +846,12 @@ function computeAwards() {
 }
 
 function pub() {
+  const ps = pVals();
+  const total = totalRounds();
   const m = state.phase === 'lobby' || state.phase === 'end' ? state.mode : activeMode();
-  const { nextImg, nextAudio, nextArt } = getNextPreloadAssets(m);
+  const { nextImg, nextAudio, nextArt } = getNextPreloadAssets(m, total);
   const teams = teamMode ? TEAMS.map(t => {
-    const members = pVals().filter(p => p.team === t.id);
+    const members = ps.filter(p => p.team === t.id);
     const score = members.reduce((s, p) => s + p.score, 0);
     const prevScore = members.reduce((s, p) => s + (p.prevScore ?? p.score), 0);
     return {
@@ -671,8 +863,8 @@ function pub() {
     };
   }).filter(t => t.members.length > 0).sort((a, b) => b.score - a.score) : null;
   return {
-    roomCode: code, mode: m, isMix: state.mode === 'mix', phase: state.phase, idx: state.idx, total: totalRounds(),
-    isFinalRound: isFinalRound(),
+    roomCode: code, mode: m, isMix: state.mode === 'mix', phase: state.phase, idx: state.idx, total,
+    isFinalRound: isFinalRound(total),
     categories: activeCategories, roundLimit, teamMode,
     displayMode, noTvMode: displayMode !== 'tv',
     songLangs, imageQuizThemes, russianShare, effectiveRussianShare: effectiveRussianShare(), songOnlyArtistTitle, finalDouble, wheelEnabled, secretMissions, alcoholFree, timerSpeed, mixRounds, mixModes,
@@ -690,17 +882,16 @@ function pub() {
     nextArt,
     result: state.phase === 'result' ? state.result : null,
     skipVote: ['question', 'go', 'write', 'discuss', 'result'].includes(state.phase) && displayMode !== 'onedevice' ? (() => {
-      const ps = pVals();
-      const total = ps.length;
-      const needed = Math.max(1, Math.ceil(total * 0.65));
+      const count = ps.length;
+      const needed = Math.max(1, Math.ceil(count * 0.65));
       const voters = Array.from(skipVotes).filter(n => ps.some(pl => pl.name.toLowerCase() === n));
-      return { count: voters.length, needed, total, voters };
+      return { count: voters.length, needed, total: count, voters };
     })() : null,
     missionReveal: (state.phase === 'result' && state.mission)
       ? { playerName: state.mission.playerName, text: state.mission.text, resolved: state.mission.resolved, success: state.mission.success }
       : null,
     awards: state.phase === 'end' ? computeAwards() : [],
-    players: list(),
+    players: list(ps),
   };
 }
 
@@ -739,15 +930,28 @@ function sendPrivate(socket, id) {
   if (socket.data.lastPrivJson === privJson) return;
   socket.data.hasPrivate = true;
   socket.data.lastPrivJson = privJson;
+  metrics.emitBytes += privJson.length;
   socket.emit('private', priv);
 }
 
+let broadcastN = 0;
+let pubBytes = 0;
+let pubBytesPhase = '';
 function broadcast() {
-  io.to(ROOM_CHAN).emit('state', pub());
+  const payload = pub();
+  // Metrik: Payload-Größe nur stichprobenartig messen (Phasenwechsel / jede 8. Übertragung) statt doppelt zu serialisieren
+  if (metrics.enabled && (pubBytesPhase !== state.phase || (broadcastN++ & 7) === 0)) {
+    pubBytes = JSON.stringify(payload).length;
+    pubBytesPhase = state.phase;
+  }
+  io.to(ROOM_CHAN).emit('state', payload);
+  metrics.broadcasts++;
+  metrics.emitBytes += pubBytes * roomSockets.size;
   for (const id of roomSockets) {
     const sock = io.sockets.sockets.get(id);
     if (sock) sendPrivate(sock, id);
   }
+  markDirty();
 }
 
 function pickNextActor(mode) {
@@ -1113,14 +1317,7 @@ async function activateRound(seq, m, playedIdx) {
     state.totalMs = 0;
     broadcast();
     const delay = 2500 + Math.floor(Math.random() * 3500);
-    timer = setTimeout(() => {
-      state.phase = 'go';
-      state.reactionGoAt = Date.now();
-      state.totalMs = TIME.reaction * 1000;
-      state.deadline = state.reactionGoAt + state.totalMs;
-      broadcast();
-      timer = setTimeout(showResult, state.totalMs);
-    }, delay);
+    timer = setTimeout(startReactionGo, delay);
     return;
   }
 
@@ -1194,6 +1391,16 @@ async function activateRound(seq, m, playedIdx) {
   state.deadline = displayMode === 'onedevice' ? 0 : Date.now() + state.totalMs;
   broadcast();
   if (displayMode !== 'onedevice') timer = setTimeout(showResult, state.totalMs);
+}
+
+function startReactionGo() {
+  if (state.phase !== 'wait') return;
+  state.phase = 'go';
+  state.reactionGoAt = Date.now();
+  state.totalMs = TIME.reaction * 1000;
+  state.deadline = state.reactionGoAt + state.totalMs;
+  broadcast();
+  timer = setTimeout(showResult, state.totalMs);
 }
 
 function startImposterVote() {
@@ -1553,14 +1760,20 @@ function attachSocket(socket, ip, allowEvent) {
         disconnectedPlayers.delete(name.toLowerCase());
         token = saved.data.reconnectToken || crypto.randomBytes(16).toString('base64url');
         const sameRound = saved.data.roundSeq === roundSeq;
+        const { prevId, ...savedData } = saved.data;
         players[socket.id] = {
-          ...saved.data,
+          ...savedData,
           name,
           avatar: rawAvatar,
           reconnectToken: token,
-          answer: sameRound ? (saved.data.answer ?? null) : null,
-          answeredAt: sameRound ? (saved.data.answeredAt || 0) : 0,
+          answer: sameRound ? (savedData.answer ?? null) : null,
+          answeredAt: sameRound ? (savedData.answeredAt || 0) : 0,
         };
+        // Imposter-Rolle hängt an der Socket-ID → auf die neue Verbindung umhängen
+        if (sameRound && prevId) {
+          const impPos = state.imposterIds.indexOf(prevId);
+          if (impPos !== -1) state.imposterIds[impPos] = socket.id;
+        }
         if (state.mission && state.mission.playerName.toLowerCase() === name.toLowerCase()) {
           state.mission.playerId = socket.id;
         }
@@ -1667,6 +1880,7 @@ function attachSocket(socket, ip, allowEvent) {
     if (activeMode() !== 'songquiz' || state.phase !== 'question' || state.paused || state.songStarted) return;
     if (idx !== state.idx || displayMode === 'onedevice') return;
     state.songStarted = true;
+    markDirty();
   });
 
   // Zeichnen: Der Client bündelt Punkte (~20 Chunks/s) statt einer Nachricht pro pointermove.
@@ -1689,6 +1903,7 @@ function attachSocket(socket, ip, allowEvent) {
     state.strokes.push(clean);
     if (state.strokes.length > STROKE_HISTORY_MAX) state.strokes.shift();
     socket.to(ROOM_CHAN).emit('draw:stroke', clean);
+    markDirty();
   });
 
   socket.on('draw:undo', () => {
@@ -1705,6 +1920,7 @@ function attachSocket(socket, ip, allowEvent) {
       state.strokes.splice(Math.max(0, state.strokes.length - 8));
     }
     io.to(ROOM_CHAN).emit('draw:history', state.strokes);
+    markDirty();
   });
 
   socket.on('draw:clear', () => {
@@ -1713,6 +1929,7 @@ function attachSocket(socket, ip, allowEvent) {
     if (!p || state.mode !== 'draw' || state.phase !== 'question' || p.name !== state.drawerName) return;
     state.strokes = [];
     io.to(ROOM_CHAN).emit('draw:clear');
+    markDirty();
   });
 
   socket.on('draw:guess', (txt, ack) => {
@@ -2222,10 +2439,180 @@ function attachSocket(socket, ip, allowEvent) {
   });
 }
 
+// --- Persistenz (siehe snapshotRooms/restoreRooms): Socket-IDs sind keine Identität,
+// Spieler werden beim Wiederherstellen per Name + reconnectToken über disconnectedPlayers zugeordnet ---
+let snapDirty = true;
+let snapJson = '';
+function markDirty() {
+  snapDirty = true;
+  scheduleRoomsSnapshot();
+}
+
+const PLAYER_SNAP_KEYS = ['avatar', 'team', 'score', 'prevScore', 'lastGain', 'streak', 'drinks', 'answer', 'answeredAt', 'stats', 'reconnectToken'];
+function playerSnap(name, p, extra) {
+  const out = { name };
+  for (const k of PLAYER_SNAP_KEYS) if (p[k] !== undefined) out[k] = p[k];
+  return extra ? Object.assign(out, extra) : out;
+}
+
+function serialize() {
+  const { imposterIds, mission, strokes, ...rest } = state;
+  const snapPlayers = [];
+  const seen = new Set();
+  for (const [id, p] of Object.entries(players)) {
+    seen.add(p.name.toLowerCase());
+    snapPlayers.push(playerSnap(p.name, p, { roundSeq, local: !!p.isLocal, imposter: imposterIds.includes(id) }));
+  }
+  for (const [key, d] of disconnectedPlayers) {
+    if (seen.has(key)) continue;
+    snapPlayers.push(playerSnap(d.data.name || key, d.data, {
+      roundSeq: d.data.roundSeq, local: false, imposter: !!d.data.prevId && imposterIds.includes(d.data.prevId),
+    }));
+  }
+  return {
+    v: 1,
+    code,
+    hostToken,
+    settings: {
+      activeCategories, roundLimit, teamMode, displayMode, songLangs, imageQuizThemes, russianShare, songOnlyArtistTitle,
+      finalDouble, wheelEnabled, secretMissions, alcoholFree, timerSpeed, mixRounds, mixModes, publicUrl,
+    },
+    // roomCustom wird bewusst nicht gespeichert: host:addCustom schreibt die Einträge nach data/custom.json,
+    // die beim Start ohnehin in DATA landen (sonst doppelte Einträge im Pool).
+    roundSeq, spinSeq, actorQueues, songKindQueue, lastSongKind,
+    skipVotes: [...skipVotes],
+    state: {
+      ...rest,
+      strokes: strokes.length > SNAPSHOT_STROKES_MAX ? strokes.slice(-SNAPSHOT_STROKES_MAX) : strokes,
+      mission: mission ? { playerName: mission.playerName, text: mission.text, resolved: mission.resolved, success: mission.success } : null,
+    },
+    players: snapPlayers,
+  };
+}
+
+function applySnapshot(snap) {
+  const s = snap.settings && typeof snap.settings === 'object' ? snap.settings : {};
+  const pickList = (arr, allowed) => (Array.isArray(arr) ? [...new Set(arr.filter(x => allowed.includes(x)))] : []);
+  const cats = pickList(s.activeCategories, CATEGORIES);
+  if (cats.length) activeCategories = cats;
+  if ([0, 5, 10, 15].includes(s.roundLimit)) roundLimit = s.roundLimit;
+  teamMode = !!s.teamMode;
+  if (['tv', 'notv', 'onedevice'].includes(s.displayMode)) displayMode = s.displayMode;
+  if (s.songLangs && typeof s.songLangs === 'object') songLangs = { en: !!s.songLangs.en, de: !!s.songLangs.de };
+  const themes = pickList(s.imageQuizThemes, ['logos', 'landmarks', 'flags', 'cars']);
+  if (themes.length) imageQuizThemes = themes;
+  if (Number.isFinite(s.russianShare)) russianShare = Math.max(0, Math.min(100, Math.round(s.russianShare)));
+  songOnlyArtistTitle = !!s.songOnlyArtistTitle;
+  if (typeof s.finalDouble === 'boolean') finalDouble = s.finalDouble;
+  if (typeof s.wheelEnabled === 'boolean') wheelEnabled = s.wheelEnabled;
+  secretMissions = !!s.secretMissions;
+  alcoholFree = !!s.alcoholFree;
+  if (TIMER_MULT[s.timerSpeed]) timerSpeed = s.timerSpeed;
+  if ([8, 12, 16].includes(s.mixRounds)) mixRounds = s.mixRounds;
+  const mm = pickList(s.mixModes, MIX_MODES_ALL);
+  if (mm.length >= 2) mixModes = mm;
+  if (typeof s.publicUrl === 'string' && s.publicUrl) publicUrl = s.publicUrl;
+  if (Number.isInteger(snap.roundSeq)) roundSeq = snap.roundSeq;
+  if (Number.isInteger(snap.spinSeq)) spinSeq = snap.spinSeq;
+  if (snap.actorQueues && typeof snap.actorQueues === 'object') actorQueues = snap.actorQueues;
+  if (Array.isArray(snap.songKindQueue)) songKindQueue = snap.songKindQueue;
+  if (typeof snap.lastSongKind === 'string') lastSongKind = snap.lastSongKind;
+  if (Array.isArray(snap.skipVotes)) for (const n of snap.skipVotes) if (typeof n === 'string') skipVotes.add(n);
+
+  const st = snap.state && typeof snap.state === 'object' ? snap.state : {};
+  state = Object.assign(freshState('quiz'), st, { imposterIds: [], mission: null });
+  if (!MODES.includes(state.mode)) state.mode = 'quiz';
+  if (!Array.isArray(state.strokes)) state.strokes = [];
+  if (st.mission && typeof st.mission.playerName === 'string') {
+    // Rejoin hängt die Mission über playerName wieder an die neue Socket-ID
+    state.mission = { ...st.mission, playerId: RESTORED_ID_PREFIX + st.mission.playerName.toLowerCase() };
+  }
+
+  let localN = 0;
+  for (const ps of Array.isArray(snap.players) ? snap.players : []) {
+    if (!ps || typeof ps.name !== 'string' || !ps.name.trim()) continue;
+    const name = ps.name.trim().slice(0, 16);
+    const data = {
+      team: null, score: 0, drinks: 0, answer: null, answeredAt: 0,
+      stats: { fastSum: 0, fastCount: 0, bestEstimate: 0, guessedWords: 0 },
+      ...playerSnap(name, ps),
+    };
+    if (ps.local) {
+      // Ein-Gerät-Spieler haben keine eigene Verbindung → direkt wieder aktiv
+      const id = `local:restored:${++localN}`;
+      players[id] = { ...data, isLocal: true };
+      if (ps.imposter) state.imposterIds.push(id);
+      continue;
+    }
+    const key = name.toLowerCase();
+    const prevId = RESTORED_ID_PREFIX + key;
+    if (ps.imposter) state.imposterIds.push(prevId);
+    const t = setTimeout(() => { disconnectedPlayers.delete(key); markDirty(); }, 900_000);
+    if (t.unref) t.unref();
+    disconnectedPlayers.set(key, {
+      data: { ...data, roundSeq: Number.isInteger(ps.roundSeq) ? ps.roundSeq : -1, prevId },
+      timer: t,
+    });
+  }
+  lastActivity = Date.now();
+  rearmAfterRestore();
+}
+
+// Timer der aktuellen Phase neu stellen. Abgelaufene Deadlines laufen nach kurzer Schonfrist weiter,
+// damit die Handys vorher wieder verbunden sind (sonst würden ihre Antworten nicht gewertet).
+function rearmAfterRestore() {
+  clearTimeout(timer);
+  pendingSpinNext = null;
+  const delayUntil = deadline => Math.max(RESTORE_GRACE_MS, deadline - Date.now());
+  if (state.phase === 'spin') {
+    if (!state.spin || String(state.spin.kind || '').startsWith('lobby') || state.idx < 0) {
+      state.phase = 'lobby';
+      state.spin = null;
+      state.deadline = 0;
+      state.totalMs = 0;
+      return;
+    }
+    // Weitere (Spieler-)Räder entfallen, der Akteur steht bereits fest
+    const seq = roundSeq;
+    const m = activeMode();
+    const playedIdx = state.mode === 'mix' ? state.subIdx : state.order[state.idx];
+    pendingSpinNext = () => {
+      state.spin = null;
+      activateRound(seq, m, playedIdx);
+    };
+    timer = setTimeout(() => {
+      if (state.phase === 'spin' && pendingSpinNext) {
+        const fn = pendingSpinNext;
+        pendingSpinNext = null;
+        fn();
+      }
+    }, delayUntil(state.deadline));
+    return;
+  }
+  if (state.paused) return; // Pausierte Räume bleiben pausiert (pausedLeft bleibt erhalten)
+  if (state.phase === 'wait') {
+    timer = setTimeout(startReactionGo, RESTORE_GRACE_MS + 2500 + Math.floor(Math.random() * 3500));
+  } else if (state.deadline > 0 && (state.phase === 'question' || state.phase === 'go')) {
+    timer = setTimeout(showResult, delayUntil(state.deadline));
+  } else if (state.deadline > 0 && state.phase === 'result') {
+    timer = setTimeout(nextRound, delayUntil(state.deadline));
+  }
+}
+
+if (snapshot) applySnapshot(snapshot);
+
 return {
   code,
   hostToken,
   getJoinUrl: () => publicUrl,
+  serialize,
+  serializeJson: () => {
+    if (snapDirty || !snapJson) {
+      snapJson = JSON.stringify(serialize());
+      snapDirty = false;
+    }
+    return snapJson;
+  },
   getPlayerCount: () => Object.keys(players).length,
   getSummary: (now) => ({
     code,
@@ -2239,6 +2626,7 @@ return {
   isIdleExpired: (now) => roomSockets.size === 0 && (now - lastActivity) > 30 * 60_000,
   attachSocket,
   destroy: () => {
+    markDirty(); // nächster Schnappschuss enthält den Raum nicht mehr
     clearTimeout(timer);
     for (const gt of pendingDisconnects.values()) clearTimeout(gt);
     pendingDisconnects.clear();
@@ -2307,6 +2695,10 @@ io.on('connection', socket => {
 });
 
 if (require.main === module) {
+  const restored = loadRoomsFromDisk();
+  roomsPersistEnabled = true;
+  if (restored.count > 0) scheduleRoomsSnapshot();
+  startMetrics();
   server.listen(PORT, HOST, () => console.log(`PartyGame v${APP_VERSION} läuft auf http://${HOST}:${PORT} (Multi-Room)`));
 
   process.on('uncaughtException', (err) => {
@@ -2317,9 +2709,13 @@ if (require.main === module) {
     writeLog('ERROR', 'unhandled_rejection', { reason: String(reason) });
   });
 
+  let shuttingDown = false;
   function gracefulShutdown(signal) {
+    if (shuttingDown) return;
+    shuttingDown = true;
     let totalP = 0; for (const r of rooms.values()) totalP += r.getPlayerCount();
     writeLog('INFO', 'server_stopping', { signal, rooms: rooms.size, players: totalP });
+    writeRoomsSnapshotSync(); // finaler Stand vor dem Trennen der Sockets
     io.close(() => {
       server.close(() => process.exit(0));
     });
@@ -2344,4 +2740,6 @@ module.exports = {
   createRoom,
   getRoom,
   rooms,
+  snapshotRooms,
+  restoreRooms,
 };

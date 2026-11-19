@@ -7,3 +7,5 @@ backups/
 data/.host-secret
 data/used.json
 .env
+data/rooms.json
+data/rooms.json.*.tmp

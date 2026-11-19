@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.7.2)
+# 🎉 PartyGame (Version 3.8.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -181,8 +181,13 @@ npm start
   scripts/deploy.sh --wait   # wartet, bis niemand mehr verbunden ist
   scripts/deploy.sh --force  # trotzdem neu starten (laufende Räume gehen verloren!)
   ```
-  `/health` zeigt `sockets` (aktive Verbindungen); ein Neustart löscht alle Räume, da sie nur im Speicher liegen.
+  `/health` zeigt `sockets` (aktive Verbindungen). Laufende Räume werden in `data/rooms.json` gesichert (entprellt, atomar, beim Stoppen synchron) und beim Start wiederhergestellt (max. 2 h alt): Handys steigen mit Punkten wieder ein, Timer laufen weiter.
 - Log-Rotation einmalig installieren: `sudo install -m 644 scripts/logrotate-partygame /etc/logrotate.d/partygame`
+- **Automatisierung (systemd-Timer, Units in `scripts/systemd/`):**
+  - `partygame-backup.timer` – täglich 04:30 `scripts/backup.sh` → `backups/data-*.tgz` (custom/used/rooms/Host-PIN, 14 Stück).
+  - `partygame-autodeploy.timer` – alle 5 min `scripts/auto-deploy.sh`: neuer Commit auf `origin/main` + GitHub-CI grün + niemand verbunden → `deploy.sh`.
+- **Monitoring:** Server schreibt jede Minute eine `metrics`-Zeile (Räume, Spieler, Sockets, CPU, RAM, Event-Loop-Lag p50/p99/max, Broadcasts, KB/min). Grafana-Dashboard `scripts/grafana/homelab-partygame.json` (Loki, `{app="partygame"}`).
+- **Lasttest:** `URL=http://localhost:3999 ROOMS=8 PLAYERS=12 ROUNDS=5 node scripts/loadtest.js` (devDependency `socket.io-client`).
 
 ### 5. Hinweis für Reverse Proxy (Nginx / Caddy / Cloudflare)
 Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
@@ -195,7 +200,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.7.2 (Aktueller Stand):** TV/Tablet: Bei 5–6 Antwortmöglichkeiten (z. B. „Von wem ist dieser Song?“) passt die Auflösung jetzt komplett ins Bild – Frage in 3 Spalten, Auflösung in 2 Spalten mit flacheren Kacheln, Zeilen werden nicht mehr auf die höchste Kachel gestreckt, lange Namen werden sauber umbrochen. Geprüft auf 1024×768, 1180×820, 820×1180, 1366×1024 und 1920×1080.
+- **v3.8.0 (Aktueller Stand):** Stabilität & flüssiges Spiel. Laufende Spiele überstehen Neustarts/Deploys (Raum-Snapshot + Wiederherstellung, Handys steigen automatisch mit Punkten wieder ein, Timer laufen weiter). WebSocket-Kompression (permessage-deflate) für State-Updates – deutlich weniger Daten im Mobilfunk. Service Worker: Seite lädt auch bei Funkloch/langsamem Netz aus dem Cache (HTML immer zuerst frisch vom Netz), Bilder/Cover gecacht. Leichtere `pub()`-Berechnung pro Update. Metrik-Logzeile + Grafana-Dashboard (Event-Loop-Lag als „Ruckel-Indikator“), tägliches Backup, Auto-Deploy nach grüner CI, Lasttest-Script. Sicherheit: X-Forwarded-For wird fälschungssicher ausgewertet (echte Client-IP von rechts).
+- **v3.7.2:** TV/Tablet: Bei 5–6 Antwortmöglichkeiten (z. B. „Von wem ist dieser Song?“) passt die Auflösung jetzt komplett ins Bild – Frage in 3 Spalten, Auflösung in 2 Spalten mit flacheren Kacheln, Zeilen werden nicht mehr auf die höchste Kachel gestreckt, lange Namen werden sauber umbrochen. Geprüft auf 1024×768, 1180×820, 820×1180, 1366×1024 und 1920×1080.
 - **v3.7.1:** Erkenne den Song: Die Musik wird in der Auflösung (nachdem alle abgestimmt haben) nicht mehr leiser gedreht, die Lautstärke bleibt gleich – auf TV und Handy.
 - **v3.7.0:** UI-Überarbeitung. **TV:** falsche Antworten werden in der Auflösung wirklich abgedunkelt, Antwortfelder mit ▲◆●■ (Zuordnung zum Handy ohne Farbe), Avatare zeigen, wer was gewählt/wen gewählt hat, „Keine Stimmen“-Karte statt leerem Bild, größere Schrift & Antwortfelder für Sofa-Abstand, Bedienleiste blendet sich nach ein paar Sekunden aus, Lobby mit großem Raumcode, Avatar-Karten und „So geht's“-Regel. **Handy:** Name zuerst + Avatar-Leiste zum Wischen beim Beitreten, Lobby mit Mitspielern, Spielregel und „Avatar ändern“, Hinweis „Frage steht auf dem TV“, Antwortstatus als klare Rückmeldung, Avatare beim Abstimmen. **Admin:** feste Aktionsleiste unten (Start/Weiter/Pause/Reset), Einstellungen in einklappbaren Gruppen. **Server:** Standard-Rundenlimit 10 (Party-Mix behält eigene Rundenzahl), Ergebnis enthält, wer welche Antwort gewählt hat.
 - **v3.6.0:** Besseres Handling für Handys & Mobilfunk: automatischer Wiedereinstieg nach Neuladen/verworfenem Tab; sofortiger Reconnect nach Bildschirmsperre/App-Wechsel (statt bis zu 35 s Ping-Timeout) mit Session-Wiederherstellung; Antworten mit Empfangsbestätigung („⏳ wird gesendet“ → „✅ angekommen“), unbestätigte Antworten werden nach Reconnect nachgesendet; Haptik-Countdown in den letzten 3 s und Feedback bei richtig/falsch; Konfetti auch am Handy (richtige Antwort, Podium); weiche Phasenübergänge (View Transitions) auf TV & Handy; Konfetti zeitbasiert (gleich schnell auf 120-Hz-Displays); Safe-Area für iPhone-Homescreen-App; JS-Fehler der Clients und Verbindungsart werden im Server-Log protokolliert; `scripts/deploy.sh` (startet nur neu, wenn niemand verbunden ist) und Log-Rotation.

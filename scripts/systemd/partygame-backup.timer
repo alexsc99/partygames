@@ -1,0 +1,16 @@
+# Timer für partygame-backup.service: täglich 04:30, verpasste Läufe werden nachgeholt.
+# Installation:
+#   sudo install -m 644 /opt/partygame/scripts/systemd/partygame-backup.service /opt/partygame/scripts/systemd/partygame-backup.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now partygame-backup.timer
+# Status: systemctl list-timers partygame-backup.timer
+[Unit]
+Description=PartyGame Datensicherung täglich 04:30
+
+[Timer]
+OnCalendar=*-*-* 04:30:00
+Persistent=true
+Unit=partygame-backup.service
+
+[Install]
+WantedBy=timers.target

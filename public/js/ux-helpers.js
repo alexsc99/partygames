@@ -418,4 +418,18 @@
       else { x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, c.width, c.height); }
     })(start);
   };
+
+  // Service Worker: HTML network-first mit Offline-Fallback, Hash-Assets/Bilder aus dem Cache (siehe /sw.js).
+  // Nur auf HTTPS/localhost; Fehler werden bewusst still ignoriert (kein Rauschen im Fehler-Reporting).
+  try {
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      const registerSw = () => {
+        try {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+        } catch {}
+      };
+      if (document.readyState === 'complete') registerSw();
+      else window.addEventListener('load', registerSw);
+    }
+  } catch {}
 })();

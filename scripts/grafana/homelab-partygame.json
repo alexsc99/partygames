@@ -1,0 +1,1600 @@
+{
+  "uid": "partygame-live",
+  "title": "Homelab – PartyGame (Live & Performance)",
+  "description": "Live-Belegung, Event-Loop-Lag, Ressourcen, Verbindungen und Fehler von PartyGame aus den Loki-Logs (app=\"partygame\")",
+  "tags": [
+    "homelab",
+    "partygame",
+    "loki"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
+  "schemaVersion": 39,
+  "version": 1,
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
+  "weekStart": "",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "name": "Neustarts",
+        "enable": true,
+        "hide": false,
+        "iconColor": "red",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS}"
+        },
+        "expr": "{app=\"partygame\"} |~ `\\] (server_stopping|rooms_restored)( \\{|$)`",
+        "instant": false,
+        "titleFormat": "Neustart"
+      }
+    ]
+  },
+  "links": [],
+  "templating": {
+    "list": [
+      {
+        "name": "DS",
+        "label": "Loki",
+        "type": "datasource",
+        "query": "loki",
+        "regex": "",
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "options": [],
+        "refresh": 1,
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Live",
+      "id": 1,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "Räume",
+      "id": 2,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "Aktive Räume (metrics, max pro Intervall)",
+      "interval": "1m",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap rooms | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Räume",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Spieler",
+      "id": 3,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "Spieler in allen Räumen",
+      "interval": "1m",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap players | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Spieler",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Sockets",
+      "id": 4,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "Offene Socket.IO-Verbindungen (TV, Handys, Admin)",
+      "interval": "1m",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap sockets | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Sockets",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Event-Loop p99",
+      "id": 5,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "p99 der Event-Loop-Verzögerung – Hauptindikator für flüssiges Spiel (grün < 20 ms, orange < 50 ms, rot ≥ 50 ms)",
+      "interval": "1m",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap elP99Ms | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Event-Loop p99",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Event-Loop max",
+      "id": 6,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "Maximale Event-Loop-Verzögerung im 60-s-Fenster",
+      "interval": "1m",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap elMaxMs | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Event-Loop max",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "CPU",
+      "id": 7,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "CPU-Last des Node-Prozesses",
+      "interval": "1m",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap cpuPct | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "CPU",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "row",
+      "title": "Performance",
+      "id": 8,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Event-Loop-Verzögerung (Ruckeln)",
+      "id": 9,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "Event-Loop-Lag aus den metrics-Zeilen (alle 60 s). Dauerhaft > 20 ms p99 = spürbares Ruckeln; ≥ 50 ms = kritisch.",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap elP50Ms | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "p50",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "B",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap elP99Ms | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "p99",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "C",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap elMaxMs | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "max",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": 180000,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    10,
+                    10
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Räume / Spieler / Sockets",
+      "id": 10,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "Belegung laut metrics-Zeilen",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap rooms | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Räume",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "B",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap players | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Spieler",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "C",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap sockets | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Sockets",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": 180000,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "CPU",
+      "id": 11,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 14
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "avg_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap cpuPct | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "CPU %",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": 180000,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Speicher",
+      "id": 12,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "Resident Set Size und genutzter V8-Heap in MB – stetiger Anstieg deutet auf ein Leck hin",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 14
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap rssMb | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "RSS",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "B",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap heapMb | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Heap",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": 180000,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Broadcasts & Sendevolumen",
+      "id": 13,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "State-Broadcasts pro Minute und gesendete KB pro Minute (Socket.IO)",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 14
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap broadcastsPerMin | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Broadcasts/min",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "B",
+          "expr": "max_over_time({app=\"partygame\"} |= `] metrics {` | regexp `\\] metrics (?P<j>\\{.*\\})` | line_format `{{.j}}` | json | unwrap emitKbPerMin | __error__=\"\" [$__interval]) by (host)",
+          "legendFormat": "Emit KB/min",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": 180000,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Emit KB/min"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "deckbytes"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Verbindungen & Fehler",
+      "id": 14,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Client-Fehler nach Meldung",
+      "id": 15,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "client_error-Zeilen (JS-Fehler auf Handys/TV) pro Intervall, gruppiert nach msg",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "sum by (msg) (count_over_time({app=\"partygame\"} |= `] client_error {` | regexp `\\] client_error (?P<j>\\{.*\\})` | line_format `{{.j}}` | json msg=\"msg\" | __error__=\"\" [$__interval]))",
+          "legendFormat": "{{msg}}",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Disconnects nach Grund",
+      "id": 16,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "player_disconnected pro Intervall nach reason (z. B. transport close, ping timeout)",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "sum by (reason) (count_over_time({app=\"partygame\"} |= `] player_disconnected {` | regexp `\\] player_disconnected (?P<j>\\{.*\\})` | line_format `{{.j}}` | json reason=\"reason\" | __error__=\"\" [$__interval]))",
+          "legendFormat": "{{reason}}",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Verbindungen nach Transport",
+      "id": 17,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "socket_connected nach Transport beim Verbindungsaufbau (polling/websocket)",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 31
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "sum by (transport) (count_over_time({app=\"partygame\"} |= `] socket_connected {` | regexp `\\] socket_connected (?P<j>\\{.*\\})` | line_format `{{.j}}` | json transport=\"transport\" | __error__=\"\" [$__interval]))",
+          "legendFormat": "{{transport}}",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Verbindungen: wiederhergestellt?",
+      "id": 18,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "socket_connected nach recovered (Connection-State-Recovery nach kurzem Abbruch)",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 31
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "sum by (recovered) (count_over_time({app=\"partygame\"} |= `] socket_connected {` | regexp `\\] socket_connected (?P<j>\\{.*\\})` | line_format `{{.j}}` | json recovered=\"recovered\" | __error__=\"\" [$__interval]))",
+          "legendFormat": "recovered={{recovered}}",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Räume & Neustarts",
+      "id": 19,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "description": "room_created, rooms_restored, room_expired, server_stopping, rooms_snapshot_failed pro Intervall",
+      "interval": "1m",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 31
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "sum(count_over_time({app=\"partygame\"} |~ `\\] room_created( \\{|$)` [$__interval]))",
+          "legendFormat": "erstellt",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "B",
+          "expr": "sum(count_over_time({app=\"partygame\"} |~ `\\] rooms_restored( \\{|$)` [$__interval]))",
+          "legendFormat": "wiederhergestellt (Start)",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "C",
+          "expr": "sum(count_over_time({app=\"partygame\"} |~ `\\] room_expired( \\{|$)` [$__interval]))",
+          "legendFormat": "abgelaufen",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "D",
+          "expr": "sum(count_over_time({app=\"partygame\"} |~ `\\] server_stopping( \\{|$)` [$__interval]))",
+          "legendFormat": "Server-Stopp",
+          "queryType": "range",
+          "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "E",
+          "expr": "sum(count_over_time({app=\"partygame\"} |~ `\\] rooms_snapshot_failed( \\{|$)` [$__interval]))",
+          "legendFormat": "Snapshot fehlgeschlagen",
+          "queryType": "range",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Logs",
+      "id": 20,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "panels": []
+    },
+    {
+      "type": "logs",
+      "title": "Warnungen & Fehler",
+      "id": 21,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "{app=\"partygame\"} |~ `\\] \\[(WARN|ERROR)\\] `",
+          "legendFormat": "",
+          "queryType": "range",
+          "editorMode": "code",
+          "maxLines": 500
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false
+      }
+    },
+    {
+      "type": "table",
+      "title": "Letzte Client-Fehler",
+      "id": 22,
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS}"
+          },
+          "refId": "A",
+          "expr": "{app=\"partygame\"} |= `] client_error {` | regexp `\\] client_error (?P<j>\\{.*\\})` | line_format `{{.j}}`",
+          "legendFormat": "",
+          "queryType": "range",
+          "editorMode": "code",
+          "maxLines": 100
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "Line",
+            "format": "json",
+            "replace": false,
+            "keepTime": false
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "labels": true,
+              "Line": true,
+              "tsNs": true,
+              "id": true,
+              "labelTypes": true
+            },
+            "indexByName": {
+              "Time": 0,
+              "room": 1,
+              "page": 2,
+              "device": 3,
+              "msg": 4,
+              "src": 5,
+              "line": 6,
+              "ver": 7,
+              "ip": 8
+            },
+            "renameByName": {
+              "Time": "Zeit",
+              "room": "Raum",
+              "page": "Seite",
+              "device": "Gerät",
+              "msg": "Meldung",
+              "src": "Quelle",
+              "line": "Zeile",
+              "ver": "Version",
+              "ip": "IP"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Zeit",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Meldung"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 520
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        }
+      }
+    }
+  ]
+}

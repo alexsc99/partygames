@@ -1,0 +1,23 @@
+# Automatisches Deploy von origin/main nach grüner GitHub-CI (scripts/auto-deploy.sh).
+# Voraussetzungen: sudoers-Regel für "sudo -n /usr/bin/systemctl restart partygame" (wie für
+# scripts/deploy.sh), git safe.directory für /opt/partygame in /home/schultheissa/.gitconfig,
+# node/npm im PATH unten. Kein NoNewPrivileges= – das würde sudo in deploy.sh blockieren.
+# Installation:
+#   sudo install -m 644 /opt/partygame/scripts/systemd/partygame-autodeploy.service /opt/partygame/scripts/systemd/partygame-autodeploy.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now partygame-autodeploy.timer
+# Log: journalctl -u partygame-autodeploy -f
+[Unit]
+Description=PartyGame Auto-Deploy (origin/main nach grüner CI)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=schultheissa
+Group=games
+WorkingDirectory=/opt/partygame
+Environment=HOME=/home/schultheissa
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/opt/partygame/scripts/auto-deploy.sh
+TimeoutStartSec=15min

@@ -1,0 +1,16 @@
+# Timer für partygame-autodeploy.service: 5 min nach dem Boot, danach alle 5 min.
+# Installation:
+#   sudo install -m 644 /opt/partygame/scripts/systemd/partygame-autodeploy.service /opt/partygame/scripts/systemd/partygame-autodeploy.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now partygame-autodeploy.timer
+# Status: systemctl list-timers partygame-autodeploy.timer
+[Unit]
+Description=PartyGame Auto-Deploy alle 5 Minuten
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+Unit=partygame-autodeploy.service
+
+[Install]
+WantedBy=timers.target

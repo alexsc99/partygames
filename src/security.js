@@ -23,11 +23,7 @@ function validHostSecret(val) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
-function isLocalDirectSocket(reqOrHandshake) {
-  const headers = reqOrHandshake.headers || {};
-  if (headers['x-forwarded-for'] || headers['x-real-ip'] || headers['cf-connecting-ip']) return false;
-  const addr = reqOrHandshake.socket?.remoteAddress || reqOrHandshake.address || '';
-  if (!addr) return false;
+function isPrivateAddr(addr) {
   return (
     addr === '127.0.0.1' ||
     addr === '::1' ||
@@ -37,16 +33,30 @@ function isLocalDirectSocket(reqOrHandshake) {
   );
 }
 
+function isLocalDirectSocket(reqOrHandshake) {
+  const headers = reqOrHandshake.headers || {};
+  if (headers['x-forwarded-for'] || headers['x-real-ip'] || headers['cf-connecting-ip']) return false;
+  const addr = reqOrHandshake.socket?.remoteAddress || reqOrHandshake.address || '';
+  return !!addr && isPrivateAddr(addr);
+}
+
 function getClientIp(req) {
   return req.ip || req.socket?.remoteAddress || 'unknown';
 }
 
+// Der Proxy hängt die echte Client-IP rechts an X-Forwarded-For an; Einträge weiter links kann der
+// Client selbst mitschicken (fälschbar). Daher von rechts die erste nicht-private Adresse nehmen.
 function getSocketIp(socket) {
   const peerAddr = socket.handshake.address || '';
-  const fromTrustedProxy = isLocalDirectSocket({ socket: { remoteAddress: peerAddr }, headers: {} });
-  if (fromTrustedProxy) {
+  if (isPrivateAddr(peerAddr)) {
     const xff = socket.handshake.headers['x-forwarded-for'];
-    if (typeof xff === 'string' && xff.trim()) return xff.split(',')[0].trim();
+    if (typeof xff === 'string' && xff.trim()) {
+      const hops = xff.split(',').map(s => s.trim()).filter(Boolean);
+      for (let i = hops.length - 1; i >= 0; i--) {
+        if (!isPrivateAddr(hops[i])) return hops[i];
+      }
+      return hops[0];
+    }
   }
   return peerAddr || 'unknown';
 }

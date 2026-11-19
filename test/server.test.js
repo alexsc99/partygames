@@ -15,6 +15,8 @@ const {
   createRateLimiter,
   createRoom,
   rooms,
+  snapshotRooms,
+  restoreRooms,
 } = require('../server.js');
 
 const HOST_SECRET = fs.readFileSync(path.join(__dirname, '..', 'data', '.host-secret'), 'utf8').trim();
@@ -405,6 +407,100 @@ describe('PartyGame Server', () => {
     } finally {
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidDrawer}`, { method: 'POST', body: '41' });
       await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '41' });
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
+  it('persists rooms across restarts: serialize → restore → rejoin keeps score, answer, phase and idx', async () => {
+    const { code, hostToken } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const url = sid => `${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sid}`;
+    const post = (sid, body) => fetch(url(sid), { method: 'POST', body });
+    const pollUntil = async (sid, re) => {
+      let all = '';
+      for (let i = 0; i < 8 && !re.test(all); i++) all += await (await fetch(url(sid))).text();
+      return all;
+    };
+    const packet = (txt, prefix) => txt.split('\x1e').find(p => p.startsWith(prefix));
+    const ackOf = (txt, id) => JSON.parse(packet(txt, `43${id}`).slice(2 + String(id).length))[0];
+    const lastState = txt => {
+      const states = txt.split('\x1e').filter(p => p.startsWith('42["state"'));
+      return states.length ? JSON.parse(states[states.length - 1].slice(2))[1] : null;
+    };
+    const questions = require('../data/questions.json');
+
+    const sidP = await connectPollingClient(code);
+    const sidP2 = await connectPollingClient(code);
+    const sidH = await connectPollingClient(code);
+    let sidR = null;
+    try {
+      await post(sidP, '421["join",{"name":"Persi","avatar":"🦊"}]');
+      const token = ackOf(await pollUntil(sidP, /431\[/), 1).reconnectToken;
+      assert.ok(token, 'Expected reconnectToken from join');
+      await post(sidP2, '42["join",{"name":"Zweit"}]');
+      await post(sidH, '42["host:wheelEnabled",false]\x1e42["host:mode","quiz"]');
+      await post(sidH, '42["host:start"]');
+      const q1 = lastState(await pollUntil(sidH, /"phase":"question","idx":0/));
+      const correct = questions.find(item => item.q === q1.q.q).c;
+
+      // Runde 1: beide antworten → Auflösung mit Punkten
+      await post(sidP, `422["answer",${correct}]`);
+      assert.equal(ackOf(await pollUntil(sidP, /432\[/), 2).ok, true);
+      await post(sidP2, `42["answer",${(correct + 1) % 4}]`);
+      await pollUntil(sidH, /"phase":"result"/);
+
+      // Runde 2: nur Persi antwortet, Runde läuft weiter
+      await post(sidH, '42["host:next"]');
+      await pollUntil(sidH, /"phase":"question","idx":1/);
+      await post(sidP, '423["answer",2]');
+      assert.equal(ackOf(await pollUntil(sidP, /433\[/), 3).ok, true);
+
+      const snap = snapshotRooms();
+      const roomSnap = snap.rooms.find(r => r.code === code);
+      assert.ok(roomSnap, 'room must be part of the snapshot');
+      const persiSnap = roomSnap.players.find(p => p.name === 'Persi');
+      assert.ok(persiSnap.score > 0, 'correct answer in round 1 must have scored');
+      assert.equal(persiSnap.answer, 2);
+      assert.equal(persiSnap.reconnectToken, token);
+      assert.equal(roomSnap.state.phase, 'question');
+      assert.equal(roomSnap.state.idx, 1);
+      assert.equal(roomSnap.state.imposterIds, undefined, 'socket ids must not be persisted');
+
+      // "Neustart": Verbindungen weg, Raum zerstört, dann aus dem Schnappschuss wiederherstellen
+      await post(sidP, '41\x1e1');
+      await post(sidP2, '41\x1e1');
+      await post(sidH, '41\x1e1');
+      rooms.get(code).destroy();
+      rooms.delete(code);
+      assert.equal(rooms.has(code), false);
+
+      const restored = restoreRooms({ ...snap, rooms: [roomSnap] });
+      assert.deepEqual(restored, { count: 1, players: 2 });
+      const room = rooms.get(code);
+      assert.ok(room, 'room must exist again after restore');
+      assert.equal(room.code, code);
+      assert.equal(room.hostToken, hostToken);
+
+      sidR = await connectPollingClient(code);
+      await post(sidR, '421["join",{"name":"Persi"}]');
+      assert.match(ackOf(await pollUntil(sidR, /431\[/), 1).error, /reserviert/);
+      await post(sidR, `422["join",{"name":"Persi","avatar":"🦊","reconnectToken":${JSON.stringify(token)}}]`);
+      const rejoinTxt = await pollUntil(sidR, /432\[/);
+      const rejoinAck = ackOf(rejoinTxt, 2);
+      assert.equal(rejoinAck.ok, true);
+      assert.equal(rejoinAck.reconnectToken, token);
+      assert.equal(rejoinAck.myAnswer, 2);
+
+      const st = lastState(rejoinTxt.includes('"name":"Persi"') ? rejoinTxt : rejoinTxt + await pollUntil(sidR, /"name":"Persi"/));
+      assert.equal(st.roomCode, code);
+      assert.equal(st.phase, 'question');
+      assert.equal(st.idx, 1);
+      const persi = st.players.find(p => p.name === 'Persi');
+      assert.equal(persi.score, persiSnap.score);
+      assert.equal(persi.answered, true);
+    } finally {
+      // '1' = Engine.IO-Close: sofort schließen statt 30 s auf den nächsten Poll zu warten
+      for (const sid of [sidP, sidP2, sidH, sidR]) if (sid) await post(sid, '41\x1e1').catch(() => {});
       rooms.get(code)?.destroy();
       rooms.delete(code);
     }
