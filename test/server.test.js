@@ -17,6 +17,9 @@ const {
   rooms,
   snapshotRooms,
   restoreRooms,
+  initWordMask,
+  applyPartialGuess,
+  formatWordMask,
 } = require('../server.js');
 
 const HOST_SECRET = fs.readFileSync(path.join(__dirname, '..', 'data', '.host-secret'), 'utf8').trim();
@@ -503,6 +506,121 @@ describe('PartyGame Server', () => {
       for (const sid of [sidP, sidP2, sidH, sidR]) if (sid) await post(sid, '41\x1e1').catch(() => {});
       rooms.get(code)?.destroy();
       rooms.delete(code);
+    }
+  });
+
+  it('reveals contiguous partial word matches (>=3 chars) while ignoring short guesses', () => {
+    const rev1 = initWordMask('Einkaufswagen');
+    assert.equal(formatWordMask('Einkaufswagen', rev1), '_____________');
+    assert.equal(applyPartialGuess('Einkaufswagen', rev1, 'ei'), false);
+    assert.equal(applyPartialGuess('Einkaufswagen', rev1, 'einkaufen'), true);
+    assert.equal(formatWordMask('Einkaufswagen', rev1), 'Einkauf______');
+    assert.equal(applyPartialGuess('Einkaufswagen', rev1, 'einkaufen'), false);
+    assert.equal(applyPartialGuess('Einkaufswagen', rev1, 'wagen'), true);
+    assert.equal(formatWordMask('Einkaufswagen', rev1), 'Einkauf_wagen');
+
+    const rev2 = initWordMask('Wahrheit oder Pflicht');
+    assert.equal(formatWordMask('Wahrheit oder Pflicht', rev2), '________ ____ _______');
+    assert.equal(applyPartialGuess('Wahrheit oder Pflicht', rev2, 'pflicht'), true);
+    assert.equal(formatWordMask('Wahrheit oder Pflicht', rev2), '________ ____ Pflicht');
+
+    const rev3 = initWordMask('U-Boot');
+    assert.equal(formatWordMask('U-Boot', rev3), '_-____');
+    assert.equal(applyPartialGuess('U-Boot', rev3, 'boot'), true);
+    assert.equal(formatWordMask('U-Boot', rev3), '_-Boot');
+
+    const revShort = initWordMask('DJ');
+    assert.equal(applyPartialGuess('DJ', revShort, 'd'), false);
+    assert.equal(formatWordMask('DJ', revShort), '__');
+  });
+
+  it('broadcasts updated word mask on partial guesses in draw and taboo', async () => {
+    const extractJsonPayloads = (raw, eventName) => {
+      const out = [];
+      const marker = `"${eventName}",`;
+      let idx = 0;
+      while ((idx = raw.indexOf(marker, idx)) !== -1) {
+        let start = idx + marker.length;
+        while (start < raw.length && raw[start] !== '{') start++;
+        let depth = 0;
+        let inStr = false;
+        let escNext = false;
+        for (let i = start; i < raw.length; i++) {
+          const c = raw[i];
+          if (escNext) { escNext = false; continue; }
+          if (c === '\\') { escNext = true; continue; }
+          if (c === '"') { inStr = !inStr; continue; }
+          if (!inStr) {
+            if (c === '{') depth++;
+            else if (c === '}') {
+              depth--;
+              if (depth === 0) {
+                try { out.push(JSON.parse(raw.slice(start, i + 1))); } catch {}
+                break;
+              }
+            }
+          }
+        }
+        idx = start + 1;
+      }
+      return out;
+    };
+
+    for (const mode of ['draw', 'taboo']) {
+      const createRes = await fetch(`${baseUrl}/api/rooms`, { method: 'POST' });
+      const { code } = await createRes.json();
+      const sidA = await connectPollingClient(code);
+      const sidB = await connectPollingClient(code);
+      const sidHost = await connectPollingClient(code);
+
+      try {
+        await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidA}`, { method: 'POST', body: '42["join",{"name":"Alice","avatar":"🦊"}]' });
+        await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidB}`, { method: 'POST', body: '42["join",{"name":"Bob","avatar":"🐸"}]' });
+        await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, {
+          method: 'POST',
+          body: `42["host:wheelEnabled",false]\x1e42["host:mode","${mode}"]`,
+        });
+        await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '42["host:start"]' });
+
+        const pollA = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidA}`)).text();
+        const pollB = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidB}`)).text();
+        const pollHost = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`)).text();
+
+        const privA = extractJsonPayloads(pollA, 'private').pop();
+        const privB = extractJsonPayloads(pollB, 'private').pop();
+        const isAActor = Boolean(privA && (privA.drawer || privA.explainer));
+        const word = isAActor ? privA.word : privB.word;
+        const guesserSid = isAActor ? sidB : sidA;
+        assert.ok(word && word.length >= 2, `Expected secret word in ${mode}, got ${word}`);
+
+        const hostStartState = extractJsonPayloads(pollHost, 'state').pop();
+        assert.ok(hostStartState && hostStartState.q && typeof hostStartState.q.mask === 'string', `Expected mask in ${mode}`);
+
+        // Pick a >=3-letter alphanumeric chunk if word is long enough
+        const lettersOnly = word.replace(/[^\p{L}\p{N}]/gu, '');
+        if (lettersOnly.length >= 4) {
+          const part = lettersOnly.slice(0, 3);
+          const ev = mode === 'draw' ? 'draw:guess' : 'taboo:guess';
+          await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${guesserSid}`, {
+            method: 'POST',
+            body: `421["${ev}",${JSON.stringify(part)}]`,
+          });
+          const ackPoll = await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${guesserSid}`)).text();
+          assert.ok(ackPoll.includes('"partial":true'), `Expected partial:true ack in ${mode}: ${ackPoll}`);
+
+          const hostAfterPartial = extractJsonPayloads(
+            await (await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`)).text(),
+            'state',
+          ).pop();
+          assert.ok(hostAfterPartial.q.mask.toLowerCase().includes(part.toLowerCase()), `Expected mask "${hostAfterPartial.q.mask}" to reveal "${part}"`);
+        }
+      } finally {
+        await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidA}`, { method: 'POST', body: '41' });
+        await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidB}`, { method: 'POST', body: '41' });
+        await fetch(`${baseUrl}/socket.io/?EIO=4&transport=polling&sid=${sidHost}`, { method: 'POST', body: '41' });
+        rooms.get(code)?.destroy();
+        rooms.delete(code);
+      }
     }
   });
 });

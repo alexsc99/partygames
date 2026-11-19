@@ -206,7 +206,7 @@ function startPhoneWheelAnim(spin) {
 }
 const playSongAudio = document.getElementById('playSongAudio');
 playSongAudio.loop = true;
-let playAudioOn = localStorage.getItem('qAudio') === '1', playAudioBlocked = false, playAudioError = false, playAudioElUnlocked = false, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000, lastPhoneSig = '';
+let playAudioOn = localStorage.getItem('qAudio') === '1', playAudioBlocked = false, playAudioError = false, playAudioElUnlocked = false, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000, lastPhoneSig = '', lastPhoneBaseSig = '';
 let playVol = Number(localStorage.getItem('qVol') ?? 0.5);
 if (!Number.isFinite(playVol) || playVol < 0 || playVol > 1) playVol = 0.5;
 playSongAudio.volume = playVol;
@@ -430,6 +430,7 @@ socket.on('state', s => {
     localImposterDone = [];
     lastRoundKey = rk;
     lastPhoneSig = '';
+    lastPhoneBaseSig = '';
     pctx.clearRect(0, 0, pad.width, pad.height);
     vctx.clearRect(0, 0, viewPad.width, viewPad.height);
     localDrawStack = [];
@@ -559,20 +560,27 @@ function buzz() {
   socket.emit('answer', true);
   render();
 }
+function showGuessFeedback(id, r) {
+  const fb = document.getElementById(id);
+  if (!fb || !r || r.ok) return;
+  if (r.partial) {
+    fb.style.color = '#ffd33d';
+    fb.textContent = '🧩 Wortteil erkannt!';
+  } else {
+    fb.style.color = '';
+    fb.textContent = '❌ Leider falsch!';
+  }
+}
 function sendGuess() {
   const el = document.getElementById('gIn');
   if (!el || !el.value.trim()) return;
-  socket.emit('draw:guess', el.value.trim(), r => {
-    if (!r.ok) { const fb = document.getElementById('gFb'); if (fb) fb.textContent = '❌ Leider falsch!'; }
-  });
+  socket.emit('draw:guess', el.value.trim(), r => showGuessFeedback('gFb', r));
   el.value = '';
 }
 function sendTabooGuess() {
   const el = document.getElementById('tIn');
   if (!el || !el.value.trim()) return;
-  socket.emit('taboo:guess', el.value.trim(), r => {
-    if (!r.ok) { const fb = document.getElementById('tFb'); if (fb) fb.textContent = '❌ Leider falsch!'; }
-  });
+  socket.emit('taboo:guess', el.value.trim(), r => showGuessFeedback('tFb', r));
   el.value = '';
 }
 function pickSort(idx) {
@@ -991,6 +999,7 @@ function renderNow() {
 function renderView() {
   if (!ROOM_CODE || roomError) {
     lastPhoneSig = '';
+    lastPhoneBaseSig = '';
     padWrap.style.display = 'none';
     viewWrap.style.display = 'none';
     app.innerHTML = `
@@ -1006,9 +1015,10 @@ function renderView() {
       </div>`;
     return;
   }
-  if (S && S.displayMode === 'onedevice') { lastPhoneSig = ''; return renderOneDevice(); }
+  if (S && S.displayMode === 'onedevice') { lastPhoneSig = ''; lastPhoneBaseSig = ''; return renderOneDevice(); }
   if (!joined) {
     lastPhoneSig = '';
+    lastPhoneBaseSig = '';
     padWrap.style.display = 'none';
     viewWrap.style.display = 'none';
     const avs = AVATARS.map(a => `<button type="button" class="avBtn${a === avatar ? ' on' : ''}" aria-pressed="${a === avatar}" onclick="pickAv('${a}')">${a}</button>`).join('');
@@ -1041,7 +1051,8 @@ function renderView() {
     : '';
   const needPlayers = S.phase === 'lobby' || S.phase === 'result' || S.phase === 'end' || S.mode === 'mostlikely' || S.mode === 'imposter';
   const playersSig = needPlayers ? (S.players || []).map(p => `${p.name}:${p.avatar || ''}:${p.team || ''}:${p.score}`).join(',') : '';
-  const phoneSig = [
+  const guessMask = ((S.mode === 'draw' || S.mode === 'taboo') && S.phase === 'question' && S.q && S.q.mask) ? S.q.mask : '';
+  const phoneBaseSig = [
     S.mode, S.idx, S.phase, S.paused, S.displayMode, S.teamMode, S.isFinalRound,
     isDrawer ? 1 : 0,
     JSON.stringify(myAnswer),
@@ -1053,7 +1064,18 @@ function renderView() {
     S.phase === 'spin' && S.spin ? S.spin.id : '',
     playersSig,
   ].join('|');
+  const phoneSig = `${phoneBaseSig}|${guessMask}`;
   if (phoneSig === lastPhoneSig) return;
+  if (phoneBaseSig === lastPhoneBaseSig) {
+    const maskEl = document.getElementById(S.mode === 'draw' ? 'drawMask' : 'tabooMask');
+    const inpEl = document.getElementById(S.mode === 'draw' ? 'gIn' : 'tIn');
+    if (maskEl && inpEl) {
+      maskEl.innerHTML = pgRenderWordMask(guessMask || '_'.repeat((S.q && S.q.len) || 0));
+      lastPhoneSig = phoneSig;
+      return;
+    }
+  }
+  lastPhoneBaseSig = phoneBaseSig;
   lastPhoneSig = phoneSig;
   if (isDrawer) {
     document.getElementById('padWord').textContent = `🎨 Male: ${P.word}`;
@@ -1201,7 +1223,9 @@ function renderView() {
       if (P && P.guessed) {
         app.innerHTML = `${top}<div class="msg">✅ Erraten!<br><small>Warte auf die anderen…</small></div>`;
       } else {
+        const maskHtml = pgRenderWordMask(S.q.mask || '_'.repeat(S.q.len || 0));
         app.innerHTML = `${top}<div class="qtxt">Was malt ${esc(S.q.drawer)}?</div>
+          <div id="drawMask" class="wordMask" style="font-size:24px">${maskHtml}</div>
           <input id="gIn" placeholder="Dein Tipp…" onkeydown="if(event.key==='Enter')sendGuess()">
           <button class="go" onclick="sendGuess()">Raten</button><div class="err" id="gFb"></div>`;
       }
@@ -1213,7 +1237,9 @@ function renderView() {
       } else if (P && P.guessed) {
         app.innerHTML = `${top}<div class="msg">✅ Erraten!<br><small>Warte auf die anderen…</small></div>`;
       } else {
-        app.innerHTML = `${top}<div class="qtxt">🗣️ ${esc(S.q.explainer)} erklärt! (${S.q.len} Buchstaben)</div>
+        const maskHtml = pgRenderWordMask(S.q.mask || '_'.repeat(S.q.len || 0));
+        app.innerHTML = `${top}<div class="qtxt">🗣️ ${esc(S.q.explainer)} erklärt! (${S.q.len} Zeichen)</div>
+          <div id="tabooMask" class="wordMask" style="font-size:24px">${maskHtml}</div>
           <input id="tIn" placeholder="Dein Tipp…" onkeydown="if(event.key==='Enter')sendTabooGuess()">
           <button class="go" onclick="sendTabooGuess()">Raten</button><div class="err" id="tFb"></div>`;
       }

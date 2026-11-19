@@ -432,4 +432,18 @@
       else window.addEventListener('load', registerSw);
     }
   } catch {}
+
+  /** Render word mask string (e.g. "Einkauf______") into non-breaking word spans. */
+  window.pgRenderWordMask = function (mask) {
+    const words = String(mask || '').split(' ').filter(Boolean);
+    if (!words.length) return '';
+    return words.map(w => {
+      const chars = Array.from(w).map(ch => {
+        if (ch === '_') return '<span class="maskSlot">_</span>';
+        if (!/[\p{L}\p{N}]/u.test(ch)) return `<span class="maskSep">${window.esc(ch)}</span>`;
+        return `<span class="maskChar">${window.esc(ch)}</span>`;
+      }).join('');
+      return `<span class="maskWord">${chars}</span>`;
+    }).join('');
+  };
 })();

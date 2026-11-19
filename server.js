@@ -247,6 +247,58 @@ function shuffle(arr) {
   return a;
 }
 
+const norm = s => String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+const WORD_CHAR_RE = /[\p{L}\p{N}]/u;
+const PARTIAL_MIN_LEN = 3;
+
+/** Initialize per-character visibility mask (separators visible immediately). */
+function initWordMask(word) {
+  return Array.from(String(word || '')).map(ch => !WORD_CHAR_RE.test(ch));
+}
+
+/** Reveal contiguous matching chunks (length >= PARTIAL_MIN_LEN) of guess inside word. */
+function applyPartialGuess(word, revealed, guess) {
+  const wordChars = Array.from(String(word || ''));
+  if (!Array.isArray(revealed) || revealed.length !== wordChars.length) return false;
+  const guessNorm = norm(guess).slice(0, 60);
+  if (guessNorm.length < PARTIAL_MIN_LEN) return false;
+
+  const normChars = [];
+  const normToOrig = [];
+  for (let i = 0; i < wordChars.length; i++) {
+    if (WORD_CHAR_RE.test(wordChars[i])) {
+      normChars.push(wordChars[i].toLowerCase());
+      normToOrig.push(i);
+    }
+  }
+  const wordNorm = normChars.join('');
+  if (wordNorm.length < PARTIAL_MIN_LEN) return false;
+
+  let changed = false;
+  for (let gStart = 0; gStart <= guessNorm.length - PARTIAL_MIN_LEN; gStart++) {
+    const chunk = guessNorm.slice(gStart, gStart + PARTIAL_MIN_LEN);
+    let pos = wordNorm.indexOf(chunk);
+    while (pos !== -1) {
+      for (let k = 0; k < PARTIAL_MIN_LEN; k++) {
+        const origIdx = normToOrig[pos + k];
+        if (!revealed[origIdx]) {
+          revealed[origIdx] = true;
+          changed = true;
+        }
+      }
+      pos = wordNorm.indexOf(chunk, pos + 1);
+    }
+  }
+  return changed;
+}
+
+/** Format word mask string preserving original case and separators. */
+function formatWordMask(word, revealed) {
+  return Array.from(String(word || ''))
+    .map((ch, i) => (!WORD_CHAR_RE.test(ch) || (revealed && revealed[i])) ? ch : '_')
+    .join('');
+}
+
 const rooms = new Map();
 const ROOM_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function normalizeRoomCode(raw) {
@@ -597,8 +649,8 @@ function freshState(mode) {
     spin: null, lobbyBanner: null,
     songStarted: false, roundStartedAt: 0,
     imposterIds: [], imposterWords: null,
-    drawerName: null, drawWord: null, strokes: [], guessedBy: [],
-    explainerName: null, tabooWord: null, tabooForbidden: [], tabooGuessedBy: [],
+    drawerName: null, drawWord: null, drawRevealed: [], strokes: [], guessedBy: [],
+    explainerName: null, tabooWord: null, tabooRevealed: [], tabooForbidden: [], tabooGuessedBy: [],
     sortOrder: [],
     storytellerName: null, tlStatements: [], tlLieIdx: -1,
     songQ: null,
@@ -608,7 +660,6 @@ function freshState(mode) {
 
 const pVals = () => Object.values(players);
 const pickOf = p => ({ name: p.name, avatar: p.avatar || '😎' });
-const norm = s => String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 const activeMode = () => (state.mode === 'mix' && state.subMode ? state.subMode : state.mode);
 
 
@@ -764,8 +815,8 @@ function currentQuestion() {
     case 'neverhavei': return item ? { q: item.q ?? item } : null;
     case 'reaction': return { q: 'Drücke erst, wenn es GRÜN wird!' };
     case 'imposter': return { q: state.phase === 'discuss' ? 'Lies dein geheimes Wort und gib einen Hinweis!' : 'Wer ist der Imposter?' };
-    case 'draw': return { drawer: state.drawerName, len: state.drawWord ? state.drawWord.length : 0, guessed: state.guessedBy };
-    case 'taboo': return { explainer: state.explainerName, len: state.tabooWord ? state.tabooWord.length : 0, guessed: state.tabooGuessedBy };
+    case 'draw': return { drawer: state.drawerName, len: state.drawWord ? state.drawWord.length : 0, mask: formatWordMask(state.drawWord, state.drawRevealed), guessed: state.guessedBy };
+    case 'taboo': return { explainer: state.explainerName, len: state.tabooWord ? state.tabooWord.length : 0, mask: formatWordMask(state.tabooWord, state.tabooRevealed), guessed: state.tabooGuessedBy };
     case 'sort': return item && state.sortOrder.length === 4 ? { q: item.q, items: state.sortOrder.map((origIdx, dispIdx) => ({ idx: dispIdx, label: item.items[origIdx].label })) } : null;
     case 'icebreaker': return item ? { q: item.q ?? item } : null;
     case 'teams': return item ? { q: item.q, a: item.a } : null;
@@ -1210,8 +1261,11 @@ async function nextRound() {
   state.strokes = [];
   state.guessedBy = [];
   state.drawerName = null;
+  state.drawWord = null;
+  state.drawRevealed = [];
   state.explainerName = null;
   state.tabooWord = null;
+  state.tabooRevealed = [];
   state.tabooForbidden = [];
   state.tabooGuessedBy = [];
   state.sortOrder = [];
@@ -1339,6 +1393,7 @@ async function activateRound(seq, m, playedIdx) {
     if (!state.drawerName) state.drawerName = pickNextActor('draw');
     const item = DATA.draw[state.order[state.idx]];
     state.drawWord = item.w ?? item;
+    state.drawRevealed = initWordMask(state.drawWord);
     state.phase = 'question';
     state.totalMs = roundTimeMs('draw');
     state.deadline = Date.now() + state.totalMs;
@@ -1352,6 +1407,7 @@ async function activateRound(seq, m, playedIdx) {
     if (!state.explainerName) state.explainerName = pickNextActor('taboo');
     const item = DATA.taboo[playedIdx];
     state.tabooWord = item.word;
+    state.tabooRevealed = initWordMask(state.tabooWord);
     state.tabooForbidden = item.taboo || [];
     state.phase = 'question';
     state.totalMs = roundTimeMs('taboo');
@@ -1932,53 +1988,59 @@ function attachSocket(socket, ip, allowEvent) {
     markDirty();
   });
 
-  socket.on('draw:guess', (txt, ack) => {
-    if (!allowEvent('guess', 10_000, 15)) return ack && ack({ ok: false });
+  function handleWordGuess(socket, txt, ack, cfg) {
     const p = players[socket.id];
-    if (!p || state.mode !== 'draw' || state.phase !== 'question' || p.name === state.drawerName) return;
-    if (state.guessedBy.includes(p.name)) return;
-    if (norm(txt) && norm(txt) === norm(state.drawWord)) {
-      state.guessedBy.push(p.name);
+    const actorName = state[cfg.actorKey];
+    const word = state[cfg.wordKey];
+    const guessed = state[cfg.guessedKey];
+    if (!p || !cfg.isActive() || state.phase !== 'question' || p.name === actorName) return;
+    if (guessed.includes(p.name)) return;
+    if (norm(txt) && norm(txt) === norm(word)) {
+      guessed.push(p.name);
       const mult = isFinalRound() ? 2 : 1;
-      const pts = Math.max(200, 1000 - (state.guessedBy.length - 1) * 200) * mult;
+      const pts = Math.max(200, 1000 - (guessed.length - 1) * 200) * mult;
       p.score += pts;
       if (p.stats) p.stats.guessedWords++;
-      const drawer = pVals().find(x => x.name === state.drawerName);
-      if (drawer && state.guessedBy.length === 1) drawer.score += 500 * mult;
+      const actor = pVals().find(x => x.name === actorName);
+      if (actor && guessed.length === 1) actor.score += 500 * mult;
       p.answer = true;
       p.answeredAt = Date.now();
       ack && ack({ ok: true });
       broadcast();
-      const nonDrawers = pVals().filter(x => x.name !== state.drawerName);
-      if (nonDrawers.length > 0 && nonDrawers.every(x => state.guessedBy.includes(x.name))) showResult();
-    } else {
-      io.to(ROOM_CHAN).emit('draw:msg', { name: p.name, text: String(txt || '').slice(0, 30) });
-      ack && ack({ ok: false });
+      const guessers = pVals().filter(x => x.name !== actorName);
+      if (guessers.length > 0 && guessers.every(x => guessed.includes(x.name))) showResult();
+      return;
     }
+    const partial = applyPartialGuess(word, state[cfg.revealedKey], txt);
+    if (cfg.emitFeed) {
+      io.to(ROOM_CHAN).emit('draw:msg', { name: p.name, text: String(txt || '').slice(0, 30), partial });
+    }
+    if (partial) broadcast();
+    ack && ack({ ok: false, partial });
+  }
+
+  socket.on('draw:guess', (txt, ack) => {
+    if (!allowEvent('guess', 10_000, 15)) return ack && ack({ ok: false });
+    handleWordGuess(socket, txt, ack, {
+      isActive: () => state.mode === 'draw',
+      actorKey: 'drawerName',
+      wordKey: 'drawWord',
+      revealedKey: 'drawRevealed',
+      guessedKey: 'guessedBy',
+      emitFeed: true,
+    });
   });
 
   socket.on('taboo:guess', (txt, ack) => {
     if (!allowEvent('tabooGuess', 10_000, 20)) return ack && ack({ ok: false });
-    const p = players[socket.id];
-    if (!p || activeMode() !== 'taboo' || state.phase !== 'question' || p.name === state.explainerName) return;
-    if (state.tabooGuessedBy.includes(p.name)) return;
-    if (norm(txt) && norm(txt) === norm(state.tabooWord)) {
-      state.tabooGuessedBy.push(p.name);
-      const mult = isFinalRound() ? 2 : 1;
-      const pts = Math.max(200, 1000 - (state.tabooGuessedBy.length - 1) * 200) * mult;
-      p.score += pts;
-      if (p.stats) p.stats.guessedWords++;
-      const exp = pVals().find(x => x.name === state.explainerName);
-      if (exp && state.tabooGuessedBy.length === 1) exp.score += 500 * mult;
-      p.answer = true;
-      p.answeredAt = Date.now();
-      ack && ack({ ok: true });
-      broadcast();
-      const nonExplainers = pVals().filter(x => x.name !== state.explainerName);
-      if (nonExplainers.length > 0 && nonExplainers.every(x => state.tabooGuessedBy.includes(x.name))) showResult();
-    } else {
-      ack && ack({ ok: false });
-    }
+    handleWordGuess(socket, txt, ack, {
+      isActive: () => activeMode() === 'taboo',
+      actorKey: 'explainerName',
+      wordKey: 'tabooWord',
+      revealedKey: 'tabooRevealed',
+      guessedKey: 'tabooGuessedBy',
+      emitFeed: false,
+    });
   });
 
   // One-Device (Pass & Play) Steuerung
@@ -2742,4 +2804,7 @@ module.exports = {
   rooms,
   snapshotRooms,
   restoreRooms,
+  initWordMask,
+  applyPartialGuess,
+  formatWordMask,
 };

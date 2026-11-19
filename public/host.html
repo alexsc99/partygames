@@ -433,7 +433,7 @@ const ctx = canvas.getContext('2d');
 socket.on('draw:clear', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); feed = []; renderDrawSide(); });
 socket.on('draw:stroke', ch => pgDrawChunk(ctx, canvas, ch, ch.w || 6));
 socket.on('draw:history', list => { ctx.clearRect(0, 0, canvas.width, canvas.height); list.forEach(ch => pgDrawChunk(ctx, canvas, ch, ch.w || 6)); });
-socket.on('draw:msg', m => { feed.unshift(`${esc(m.name)}: ${esc(m.text)}`); feed = feed.slice(0, 8); renderDrawSide(); });
+socket.on('draw:msg', m => { feed.unshift(`${m.partial ? '🧩 ' : ''}${esc(m.name)}: ${esc(m.text)}`); feed = feed.slice(0, 8); renderDrawSide(); });
 socket.on('react', r => {
   if (!r || !r.emoji) return;
   pgFloatEmoji(`<span class="emIcon">${esc(r.emoji)}</span>${r.name ? `<small>${esc(r.avatar || '😎')} ${esc(r.name)}</small>` : ''}`, 10, 78);
@@ -506,9 +506,11 @@ socket.on('state', s => {
 
 function renderDrawSide() {
   if (!S || S.mode !== 'draw' || S.phase !== 'question') return;
-  const q = S.q || { drawer: '', len: 0, guessed: [] };
+  const q = S.q || { drawer: '', len: 0, mask: '', guessed: [] };
+  const maskHtml = pgRenderWordMask(q.mask || '_'.repeat(q.len || 0));
   document.getElementById('drawInfo').innerHTML =
-    `<h2>🎨 ${esc(q.drawer)} malt</h2><p>Wortlänge: <b>${'_ '.repeat(q.len)}</b> (${q.len})</p>` +
+    `<h2>🎨 ${esc(q.drawer)} malt</h2><div class="wordMask left" style="font-size:clamp(18px,3.2vmin,38px)">${maskHtml}</div>` +
+    `<p style="opacity:.75;margin:.4vh 0 1vh">(${q.len} Zeichen)</p>` +
     `<p>Erraten: ${q.guessed.map(esc).join(', ') || 'noch niemand'}</p>`;
   document.getElementById('drawGuesses').innerHTML = feed.map(f => `<div>${f}</div>`).join('');
 }
@@ -784,7 +786,7 @@ function renderView() {
 
   // In-place update when only player answer status or skipVote changed
   const mr = S.missionReveal;
-  const sig = `${S.mode}:${S.idx}:${S.phase}:${S.paused}:${audioBlocked}:${audioError}:${(S.q && S.q.guessed ? S.q.guessed.join(',') : '')}:${mr ? `${mr.resolved}:${mr.success}` : ''}:${res ? (S.players || []).map(p => `${p.name}:${p.score}`).join(',') : ''}`;
+  const sig = `${S.mode}:${S.idx}:${S.phase}:${S.paused}:${audioBlocked}:${audioError}:${(S.q && S.q.guessed ? S.q.guessed.join(',') : '')}:${(S.q && S.q.mask) ? S.q.mask : ''}:${mr ? `${mr.resolved}:${mr.success}` : ''}:${res ? (S.players || []).map(p => `${p.name}:${p.score}`).join(',') : ''}`;
   if (!S.paused && sig === lastRenderSig && document.getElementById('doneCnt')) {
     document.getElementById('doneCnt').textContent = `${done}/${S.players.length} fertig`;
     if (!res) {
@@ -946,8 +948,10 @@ function renderView() {
 
   if (S.mode === 'taboo') {
     if (!res) {
+      const maskHtml = pgRenderWordMask(S.q.mask || '_'.repeat(S.q.len || 0));
       app.innerHTML = header + `<div class="q">🗣️ ${esc(S.q.explainer)} erklärt!</div>` +
-        `<div class="big">Wortlänge: <b style="color:#ffd33d">${'_ '.repeat(S.q.len)}</b> (${S.q.len})</div>` +
+        `<div class="big"><div class="wordMask">${maskHtml}</div></div>` +
+        `<div style="opacity:.75;font-size:clamp(14px,2.4vmin,28px);text-align:center;margin-top:.6vh">(${S.q.len} Zeichen)</div>` +
         `<div class="chips" style="margin-top:3vh">${S.q.guessed.map(n => `<span style="background:#26890c">✓ ${esc(n)}</span>`).join('') || '<span>Noch niemand erraten…</span>'}</div>`;
     } else {
       const r = S.result;
