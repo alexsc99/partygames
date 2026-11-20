@@ -165,9 +165,9 @@ if (ROOM_CODE) {
   socket.on('room:error', () => createAndOpenAdmin());
 }
 let S = null; let qrInited = false; let lastAdminSig = '';
-function copyRoomLink() {
+async function copyRoomLink() {
   const link = (S && S.publicUrl) || (location.origin + '/?room=' + encodeURIComponent(ROOM_CODE));
-  navigator.clipboard?.writeText(link).catch(() => {});
+  if (!(await pgCopyText(link))) return;
   const btn = document.getElementById('copyLinkBtn');
   if (btn) { btn.textContent = '✅ Link kopiert!'; setTimeout(() => { btn.textContent = '📋 Einladungs-Link kopieren'; }, 2000); }
 }

@@ -401,30 +401,14 @@ if (lobbyPlayBtn && ROOM_CODE) {
   lobbyPlayBtn.href = '/?room=' + encodeURIComponent(ROOM_CODE);
 }
 let copyTimer = 0;
-function copyJoinLink() {
+async function copyJoinLink() {
   const link = url || (location.origin + (ROOM_CODE ? '/?room=' + encodeURIComponent(ROOM_CODE) : '/'));
-  const showDone = () => {
-    const b = document.getElementById('qrCopiedBadge');
-    if (!b) return;
-    b.classList.add('show');
-    clearTimeout(copyTimer);
-    copyTimer = setTimeout(() => b.classList.remove('show'), 1800);
-  };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(link).then(showDone).catch(() => fallbackCopy(link, showDone));
-  } else {
-    fallbackCopy(link, showDone);
-  }
-}
-function fallbackCopy(text, onDone) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand('copy'); onDone(); } catch {}
-  ta.remove();
+  if (!(await pgCopyText(link))) return;
+  const b = document.getElementById('qrCopiedBadge');
+  if (!b) return;
+  b.classList.add('show');
+  clearTimeout(copyTimer);
+  copyTimer = setTimeout(() => b.classList.remove('show'), 1800);
 }
 const canvas = document.getElementById('tvCanvas');
 const ctx = canvas.getContext('2d');

@@ -317,6 +317,26 @@
     if (el && el.textContent !== txt) el.textContent = txt;
   };
 
+  // ---- Text kopieren: Clipboard-API gibt es nur auf HTTPS/localhost. Über http://<IP> fehlt sie →
+  // execCommand-Fallback, sonst Eingabedialog zum manuellen Kopieren. true = automatisch kopiert.
+  window.pgCopyText = async function (text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try { await navigator.clipboard.writeText(text); return true; } catch {}
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch {}
+    ta.remove();
+    if (!ok) prompt('Link kopieren:', text);
+    return ok;
+  };
+
   // ---- Client-Fehler sammeln und an den Server melden (max. 5 pro Seitenaufruf) ----
   const ASSET_VER = (() => { try { return new URL(document.currentScript.src).searchParams.get('v') || ''; } catch { return ''; } })();
   const errQueue = [];

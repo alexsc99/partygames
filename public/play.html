@@ -156,18 +156,13 @@ async function joinByRoomInput() {
     if (errEl) errEl.textContent = 'Verbindungsfehler beim Prüfen des Raums.';
   }
 }
-function copyInviteLink() {
+async function copyInviteLink() {
   const link = (S && S.publicUrl) || (location.origin + '/?room=' + encodeURIComponent(ROOM_CODE));
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(link).then(() => {
-      document.querySelectorAll('.copyInviteBtn').forEach(b => {
-        b.textContent = '✅ Link kopiert!';
-        setTimeout(() => { b.textContent = '📋 Einladungs-Link kopieren'; }, 2000);
-      });
-    }).catch(() => prompt('Einladungs-Link kopieren:', link));
-  } else {
-    prompt('Einladungs-Link kopieren:', link);
-  }
+  if (!(await pgCopyText(link))) return;
+  document.querySelectorAll('.copyInviteBtn').forEach(b => {
+    b.textContent = '✅ Link kopiert!';
+    setTimeout(() => { b.textContent = '📋 Einladungs-Link kopieren'; }, 2000);
+  });
 }
 function inviteBarHtml() {
   return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(255,211,61,0.1);border:1px solid rgba(255,211,61,0.35);border-radius:10px;padding:8px 12px;margin:8px 0 12px;font-size:14px"><span>Raum: <b style="color:#ffd33d;letter-spacing:2px">${esc(ROOM_CODE)}</b></span><button type="button" class="copyInviteBtn" onclick="copyInviteLink()" style="background:#4b3a9e;color:#fff;padding:7px 12px;font-size:13px;font-weight:700;border-radius:8px;border:0;cursor:pointer">📋 Einladungs-Link kopieren</button></div>`;
