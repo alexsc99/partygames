@@ -44,7 +44,7 @@ Es gibt drei URLs:
 | 📊 **Skala 1–10** | Jeder bewertet auf einer Skala von 1 bis 10 |
 | 🎭 **2 Wahrheiten, 1 Lüge** | Ein Spieler schreibt 2 Wahrheiten & 1 Lüge, die anderen entlarven die Lüge |
 | ⚡ **Wort-Assoziation** | Schnell das erste Wort eintippen, das zum Begriff passt |
-| 🎵 **Erkenne den Song** | Spielt 30s-Vorschauen (Deezer/iTunes) ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe; Vorschauen mit leisem Intro oder Stille starten automatisch an der ersten lauten Stelle (`data/song-starts.json`) |
+| 🎵 **Erkenne den Song** | Spielt lokal gespeicherte Song-Ausschnitte (`data/song-audio/`, kein Streaming während des Spiels) ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe; Ausschnitte mit leisem Intro oder Stille starten automatisch an der ersten lauten Stelle (`data/song-starts.json`) |
 | 🖼️ **Bild-Quiz** | Firmenlogos ohne Schriftzug (50), Sehenswürdigkeiten (40), Flaggen (41), Automarken-Embleme ohne Schriftzug (30) & Länder-Umrisse (40) per 4-Optionen-Quiz erraten |
 | 🔥 **Heißer Stuhl** | Eine ausgeloste Person wählt geheim zwischen zwei Optionen („Was würdest du lieber …“), alle anderen tippen, was sie wählt: richtig +50, die Person +10 pro richtigem Rater, falsch = 1 Schluck |
 | 🎲 **Party-Mix** | 12 bunte Runden (wählbar 8–50) aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl, Pantomime, Heißer Stuhl – Kennenlernen, Wort-Assoziation & Skala nur manuell zuschaltbar) |
