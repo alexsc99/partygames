@@ -9,6 +9,7 @@ const QRCode = require('qrcode');
 const { Server } = require('socket.io');
 const { version: APP_VERSION } = require('./package.json');
 const { writeLog } = require('./src/logger');
+const { createPhotoStore, PHOTO_TTL_MS, PHOTO_MAX_BYTES } = require('./src/photos');
 const {
   ALLOWED_ORIGINS,
   hostAuthFails,
@@ -175,7 +176,7 @@ app.use((req, res, next) => {
 app.use(express.static(PUBLIC_DIR, { etag: true, maxAge: '1h' }));
 // Seiten einmal beim Start mit Asset-Hashes rendern; no-cache = immer revalidieren (ETag → 304).
 const PAGES = {};
-for (const file of ['play.html', 'host.html', 'admin.html', 'rooms.html']) {
+for (const file of ['play.html', 'host.html', 'admin.html', 'rooms.html', 'fotos.html']) {
   let html = fs.readFileSync(path.join(PUBLIC_DIR, file), 'utf8');
   for (const [url, hash] of Object.entries(assetHashes)) html = html.split(`"${url}"`).join(`"${url}?v=${hash}"`);
   html = html.split('__APP_VERSION__').join(APP_VERSION);
@@ -205,6 +206,7 @@ app.get('/host', sendRevalidated('host.html'));
 app.get('/admin', sendRevalidated('admin.html'));
 app.get('/rooms', sendRevalidated('rooms.html'));
 app.get('/room', sendRevalidated('rooms.html'));
+app.get('/fotos', sendRevalidated('fotos.html'));
 
 function serveCachedAssetDir(dir, allowedExts = null) {
   return (req, res) => {
@@ -332,6 +334,7 @@ function formatWordMask(word, revealed) {
 }
 
 const rooms = new Map();
+const photos = createPhotoStore(process.env.PARTYGAME_PHOTO_DIR || path.join(__dirname, 'data', 'photos'));
 const ROOM_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function normalizeRoomCode(raw) {
   return String(raw || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
@@ -340,7 +343,7 @@ function generateRoomCode() {
   for (let attempt = 0; attempt < 100; attempt++) {
     let c = '';
     for (let i = 0; i < 4; i++) c += ROOM_CHARS[crypto.randomInt(ROOM_CHARS.length)];
-    if (!rooms.has(c)) return c;
+    if (!rooms.has(c) && !photos.exists(c)) return c; // Foto-Ordner einer früheren Party nicht wiederverwenden
   }
   return crypto.randomBytes(3).toString('hex').toUpperCase();
 }
@@ -392,7 +395,10 @@ const qrCacheMap = new Map();
 app.get('/qr.png', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   const room = getRoom(req.query.room);
-  const targetUrl = room ? room.getJoinUrl() : DEFAULT_URL_PLAY;
+  // for=fotos: QR auf die Foto-Galerie des Raums (gleiche Domain wie der Spieler-Link)
+  const targetUrl = room && req.query.for === 'fotos'
+    ? `${new URL(room.getJoinUrl()).origin}/fotos?room=${room.code}`
+    : room ? room.getJoinUrl() : DEFAULT_URL_PLAY;
   let buf = qrCacheMap.get(targetUrl);
   if (!buf) {
     buf = await QRCode.toBuffer(targetUrl, { width: 600, margin: 1 });
@@ -406,6 +412,46 @@ app.get('/info', (req, res) => {
   const room = getRoom(req.query.room);
   res.json({ url: room ? room.getJoinUrl() : DEFAULT_URL_PLAY, room: room ? room.code : null });
 });
+
+// ---- Foto-Wand: Upload vom Handy (auch noch Tage nach der Party), Galerie für alle mit Raum-Link, ZIP ----
+const publicPhoto = (code, p) => ({ id: p.id, name: p.name, ts: p.ts, url: `/photos/${code}/${p.id}.jpg` });
+const photoRoomKnown = code => rooms.has(code) || photos.exists(code);
+app.get('/api/photos/:code', (req, res) => {
+  const code = normalizeRoomCode(req.params.code);
+  if (!photoRoomKnown(code)) return res.status(404).json({ ok: false, error: 'Raum nicht gefunden oder Fotos schon gelöscht' });
+  res.json({ ok: true, code, ttlDays: PHOTO_TTL_MS / 86_400_000, photos: photos.list(code).map(p => publicPhoto(code, p)) });
+});
+app.post('/api/photos/:code', express.raw({ type: 'image/jpeg', limit: PHOTO_MAX_BYTES }), (req, res) => {
+  const code = normalizeRoomCode(req.params.code);
+  if (!photoRoomKnown(code)) return res.status(404).json({ ok: false, error: 'Raum nicht gefunden' });
+  let name = '';
+  try { name = decodeURIComponent(String(req.headers['x-photo-name'] || '')); } catch { /* Name ist optional */ }
+  const r = photos.add(code, req.body, name);
+  if (r.error) return res.status(400).json({ ok: false, error: r.error });
+  const photo = publicPhoto(code, r.entry);
+  writeLog('INFO', 'photo_uploaded', { room: code, bytes: req.body.length });
+  rooms.get(code)?.onPhoto(photo);
+  res.status(201).json({ ok: true, photo });
+});
+app.get('/api/photos/:code/zip', (req, res) => {
+  const code = normalizeRoomCode(req.params.code);
+  if (!photos.list(code).length) return res.status(404).json({ ok: false, error: 'Keine Fotos' });
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="party-fotos-${code}.zip"`);
+  photos.streamZip(code, res);
+});
+app.get('/photos/:code/:file', (req, res) => {
+  const f = photos.file(normalizeRoomCode(req.params.code), path.basename(String(req.params.file)).replace(/\.jpg$/, ''));
+  if (!f || !fs.existsSync(f)) return res.status(404).end();
+  res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+  if (req.query.dl) res.attachment(path.basename(f));
+  res.sendFile(f);
+});
+setInterval(() => {
+  const removed = photos.cleanup();
+  if (removed) writeLog('INFO', 'photos_expired', { removed });
+}, 3600_000).unref();
+photos.cleanup();
 
 setInterval(() => {
   const now = Date.now();
@@ -969,6 +1015,7 @@ function pub() {
     songLangs, imageQuizThemes, russianShare, effectiveRussianShare: effectiveRussianShare(), songOnlyArtistTitle, finalDouble, wheelEnabled, secretMissions, alcoholFree, timerSpeed, mixRounds, mixModes,
     publicUrl, defaultPublicUrl: DEFAULT_URL_PLAY,
     partyCards,
+    photoCount: photos.list(code).length,
     card: state.phase === 'card' && state.card ? publicCard() : null,
     rule: state.rule && state.phase !== 'lobby' && state.phase !== 'end' && state.idx <= state.rule.untilIdx ? state.rule.text : null,
     teams,
@@ -2991,6 +3038,11 @@ return {
   code,
   hostToken,
   getJoinUrl: () => publicUrl,
+  // Neues Foto: TV blendet es kurz ein, Zähler in Admin/Handys aktualisieren
+  onPhoto: photo => {
+    io.to(ROOM_CHAN).emit('photo:new', photo);
+    broadcast();
+  },
   serialize,
   serializeJson: () => {
     if (snapDirty || !snapJson) {

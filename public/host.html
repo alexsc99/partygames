@@ -119,6 +119,13 @@
  .pcOutcome.bad { background: #e21b3c; }
  .pcLb { max-width: 900px; margin: 2vh auto 0; }
  .ruleTag { display: inline-block; margin-top: .6vh; background: rgba(255,211,61,.16); border: 1px solid #ffd33d; color: #ffd33d; border-radius: 10px; padding: .3vh 1vw; font-size: clamp(13px, 2vmin, 24px); font-weight: 700; }
+ .endPhotos { display: flex; gap: clamp(12px, 3vw, 40px); align-items: center; justify-content: center; margin: 1.5vh 0 2vh; }
+ #endSlide { height: clamp(140px, 30vh, 420px); max-width: 55vw; object-fit: contain; border-radius: 14px; border: 5px solid #fff; background: #000; transition: opacity .4s ease; }
+ .endNoPhoto { font-size: clamp(60px, 14vmin, 160px); opacity: .5; }
+ .endQr { width: clamp(110px, 18vmin, 220px); height: clamp(110px, 18vmin, 220px); background: #fff; padding: 6px; border-radius: 10px; margin: 1vh 0; }
+ .photoPop.mini { inset: auto 2vw 2vh auto; background: transparent; }
+ .photoPop.mini img { max-width: 22vw; max-height: 28vh; border-width: 4px; }
+ .photoPop.mini div { font-size: clamp(13px, 2vmin, 22px); margin-top: .6vh; }
  #drawWrap { display: none; gap: clamp(12px, 2.5vw, 36px); margin-top: 1.8vh; align-items: flex-start; }
  #tvCanvas { background: #fff; border-radius: 16px; width: 62vw; max-width: 100%; height: auto; aspect-ratio: 1000 / 620; max-height: 62vh; display: block; }
  .drawSide { flex: 1; min-width: 0; width: 100%; }
@@ -469,6 +476,43 @@ function preloadImgUrl(u) {
   const im = new Image();
   im.src = u;
 }
+// ---- Foto-Wand: neues Foto kurz zeigen (während Fragen nur klein in der Ecke), Diashow am Ende ----
+let photoPopTimer = 0;
+socket.on('photo:new', p => {
+  if (!p || !p.url) return;
+  let el = document.getElementById('photoPop');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'photoPop';
+    el.className = 'photoPop';
+    document.body.appendChild(el);
+  }
+  const busy = S && ['question', 'go', 'wait', 'discuss', 'write'].includes(S.phase);
+  el.classList.toggle('mini', !!busy);
+  el.innerHTML = `<img src="${esc(p.url)}" alt=""><div>📸 ${p.name ? `von ${esc(p.name)}` : 'Neues Foto!'}</div>`;
+  el.classList.add('on');
+  sfx('pop');
+  clearTimeout(photoPopTimer);
+  photoPopTimer = setTimeout(() => el.classList.remove('on'), busy ? 4000 : 6000);
+});
+let endSlideTimer = 0;
+function stopEndSlides() { clearInterval(endSlideTimer); endSlideTimer = 0; }
+async function startEndSlides() {
+  stopEndSlides();
+  if (!S || !S.photoCount) return;
+  let list = [];
+  try { list = (await (await fetch('/api/photos/' + encodeURIComponent(ROOM_CODE))).json()).photos || []; } catch { return; }
+  if (!list.length) return;
+  let i = 0;
+  const show = () => {
+    const img = document.getElementById('endSlide');
+    if (!img) return stopEndSlides();
+    img.style.opacity = '0';
+    setTimeout(() => { img.src = list[i % list.length].url; img.style.opacity = '1'; i++; }, 350);
+  };
+  show();
+  endSlideTimer = setInterval(show, 4000);
+}
 socket.on('state', s => {
   const prevS = S;
   S = s;
@@ -740,6 +784,7 @@ function render() {
 
 function renderView() {
   if (!S) return;
+  if (S.phase !== 'end') stopEndSlides();
   qrCorner.style.display = S.phase === 'lobby' ? 'none' : 'flex';
   if (lobbyPlayBtn) lobbyPlayBtn.style.display = S.phase === 'lobby' ? 'inline-block' : 'none';
   const hostNextBtn = document.getElementById('hostNextBtn');
@@ -834,13 +879,20 @@ function renderView() {
   }
 
   if (S.phase === 'end') {
-    const endSig = `end:${S.mode}:${S.players.length}`;
+    const endSig = `end:${S.mode}:${S.players.length}:${S.photoCount}`;
     if (lastRenderSig === endSig) return;
     lastRenderSig = endSig;
     const awardsHtml = S.awards && S.awards.length
       ? `<div class="cols" style="margin-bottom:2vh">${S.awards.map(a => `<div class="card" style="text-align:center"><div style="font-size:3.2vh">${a.icon} ${esc(a.title)}</div><div style="font-size:3.6vh;font-weight:800;color:#ffd33d;margin:.4vh 0">${esc(a.name)}</div><div style="opacity:.8;font-size:2.4vh">${esc(a.detail)}</div></div>`).join('')}</div>`
       : '';
-    app.innerHTML = `<h1>🏆 Endergebnis – ${title}</h1>${renderPodium()}${awardsHtml}${lb()}`;
+    const photosHtml = `<div class="card endPhotos">
+        ${S.photoCount ? '<img id="endSlide" alt="">' : '<div class="endNoPhoto">📸</div>'}
+        <div style="text-align:center"><div style="font-size:clamp(18px,3.4vmin,40px);font-weight:900;color:#ffd33d">📸 Fotos des Abends${S.photoCount ? ` (${S.photoCount})` : ''}</div>
+          <img class="endQr" src="/qr.png?room=${encodeURIComponent(ROOM_CODE)}&for=fotos" alt="QR zur Galerie">
+          <div style="opacity:.85;font-size:clamp(13px,2.2vmin,26px)">Scannen: ansehen, herunterladen & hochladen · 7 Tage</div></div>
+      </div>`;
+    app.innerHTML = `<h1>🏆 Endergebnis – ${title}</h1>${renderPodium()}${photosHtml}${awardsHtml}${lb()}`;
+    startEndSlides();
     return;
   }
 

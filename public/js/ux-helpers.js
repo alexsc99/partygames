@@ -361,6 +361,86 @@
     return true;
   };
 
+  // ---- Foto-Wand: Bild verkleinern (max. 1600 px, JPEG) und in die Raum-Galerie hochladen ----
+  // Mobilfunk-tauglich (~200–400 KB statt 3–8 MB); iOS liefert HEIC als JPEG an <input type=file>.
+  async function shrinkToJpeg(file, max = 1600, quality = 0.82) {
+    const bmp = window.createImageBitmap ? await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => null) : null;
+    const src = bmp || await new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = rej;
+      im.src = URL.createObjectURL(file);
+    });
+    const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight;
+    const s = Math.min(1, max / Math.max(w, h));
+    const c = document.createElement('canvas');
+    c.width = Math.round(w * s);
+    c.height = Math.round(h * s);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    if (bmp) bmp.close();
+    return new Promise(res => c.toBlob(res, 'image/jpeg', quality));
+  }
+  window.pgUploadPhotos = async function (room, files, name, onProgress) {
+    const list = Array.from(files || []);
+    let ok = 0, error = '';
+    for (const [i, f] of list.entries()) {
+      if (onProgress) onProgress(i + 1, list.length);
+      try {
+        const body = await shrinkToJpeg(f);
+        const r = await fetch('/api/photos/' + encodeURIComponent(room), {
+          method: 'POST',
+          headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(name || '') },
+          body,
+        });
+        if (r.ok) ok++;
+        else error = (await r.json().catch(() => ({}))).error || 'Upload fehlgeschlagen';
+      } catch {
+        error = 'Bild konnte nicht gelesen oder hochgeladen werden';
+      }
+    }
+    return { ok, total: list.length, error };
+  };
+  // Kurze Meldung unten am Bildschirm
+  window.pgToast = function (text, ms = 2600) {
+    let el = document.getElementById('pgToast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'pgToast';
+      el.className = 'pgToast';
+      el.setAttribute('role', 'status');
+      document.body.appendChild(el);
+    }
+    el.textContent = text;
+    el.classList.add('on');
+    clearTimeout(el._t);
+    if (ms > 0) el._t = setTimeout(() => el.classList.remove('on'), ms);
+  };
+  // Datei-Auswahl → Upload mit Fortschritt als Toast (für Handy, Admin, Galerie)
+  window.pgPhotoInput = async function (input, room, name, onDone) {
+    const files = input.files;
+    if (!files || !files.length) return;
+    const r = await pgUploadPhotos(room, files, name, (i, n) => pgToast(`📤 Lade Foto ${i}/${n} hoch …`, 0));
+    input.value = '';
+    pgToast(r.ok === r.total ? `✅ ${r.ok === 1 ? 'Foto' : `${r.ok} Fotos`} hochgeladen` : `⚠️ ${r.ok}/${r.total} hochgeladen – ${r.error}`, 3500);
+    if (onDone) onDone(r);
+  };
+  // Für Seiten, die #app ständig neu zeichnen: ein dauerhaftes, verstecktes Datei-Feld außerhalb von #app,
+  // sonst geht die Auswahl verloren, wenn der Button während des Foto-Pickers neu gerendert wird.
+  window.pgPickPhotos = function (room, name, onDone) {
+    let input = document.getElementById('pgPhotoPick');
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.multiple = true;
+      input.id = 'pgPhotoPick';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+    }
+    input.onchange = () => pgPhotoInput(input, room, typeof name === 'function' ? name() : name, onDone);
+    input.click();
+  };
+
   // ---- Client-Fehler sammeln und an den Server melden (max. 5 pro Seitenaufruf) ----
   const ASSET_VER = (() => { try { return new URL(document.currentScript.src).searchParams.get('v') || ''; } catch { return ''; } })();
   const errQueue = [];

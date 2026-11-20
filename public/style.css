@@ -48,6 +48,15 @@ button:active:not(:disabled) { transform: scale(.96); }
   to { transform: rotate(7deg) scale(1.07); }
 }
 @media (prefers-reduced-motion: reduce) { .suspenseDrum { animation: none; } }
+/* Foto-Wand */
+.pgToast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 9500; background: #2d2266; border: 1px solid #ffd33d; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 12px; box-shadow: 0 8px 26px rgba(0,0,0,.45); transition: opacity .2s ease, transform .2s ease; max-width: 92vw; text-align: center; }
+.pgToast.on { opacity: 1; transform: translate(-50%, 0); }
+.photoBtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #7c4dff; color: #fff; font-weight: 800; padding: 12px 16px; border-radius: 12px; cursor: pointer; user-select: none; }
+.photoBtn input { display: none; }
+.photoPop { position: fixed; inset: 0; z-index: 8500; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(20, 12, 50, .9); }
+.photoPop.on { display: flex; animation: suspenseIn .2s ease-out both; }
+.photoPop img { max-width: 86vw; max-height: 78vh; border-radius: 16px; border: 6px solid #fff; box-shadow: 0 18px 50px rgba(0,0,0,.55); transform: rotate(-2deg); animation: popIn .45s cubic-bezier(.2,1.4,.4,1) both; }
+.photoPop div { margin-top: 2vh; font-size: clamp(18px, 3.6vmin, 44px); font-weight: 900; color: #ffd33d; }
 @keyframes pulseGo {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.02); }

@@ -9,3 +9,4 @@ data/used.json
 .env
 data/rooms.json
 data/rooms.json.*.tmp
+data/photos/

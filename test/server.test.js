@@ -806,4 +806,59 @@ describe('PartyGame Server', () => {
       rooms.delete(code);
     }
   });
+
+  it('photo wall: upload JPEG, list, serve, ZIP download; rejects non-JPEG and unknown rooms', async () => {
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200, 7), Buffer.from([0xff, 0xd9])]);
+    const photoDir = path.join(__dirname, '..', 'data', 'photos', code);
+    try {
+      const up = await fetch(`${baseUrl}/api/photos/${code}`, {
+        method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent('Jöran') }, body: jpeg,
+      });
+      assert.equal(up.status, 201);
+      const { photo } = await up.json();
+      assert.equal(photo.name, 'Jöran');
+
+      const bad = await fetch(`${baseUrl}/api/photos/${code}`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: Buffer.from('nope') });
+      assert.equal(bad.status, 400);
+      assert.equal((await fetch(`${baseUrl}/api/photos/ZZZZ`)).status, 404);
+
+      const list = await (await fetch(`${baseUrl}/api/photos/${code}`)).json();
+      assert.equal(list.photos.length, 1);
+      const img = Buffer.from(await (await fetch(baseUrl + photo.url)).arrayBuffer());
+      assert.ok(img.equals(jpeg), 'served photo must be byte-identical');
+
+      const zip = Buffer.from(await (await fetch(`${baseUrl}/api/photos/${code}/zip`)).arrayBuffer());
+      assert.equal(zip.readUInt32LE(0), 0x04034b50, 'ZIP local header');
+      const eocd = zip.length - 22;
+      assert.equal(zip.readUInt32LE(eocd), 0x06054b50, 'ZIP end record');
+      assert.equal(zip.readUInt16LE(eocd + 10), 1, 'one entry');
+      assert.ok(zip.includes(jpeg), 'ZIP stores the photo uncompressed');
+    } finally {
+      fs.rmSync(photoDir, { recursive: true, force: true });
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
+  it('photo store deletes photos older than 7 days and keeps newer ones', () => {
+    const os = require('node:os');
+    const { createPhotoStore, PHOTO_TTL_MS } = require('../src/photos');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pg-photos-'));
+    try {
+      const store = createPhotoStore(dir);
+      const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
+      const { entry: oldOne } = store.add('ABCD', jpeg, 'alt');
+      const { entry: newOne } = store.add('ABCD', jpeg, 'neu');
+      const now = oldOne.ts + PHOTO_TTL_MS + 1;
+      newOne.ts = now - 1000; // gerade erst hochgeladen
+      assert.equal(store.cleanup(now), 1);
+      assert.deepEqual(store.list('ABCD').map(p => p.name), ['neu']);
+      assert.equal(fs.existsSync(store.file('ABCD', oldOne.id)), false);
+      assert.equal(store.cleanup(now + PHOTO_TTL_MS), 1);
+      assert.equal(store.exists('ABCD'), false, 'empty room folder is removed');
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

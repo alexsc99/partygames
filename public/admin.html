@@ -167,6 +167,11 @@ if (ROOM_CODE) {
   socket.on('room:error', () => createAndOpenAdmin());
 }
 let S = null; let qrInited = false; let lastAdminSig = '';
+async function copyGalleryLink() {
+  let origin = location.origin;
+  try { if (S && S.publicUrl) origin = new URL(S.publicUrl).origin; } catch { /* eigene Adresse */ }
+  if (await pgCopyText(origin + '/fotos?room=' + encodeURIComponent(ROOM_CODE))) pgToast('✅ Galerie-Link kopiert');
+}
 async function copyRoomLink() {
   const link = (S && S.publicUrl) || (location.origin + '/?room=' + encodeURIComponent(ROOM_CODE));
   if (!(await pgCopyText(link))) return;
@@ -370,7 +375,7 @@ function render() {
     S.effectiveRussianShare ?? S.russianShare ?? 0, S.songOnlyArtistTitle,
     S.roundLimit, S.teamMode, S.displayMode || (S.noTvMode ? 'notv' : 'tv'),
     S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree, S.partyCards,
-    S.card ? JSON.stringify(S.card) : '', S.rule || '',
+    S.card ? JSON.stringify(S.card) : '', S.rule || '', S.photoCount,
     S.lobbyBanner || '', S.spin?.id || '',
     S.q?.q || '', S.q?.drawer || '', S.q?.guessed ? S.q.guessed.length : '',
     mr ? `${mr.playerName}:${mr.resolved}:${mr.success}` : '',
@@ -526,6 +531,15 @@ function render() {
         <button class="${S.wheelEnabled !== false ? 'active' : ''}" onclick="socket.emit('host:wheelEnabled',S.wheelEnabled===false)">🎡 Drehrad-Animation: ${S.wheelEnabled !== false ? 'An' : 'Aus'}</button>
         <button class="${S.secretMissions ? 'active' : ''}" onclick="socket.emit('host:secretMissions',!S.secretMissions)">🕵️ Geheime Missionen: ${S.secretMissions ? 'An' : 'Aus'}</button>
         <button class="${S.alcoholFree ? 'active' : ''}" onclick="socket.emit('host:alcoholFree',!S.alcoholFree)">🥤 Alkoholfrei: ${S.alcoholFree ? 'An' : 'Aus'}</button>
+      </div>
+    `)}
+    ${grp('photos', '📸 Fotos', `${S.photoCount || 0} ${S.photoCount === 1 ? 'Foto' : 'Fotos'}`, `
+      <div class="sub">Alle im Raum können über den Galerie-Link Fotos ansehen, herunterladen und hochladen. Jedes Foto wird 7 Tage nach dem Hochladen gelöscht. Am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie.</div>
+      <div class="cats">
+        <a href="/fotos?room=${encodeURIComponent(ROOM_CODE)}" target="_blank" style="text-decoration:none"><button type="button" class="active">🖼️ Galerie öffnen</button></a>
+        <button type="button" onclick="copyGalleryLink()">📋 Galerie-Link kopieren</button>
+        <button type="button" onclick="pgPickPhotos(ROOM_CODE, '')">📤 Fotos hochladen</button>
+        ${S.photoCount ? `<a href="/api/photos/${encodeURIComponent(ROOM_CODE)}/zip" style="text-decoration:none"><button type="button">⬇️ Alle als ZIP</button></a>` : ''}
       </div>
     `)}
     ${grp('cards', '🎪 Party-Karten', esc(PARTY_FREQ[S.partyCards] || 'Aus'), `
