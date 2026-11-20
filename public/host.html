@@ -319,6 +319,7 @@ let lastCardOutcome = '';
 let discussUntil = 0, jokerCutAt = {}; // lokale Countdowns (Diskussion, Zeitdieb) – aus den relativen Server-Zeiten
 const songAudio = document.getElementById('songAudio');
 songAudio.loop = true;
+pgLoopFromStart(songAudio);
 let audioBlocked = false, audioError = false, audioElUnlocked = false;
 let hostVol = Number(localStorage.getItem('hostVol') ?? 0.5);
 if (!Number.isFinite(hostVol) || hostVol < 0 || hostVol > 1) hostVol = 0.5;

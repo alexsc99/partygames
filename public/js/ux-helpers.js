@@ -150,6 +150,16 @@
     const b = el.buffered, d = el.duration;
     return b.length > 0 && Number.isFinite(d) && b.end(b.length - 1) >= d - 0.5;
   }
+  // Song-Vorschau läuft in Schleife: nach dem Ende wieder ab dem Startversatz (#t=…), nicht ab dem leisen Intro
+  window.pgLoopFromStart = function (audio) {
+    let last = 0;
+    audio.addEventListener('timeupdate', () => {
+      const m = /#t=([\d.]+)/.exec(audio.getAttribute('src') || '');
+      const start = m ? Number(m[1]) : 0;
+      if (start > 0 && audio.currentTime + 1 < last && audio.currentTime < start) audio.currentTime = start;
+      last = audio.currentTime;
+    });
+  };
   window.pgPreloadNextAudio = function (s, currentAudioEl) {
     if (!s || !s.nextAudio || s.nextAudio === lastPreloadAudio) return;
     // Während der aktuelle Song noch lädt, keine Bandbreite für den nächsten abzweigen (Mobilfunk!)

@@ -311,6 +311,7 @@ function startPhoneWheelAnim(spin) {
 }
 const playSongAudio = document.getElementById('playSongAudio');
 playSongAudio.loop = true;
+pgLoopFromStart(playSongAudio);
 let playAudioOn = localStorage.getItem('qAudio') === '1', playAudioBlocked = false, playAudioError = false, playAudioElUnlocked = false, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000, lastPhoneSig = '', lastPhoneBaseSig = '';
 let playVol = Number(localStorage.getItem('qVol') ?? 0.5);
 if (!Number.isFinite(playVol) || playVol < 0 || playVol > 1) playVol = 0.5;

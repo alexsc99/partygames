@@ -1499,19 +1499,21 @@
   },
   {
     "artist": "Александр Рыбак",
-    "title": "Europe's Skies",
+    "title": "Небеса Европы",
     "year": 2011,
     "type": "solo",
     "lang": "ru",
-    "query": "Alexander Rybak Europe's Skies"
+    "query": "Alexander Rybak Europe's Skies",
+    "keepAudio": true
   },
   {
     "artist": "Александр Рыбак",
-    "title": "Fairytale",
+    "title": "Сказка",
     "year": 2009,
     "type": "solo",
     "lang": "ru",
-    "query": "Alexander Rybak Fairytale"
+    "query": "Alexander Rybak Fairytale",
+    "keepAudio": true
   },
   {
     "artist": "Фактор 2",

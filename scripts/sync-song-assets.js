@@ -244,7 +244,8 @@ function transcodeTo96kMp3(inputPath, outMp3) {
     // Special case: Estelle feat. Kanye West (Lost Frequencies Remix) keeps its existing remix MP3
     // and uses the official Estelle - American Boy album cover.
     let match = null;
-    let keepExistingAudio = false;
+    // keepAudio in songs.json: Audio wurde bewusst von Hand gewählt (z. B. russische Fassung) – nie überschreiben
+    let keepExistingAudio = !!song.keepAudio;
     if (/lost frequencies remix/i.test(song.title || '')) {
       keepExistingAudio = true;
       const dz = await fetchJsonRateLimited('https://api.deezer.com/search?q=Estelle%20American%20Boy&limit=3', false);
