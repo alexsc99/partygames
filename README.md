@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.9.2)
+# 🎉 PartyGame (Version 3.10.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -62,6 +62,7 @@ Es gibt drei URLs:
 - **Kategorien-Filter:** 5 klare Kategorien — *🎉 Party & Freunde*, *🍻 Peinlich & Eskaliert*, *💬 Kennenlernen & Deep Talk*, *💘 Date* und *🔥 Hot 18+* (in `/admin` frei kombinierbar; Standard: Party & Freunde, Peinlich & Eskaliert, Kennenlernen & Deep Talk).
 - **Song-Sprachen & Russisch-Anteil:** In `/admin` unter *Erkenne den Song* sind `🇬🇧 Englisch` und `🇩🇪 Deutsch` standardmäßig aktiv; der `🇷🇺 Russisch-Anteil` lässt sich per Slider von `0%` bis `100%` regeln (Standard: `0%`). Optional auf *Nur Interpret & Titel* begrenzbar.
 - **🕵️ Geheime Missionen:** Optional in `/admin` aktivierbar — ein zufälliger Spieler erhält auf seinem Handy eine geheime Runden-Aufgabe (+150 Bonus-Punkte bei Erfolg, Auflösung & Bewertung am Rundenende).
+- **🎪 Party-Karten:** Optional in `/admin` (Aus / Selten / Normal / Oft). Zwischen zwei Runden erscheint ab und zu eine Karte auf TV und Handys: 🎉 Gruppen-Challenge (+200 für alle oder alle trinken bzw. Kniebeugen), 👑 Kopfgeld auf den Spitzenreiter, 🆘 Aufholchance für den Letzten, 🎤 Reihum-Runde mit Handy-Abstimmung (+300), ⚡ Blitz-Duell zweier ausgeloster Spieler (+400), 🔄 Weitergeben und 📜 Regelkarten, die 3 Runden lang am TV-Rand stehen. Ausgewertet wird im Admin; nie direkt vor der Finalrunde, nicht im Ein-Gerät-Modus. Karten aus „Peinlich“/„Hot 18+“ nur bei aktiver Kategorie, „Alkoholfrei“ tauscht Trink-Aufgaben aus.
 - **Lautstärke-Regler & Auto-Timer-Sync:** Eigener Lautstärke-Slider auf TV und Handy; der Song-Timer synchronisiert sich unabhängig von unterschiedlichen Geräte-Uhrzeiten exakt mit dem Audio-Start.
 - **Finalrunde (2× Punkte):** Die letzte Runde eines Spiels zählt automatisch doppelt (in `/admin` ein-/ausschaltbar).
 - **Sieger-Awards:** Am Spielende gibt es Auszeichnungen (*Trinkkönig*, *Blitzdenker*, *Rate-Profi*, *Schätz-Meister*).
@@ -106,6 +107,7 @@ partygame/
 │   ├── song-art/        # Lokale Album-Cover (0.jpg–372.jpg)
 │   ├── imagequiz.json   # Bild-Quiz (201 Fragen: Logos, Sehenswürdigkeiten, Flaggen, Automarken, Länder-Umrisse)
 │   ├── iq-images/       # Lokale Bilder für das Bild-Quiz (neutrale Dateinamen)
+│   ├── partycards.json  # Party-Karten (63 Aufgaben zwischen den Runden, Platzhalter {leader} {last} {a} {b} {player})
 │   ├── used.json        # Automatisch verwaltet: bereits gespielte Indizes
 │   └── custom.json      # Automatisch erzeugt: eigene Fragen aus /admin
 ├── start.sh             # Startet Server + Firefox im TV-Vollbild
@@ -211,7 +213,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.9.2 (Aktueller Stand):** „Link kopieren“ (Admin, Handy, TV) funktioniert auch über `http://<IP>`: gemeinsamer Helfer `pgCopyText` mit Fallback, wenn die Clipboard-API fehlt; „✅ kopiert“ erscheint nur noch, wenn wirklich kopiert wurde.
+- **v3.10.0 (Aktueller Stand):** Neue Option **🎪 Party-Karten** (Aufgaben zwischen den Runden: Gruppen-Challenge, Kopfgeld, Underdog, Reihum-Runde mit Handy-Abstimmung, Blitz-Duell, Weitergeben, Regelkarten; Auswertung im Admin), Karten in `data/partycards.json`.
+- **v3.9.2:** „Link kopieren“ (Admin, Handy, TV) funktioniert auch über `http://<IP>`: gemeinsamer Helfer `pgCopyText` mit Fallback, wenn die Clipboard-API fehlt; „✅ kopiert“ erscheint nur noch, wenn wirklich kopiert wurde.
 - **v3.9.1:** Versionsnummer wird unten in `/admin` angezeigt (Platzhalter `__APP_VERSION__` wird beim Start aus `package.json` gefüllt).
 - **v3.9.0:** Neues Bild-Quiz-Thema **🗺️ Länder-Umrisse** (40 Länder, "Welches Land hat diese Umrisse?"), in `/admin` unter *Bild-Quiz Themen* einzeln an-/abwählbar und in „Alle“ enthalten.
 - **v3.8.2:** Bild-Quiz ohne Namen im Bild: Schriftzüge aus Logos/Emblemen entfernt (u. a. Pepsi, BMW, Porsche, Burger King, Mastercard, Airbnb, Target, Adobe, Peugeot, Volvo, Nissan, Alfa Romeo, Aston Martin); TikTok, Red Bull und Reddit als Symbol-Logo; reine Wortmarken ersetzt (KFC → Lufthansa, Uber → Shazam, NASA → Duolingo, Ford → Jaguar, Fiat → Chevrolet, Kia → Suzuki).

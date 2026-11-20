@@ -623,4 +623,72 @@ describe('PartyGame Server', () => {
       }
     }
   });
+
+  it('shows a party card between rounds, applies its points via /admin and continues the game', async () => {
+    const { io: ioc } = require('socket.io-client');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const admin = connect();
+    const names = ['Ada', 'Bo', 'Cy'];
+    const players = names.map(connect);
+    let S = null;
+    admin.on('state', s => { S = s; });
+    const until = async (pred, ms = 3000) => {
+      const end = Date.now() + ms;
+      while (Date.now() < end) { if (S && pred(S)) return S; await new Promise(r => setTimeout(r, 20)); }
+      throw new Error(`timeout, phase=${S && S.phase}`);
+    };
+    try {
+      await Promise.all(players.map((p, i) => new Promise(res => p.emit('join', { name: names[i], avatar: '😎' }, res))));
+      admin.emit('host:mode', 'quiz');
+      admin.emit('host:wheelEnabled', false);
+      admin.emit('host:partyCards', 'often');
+      await until(s => s.partyCards === 'often' && s.players.length === 3);
+      admin.emit('host:start');
+      // „Oft“ = spätestens nach der dritten Runde kommt eine Karte
+      for (let round = 0; round < 3 && S.phase !== 'card'; round++) {
+        await until(s => s.phase === 'question' && s.idx === round);
+        await Promise.all(players.map((p, i) => new Promise(res => p.emit('answer', i, res))));
+        await until(s => s.phase === 'result');
+        admin.emit('host:next');
+        await until(s => s.phase === 'card' || (s.phase === 'question' && s.idx === round + 1));
+      }
+      assert.equal(S.phase, 'card', 'expected a party card within three rounds');
+      const card = S.card;
+      const idxAtCard = S.idx;
+      assert.ok(card.text && !/[{}]/.test(card.text), `placeholders must be filled: ${card.text}`);
+      const before = Object.fromEntries(S.players.map(p => [p.name, p.score]));
+      const diff = () => Object.fromEntries(S.players.map(p => [p.name, p.score - before[p.name]]));
+
+      if (card.act === 'vote') {
+        players.forEach((p, i) => p.emit('card:vote', i === 1 ? 'Ada' : 'Bo')); // Bo: 2 Stimmen
+        await until(s => s.card && s.card.resolved);
+        assert.equal(diff().Bo, card.reward);
+      } else if (card.act === 'yesno') {
+        admin.emit('host:cardResolve', { ok: true });
+        await until(s => s.card && s.card.resolved);
+        const d = diff();
+        if (card.type === 'group') names.forEach(n => assert.equal(d[n], card.reward));
+        else assert.equal(d[card.target], card.reward);
+      } else if (card.act === 'duel') {
+        admin.emit('host:cardResolve', { name: card.duel[0] });
+        await until(s => s.card && s.card.resolved);
+        assert.equal(diff()[card.duel[0]], card.reward);
+      } else if (card.act === 'give' || card.act === 'take') {
+        admin.emit('host:cardResolve', { name: names.find(n => n !== card.target) });
+        await until(s => s.card && s.card.resolved);
+        assert.equal(Object.values(diff()).reduce((a, b) => a + b, 0), 0, 'point transfers must not create points');
+      }
+      if (card.act === 'rule') assert.equal(S.rule, card.text);
+
+      admin.emit('host:next');
+      await until(s => s.phase === 'question' && s.idx === idxAtCard + 1);
+      assert.equal(S.card, null);
+    } finally {
+      admin.close();
+      players.forEach(p => p.close());
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
 });

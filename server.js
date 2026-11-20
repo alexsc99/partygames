@@ -57,6 +57,23 @@ try {
 const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'mix'];
 const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'sort', 'songquiz', 'imagequiz'];
 const IQ_THEMES = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
+// ---- Party-Karten: Aufgaben zwischen zwei Runden (Gruppe, Spitzenreiter, Letzter, Duell, Regel …) ----
+const PARTY_CARDS = require('./data/partycards.json');
+const PARTY_CARD_GAP = { rare: 5, normal: 3, often: 2 }; // ungefährer Rundenabstand je Häufigkeit
+const PARTY_CARD_TYPES = {
+  group: { title: '🎉 Gruppen-Challenge', act: 'yesno', w: 3 },
+  leader: { title: '👑 Kopfgeld', w: 1.5 },
+  underdog: { title: '🆘 Underdog-Chance', w: 1.5 },
+  vote: { title: '🎤 Reihum-Runde', act: 'vote', w: 2, min: 3 },
+  pass: { title: '🔄 Weitergeben', act: 'info', w: 1 },
+  duel: { title: '⚡ Blitz-Duell', act: 'duel', w: 2 },
+  rule: { title: '📜 Neue Regel', act: 'rule', w: 1 },
+};
+const CARD_GROUP_PTS = 200;
+const CARD_VOTE_PTS = 300;
+const CARD_DUEL_PTS = 400;
+const CARD_RULE_ROUNDS = 3;
+const CARD_AUTO_NEXT_MS = 6000;
 const MODE_LABELS = {
   quiz: '🎉 Party-Quiz',
   mostlikely: '🍻 Wer würde?',
@@ -575,6 +592,7 @@ let finalDouble = true;
 let wheelEnabled = true;
 let secretMissions = false;
 let alcoholFree = false;
+let partyCards = 'off'; // 'off' | 'rare' | 'normal' | 'often'
 let timerSpeed = 'normal';
 let mixRounds = MIX_ROUNDS;
 const roundTimeMs = m => Math.max(4000, Math.round((TIME[m] || 20) * (m === 'reaction' ? 1 : (TIMER_MULT[timerSpeed] || 1)) * 1000));
@@ -657,6 +675,7 @@ function freshState(mode) {
     storytellerName: null, tlStatements: [], tlLieIdx: -1,
     songQ: null,
     mission: null,
+    card: null, rule: null, lastCardIdx: -1, usedCards: [],
   };
 }
 
@@ -922,6 +941,9 @@ function pub() {
     displayMode, noTvMode: displayMode !== 'tv',
     songLangs, imageQuizThemes, russianShare, effectiveRussianShare: effectiveRussianShare(), songOnlyArtistTitle, finalDouble, wheelEnabled, secretMissions, alcoholFree, timerSpeed, mixRounds, mixModes,
     publicUrl, defaultPublicUrl: DEFAULT_URL_PLAY,
+    partyCards,
+    card: state.phase === 'card' && state.card ? publicCard() : null,
+    rule: state.rule && state.phase !== 'lobby' && state.phase !== 'end' && state.idx <= state.rule.untilIdx ? state.rule.text : null,
     teams,
     paused: state.paused, pausedLeft: state.pausedLeft,
     deadline: state.deadline, time: TIME[m],
@@ -1066,6 +1088,9 @@ function startGame() {
     state.order = pickOrder(state.mode);
   }
   state.idx = -1;
+  state.card = null;
+  state.rule = null;
+  state.lastCardIdx = -1;
   pVals().forEach(p => { p.score = 0; p.prevScore = 0; p.lastGain = 0; p.streak = 0; p.drinks = 0; p.stats = { fastSum: 0, fastCount: 0, bestEstimate: 0, guessedWords: 0 }; });
   nextRound();
 }
@@ -1240,8 +1265,155 @@ function buildSongQuestion(song, meta) {
   return { q, a, c, artist: song.artist, title: song.title, year: song.year, type: song.type, preview: meta.preview, art: meta.art };
 }
 
-async function nextRound() {
+const byName = n => pVals().find(p => p.name === n);
+const addPoints = (p, n) => { if (p) p.score = Math.max(0, (p.score || 0) + n); };
+const rankedPlayers = () => [...pVals()].sort((a, b) => b.score - a.score);
+
+function partyCardDue() {
+  const gap = PARTY_CARD_GAP[partyCards];
+  if (!gap || state.phase !== 'result' || displayMode === 'onedevice' || pVals().length < 2) return false;
+  if (state.idx + 2 >= totalRounds()) return false; // nie vor der letzten Runde (Finalrunde) und nicht am Ende
+  const since = state.idx - state.lastCardIdx;
+  return since > gap || (since === gap && Math.random() < 0.7);
+}
+
+function pickPartyCard() {
+  const ranked = rankedPlayers();
+  const n = ranked.length;
+  const hasRanking = n >= 2 && ranked[0].score > ranked[n - 1].score;
+  const pool = PARTY_CARDS.filter(c => {
+    const t = PARTY_CARD_TYPES[c.type];
+    if (!t || n < (t.min || 2)) return false;
+    if (c.cat && !activeCategories.includes(c.cat)) return false;
+    if ((c.type === 'leader' || c.type === 'underdog') && !hasRanking) return false;
+    return c.act !== 'mode' || state.mode === 'mix';
+  });
+  if (!pool.length) return null;
+  let fresh = pool.filter(c => !state.usedCards.includes(c.id));
+  if (!fresh.length) {
+    state.usedCards = [];
+    fresh = pool;
+  }
+  // Erst den Typ gewichtet wählen, dann die Karte – sonst dominieren Typen mit vielen Karten
+  const types = [...new Set(fresh.map(c => c.type))];
+  let r = Math.random() * types.reduce((s, t) => s + PARTY_CARD_TYPES[t].w, 0);
+  const type = types.find(t => (r -= PARTY_CARD_TYPES[t].w) < 0) || types[types.length - 1];
+  const cands = fresh.filter(c => c.type === type);
+  return cands[crypto.randomInt(cands.length)];
+}
+
+function maybeStartPartyCard() {
+  if (!partyCardDue()) return false;
+  const c = pickPartyCard();
+  if (!c) return false;
+  const ranked = rankedPlayers();
+  const mixed = shuffle(pVals());
+  const roles = { leader: ranked[0], last: ranked[ranked.length - 1], a: mixed[0], b: mixed[1], player: mixed[0] };
+  const act = c.act || PARTY_CARD_TYPES[c.type].act || 'info';
+  const text = (alcoholFree && c.af ? c.af : c.text).replace(/\{(leader|last|a|b|player)\}/g, (_, k) => roles[k].name);
+  const target = c.type === 'leader' ? roles.leader : c.type === 'underdog' ? roles.last : null;
   clearTimeout(timer);
+  skipVotes.clear();
+  state.usedCards.push(c.id);
+  state.lastCardIdx = state.idx;
+  const reward = c.type === 'group' ? CARD_GROUP_PTS : act === 'vote' ? CARD_VOTE_PTS : act === 'duel' ? CARD_DUEL_PTS : (c.pts || c.amount || 0);
+  state.card = {
+    id: c.id, type: c.type, title: PARTY_CARD_TYPES[c.type].title, act, text,
+    target: target ? target.name : null,
+    duel: act === 'duel' ? [roles.a.name, roles.b.name] : null,
+    reward, minus: c.minus || 0, amount: c.amount || 0,
+    votes: {}, tally: null, resolved: false, outcome: null,
+  };
+  if (act === 'rule') state.rule = { text, untilIdx: state.idx + CARD_RULE_ROUNDS };
+  state.phase = 'card';
+  state.totalMs = c.sec ? c.sec * 1000 : 0;
+  state.deadline = c.sec ? Date.now() + state.totalMs : 0;
+  writeLog('INFO', 'party_card', { room: code, card: c.id });
+  broadcast();
+  return true;
+}
+
+// Auswertung über /admin (bzw. automatisch, sobald bei Reihum-Karten alle abgestimmt haben)
+function resolvePartyCard(arg) {
+  const card = state.card;
+  if (state.phase !== 'card' || !card || card.resolved) return;
+  const ps = pVals();
+  const before = new Map(ps.map(p => [p, p.score || 0]));
+  const target = byName(card.target);
+  let outcome;
+  if (card.act === 'yesno') {
+    const ok = !!(arg && arg.ok);
+    if (card.type === 'group') {
+      if (ok) ps.forEach(p => addPoints(p, card.reward));
+      else ps.forEach(p => { p.drinks = (p.drinks || 0) + 1; });
+      outcome = ok ? `✅ Geschafft! +${card.reward} für alle`
+        : alcoholFree ? '❌ Nicht geschafft – alle machen 5 Kniebeugen!' : '❌ Nicht geschafft – alle trinken einen Schluck!';
+    } else if (ok) {
+      addPoints(target, card.reward);
+      outcome = `✅ Geschafft! ${card.target} +${card.reward}`;
+    } else {
+      addPoints(target, -card.minus);
+      outcome = card.minus ? `❌ Nicht geschafft! ${card.target} −${card.minus}` : `❌ Leider nicht – keine Punkte für ${card.target}`;
+    }
+  } else if (card.act === 'give' || card.act === 'take') {
+    const other = byName(arg && arg.name);
+    if (!other || !target || other === target) return;
+    const [from, to] = card.act === 'give' ? [target, other] : [other, target];
+    const amt = Math.min(card.amount, from.score || 0);
+    addPoints(from, -amt);
+    addPoints(to, amt);
+    outcome = `💸 ${from.name} gibt ${amt} Punkte an ${to.name}`;
+  } else if (card.act === 'duel') {
+    const winner = byName(arg && arg.name);
+    if (!winner || !card.duel.includes(winner.name)) return;
+    addPoints(winner, card.reward);
+    outcome = `🏆 ${winner.name} gewinnt das Duell! +${card.reward}`;
+  } else if (card.act === 'vote') {
+    const tally = {};
+    for (const n of Object.values(card.votes)) if (byName(n)) tally[n] = (tally[n] || 0) + 1;
+    const max = Math.max(0, ...Object.values(tally));
+    const winners = max > 0 ? Object.keys(tally).filter(n => tally[n] === max) : [];
+    winners.forEach(n => addPoints(byName(n), card.reward));
+    card.tally = tally;
+    outcome = winners.length ? `🏆 ${winners.join(' & ')} ${winners.length > 1 ? 'gewinnen' : 'gewinnt'}! +${card.reward}` : 'Keine Stimmen – keine Punkte';
+  } else if (card.act === 'mode') {
+    const m = arg && arg.mode;
+    if (state.mode !== 'mix' || !MIX_MODES_ALL.includes(m)) return;
+    state.mixOrder[state.idx + 1] = m;
+    outcome = `🎲 ${card.target} wählt: ${MODE_LABELS[m] || m}`;
+  } else {
+    return; // info/rule brauchen keine Auswertung, nur „Weiter“
+  }
+  for (const [p, prev] of before) {
+    p.prevScore = prev;
+    p.lastGain = Math.max(0, (p.score || 0) - prev);
+  }
+  card.resolved = true;
+  card.outcome = outcome;
+  clearTimeout(timer);
+  state.totalMs = CARD_AUTO_NEXT_MS;
+  state.deadline = Date.now() + CARD_AUTO_NEXT_MS;
+  broadcast();
+  timer = setTimeout(nextRound, CARD_AUTO_NEXT_MS);
+}
+
+function publicCard() {
+  const c = state.card;
+  const lbl = n => { const p = byName(n); return p ? `${p.avatar || '😎'} ${p.name}` : n; };
+  return {
+    id: c.id, type: c.type, title: c.title, act: c.act, text: c.text,
+    target: c.target, targetLabel: c.target ? lbl(c.target) : null,
+    duel: c.duel, reward: c.reward, minus: c.minus, amount: c.amount,
+    voters: c.act === 'vote' ? Object.keys(c.votes) : [],
+    tally: c.tally, resolved: c.resolved, outcome: c.outcome,
+  };
+}
+
+async function nextRound() {
+  // Nach einer Auflösung kann zuerst eine Party-Karte kommen; ihr „Weiter“ ruft nextRound erneut auf.
+  if (maybeStartPartyCard()) return;
+  clearTimeout(timer);
+  state.card = null;
   skipVotes.clear();
   pendingSpinNext = null;
   state.spin = null;
@@ -2247,6 +2419,21 @@ function attachSocket(socket, ip, allowEvent) {
     alcoholFree = !!on;
     broadcast();
   });
+  socket.on('host:partyCards', freq => {
+    if (freq !== 'off' && !PARTY_CARD_GAP[freq]) return;
+    partyCards = freq;
+    broadcast();
+  });
+  socket.on('host:cardResolve', arg => resolvePartyCard(arg));
+  socket.on('card:vote', targetName => {
+    const card = state.card;
+    const p = players[socket.id];
+    if (state.phase !== 'card' || !card || card.act !== 'vote' || card.resolved || !p) return;
+    if (!byName(targetName) || targetName === p.name) return;
+    card.votes[p.name] = targetName;
+    if (pVals().filter(x => !x.isLocal).every(x => card.votes[x.name])) return resolvePartyCard();
+    broadcast();
+  });
   socket.on('host:timerSpeed', sp => {
     if (TIMER_MULT[sp]) timerSpeed = sp;
     broadcast();
@@ -2441,7 +2628,7 @@ function attachSocket(socket, ip, allowEvent) {
       fn();
     } else if (state.phase === 'discuss') startImposterVote();
     else if (state.phase === 'write') nextRound();
-    else if (state.phase === 'result') nextRound();
+    else if (state.phase === 'result' || state.phase === 'card') nextRound();
     else if (state.phase === 'question' || state.phase === 'go') showResult();
   });
   socket.on('host:pause', () => {
@@ -2541,7 +2728,7 @@ function serialize() {
     hostToken,
     settings: {
       activeCategories, roundLimit, teamMode, displayMode, songLangs, imageQuizThemes, russianShare, songOnlyArtistTitle,
-      finalDouble, wheelEnabled, secretMissions, alcoholFree, timerSpeed, mixRounds, mixModes, publicUrl,
+      finalDouble, wheelEnabled, secretMissions, alcoholFree, partyCards, timerSpeed, mixRounds, mixModes, publicUrl,
     },
     // roomCustom wird bewusst nicht gespeichert: host:addCustom schreibt die Einträge nach data/custom.json,
     // die beim Start ohnehin in DATA landen (sonst doppelte Einträge im Pool).
@@ -2573,6 +2760,7 @@ function applySnapshot(snap) {
   if (typeof s.wheelEnabled === 'boolean') wheelEnabled = s.wheelEnabled;
   secretMissions = !!s.secretMissions;
   alcoholFree = !!s.alcoholFree;
+  if (s.partyCards === 'off' || PARTY_CARD_GAP[s.partyCards]) partyCards = s.partyCards;
   if (TIMER_MULT[s.timerSpeed]) timerSpeed = s.timerSpeed;
   if ([8, 12, 16].includes(s.mixRounds)) mixRounds = s.mixRounds;
   const mm = pickList(s.mixModes, MIX_MODES_ALL);
@@ -2661,6 +2849,8 @@ function rearmAfterRestore() {
   } else if (state.deadline > 0 && (state.phase === 'question' || state.phase === 'go')) {
     timer = setTimeout(showResult, delayUntil(state.deadline));
   } else if (state.deadline > 0 && state.phase === 'result') {
+    timer = setTimeout(nextRound, delayUntil(state.deadline));
+  } else if (state.deadline > 0 && state.phase === 'card' && state.card && state.card.resolved) {
     timer = setTimeout(nextRound, delayUntil(state.deadline));
   }
 }

@@ -109,6 +109,16 @@
  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 2.5vw, 32px); }
  .card { background: #2d2266; border-radius: 16px; padding: clamp(12px, 2.2vh, 28px) clamp(14px, 2.2vw, 32px); animation: fadeSlideUp .3s ease-out both; }
  .card h2 { margin-top: 0; font-size: clamp(18px, 3.2vmin, 38px); }
+ .pcard { max-width: 1100px; margin: 2vh auto 0; background: linear-gradient(160deg, #4b3a9e, #2d2266); border: 3px solid #ffd33d; border-radius: 28px; padding: clamp(18px, 4vh, 56px) clamp(18px, 4vw, 64px); text-align: center; box-shadow: 0 18px 50px rgba(0,0,0,.45); animation: popIn .45s cubic-bezier(.2,1.4,.4,1) both; }
+ .pcKicker { font-size: clamp(14px, 2.2vmin, 26px); letter-spacing: .25em; text-transform: uppercase; opacity: .7; font-weight: 800; }
+ .pcTitle { font-size: clamp(26px, 6vmin, 76px); font-weight: 900; color: #ffd33d; margin: .6vh 0 1.4vh; text-shadow: 0 4px 18px rgba(0,0,0,.4); }
+ .pcTarget { display: inline-block; background: #ffd33d; color: #1b1340; font-weight: 900; font-size: clamp(18px, 3.6vmin, 44px); padding: .6vh 2vw; border-radius: 999px; margin-bottom: 1.6vh; }
+ .pcText { font-size: clamp(22px, 4.6vmin, 58px); font-weight: 800; line-height: 1.25; }
+ .pcInfo { font-size: clamp(15px, 2.6vmin, 32px); margin-top: 2vh; opacity: .85; font-weight: 600; }
+ .pcOutcome { margin-top: 2.4vh; font-size: clamp(22px, 4.8vmin, 60px); font-weight: 900; background: #26890c; border-radius: 18px; padding: 1.4vh 2vw; animation: popIn .35s ease-out both; }
+ .pcOutcome.bad { background: #e21b3c; }
+ .pcLb { max-width: 900px; margin: 2vh auto 0; }
+ .ruleTag { display: inline-block; margin-top: .6vh; background: rgba(255,211,61,.16); border: 1px solid #ffd33d; color: #ffd33d; border-radius: 10px; padding: .3vh 1vw; font-size: clamp(13px, 2vmin, 24px); font-weight: 700; }
  #drawWrap { display: none; gap: clamp(12px, 2.5vw, 36px); margin-top: 1.8vh; align-items: flex-start; }
  #tvCanvas { background: #fff; border-radius: 16px; width: 62vw; max-width: 100%; height: auto; aspect-ratio: 1000 / 620; max-height: 62vh; display: block; }
  .drawSide { flex: 1; min-width: 0; width: 100%; }
@@ -268,6 +278,7 @@ if (ROOM_CODE) {
   socket.on('room:error', () => createAndOpenRoom('/host'));
 }
 let S = null, url = '', lastPreloadImg = '', feed = [], muted = false, lastSfxKey = '', lastTickSec = -1, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000;
+let lastCardOutcome = '';
 const songAudio = document.getElementById('songAudio');
 songAudio.loop = true;
 let audioBlocked = false, audioError = false, audioElUnlocked = false;
@@ -452,6 +463,13 @@ socket.on('state', s => {
     else if (s.phase === 'question' && s.mode !== 'songquiz') sfx('question');
     else if (s.phase === 'result') { sfx('result'); if (s.mode === 'imposter' && s.result && s.result.caught) pgConfetti(70); }
     else if (s.phase === 'end') { sfx('end'); pgConfetti(130); }
+    else if (s.phase === 'card') sfx('wheelWin');
+  }
+  const outKey = s.phase === 'card' && s.card && s.card.resolved ? `${s.idx}:${s.card.id}` : '';
+  if (outKey && outKey !== lastCardOutcome) {
+    lastCardOutcome = outKey;
+    sfx('result');
+    if (/^[✅🏆]/u.test(s.card.outcome || '')) pgConfetti(70);
   }
   const songKey = `${s.mode}:${s.idx}`;
   if (s.paused) {
@@ -478,7 +496,7 @@ socket.on('state', s => {
     }
   } else if (s.mode === 'songquiz' && s.phase === 'result') {
     songAudio.volume = hostVol; // Song läuft in der Auflösung mit unveränderter Lautstärke weiter
-  } else if (s.mode !== 'songquiz' || s.phase === 'lobby' || s.phase === 'end') {
+  } else if (s.mode !== 'songquiz' || s.phase === 'lobby' || s.phase === 'end' || s.phase === 'card') {
     lastSongKey = '';
     audioBlocked = false;
     audioError = false;
@@ -695,7 +713,8 @@ function renderView() {
   if (lobbyPlayBtn) lobbyPlayBtn.style.display = S.phase === 'lobby' ? 'inline-block' : 'none';
   const hostNextBtn = document.getElementById('hostNextBtn');
   if (hostNextBtn) {
-    const showNext = ['lobby', 'result', 'discuss', 'end'].includes(S.phase);
+    const cardWaiting = S.phase === 'card' && S.card && !S.card.resolved && !['info', 'rule'].includes(S.card.act);
+    const showNext = ['lobby', 'result', 'discuss', 'end'].includes(S.phase) || (S.phase === 'card' && !cardWaiting);
     hostNextBtn.style.display = showNext ? 'inline-block' : 'none';
     hostNextBtn.textContent = S.phase === 'lobby' ? '▶ Spiel starten' : S.phase === 'end' ? '🔄 Nochmal' : '▶ Weiter';
   }
@@ -741,6 +760,37 @@ function renderView() {
     return;
   }
 
+  if (S.phase === 'card' && S.card) {
+    const c = S.card;
+    const cardSig = `card:${S.idx}:${JSON.stringify(c)}:${c.resolved ? S.players.map(p => p.score).join(',') : ''}`;
+    if (cardSig === lastRenderSig) return;
+    lastRenderSig = cardSig;
+    const vs = c.duel ? c.duel.map(n => esc((S.players.find(p => p.name === n) || {}).avatar || '😎') + ' ' + esc(n)).join(' &nbsp;⚔️&nbsp; ') : '';
+    let info = '';
+    if (!c.resolved) {
+      if (c.act === 'vote') info = `🗣️ Reihum erzählen – dann auf dem Handy den besten Beitrag wählen (+${c.reward})<br>🗳️ ${c.voters.length}/${S.players.length} haben abgestimmt`;
+      else if (c.act === 'duel') info = `🏆 Sieger bekommt +${c.reward} · Der Gastgeber entscheidet im Admin`;
+      else if (c.act === 'rule') info = '📜 Gilt für die nächsten 3 Runden';
+      else if (c.act === 'info') info = '✋ Los geht’s – danach „▶ Weiter“';
+      else if (c.type === 'group') info = `✅ Geschafft: +${c.reward} für alle · ❌ Nicht geschafft: ${S.alcoholFree ? 'alle machen 5 Kniebeugen' : 'alle trinken'}`;
+      else info = '⏳ Der Gastgeber wertet im Admin aus…';
+    }
+    const bad = /^❌/u.test(c.outcome || '');
+    app.innerHTML = `<div class="bar"><div id="bar" style="width:100%"></div></div>
+      <div class="hdrInfo">🎪 Party-Karte &nbsp;|&nbsp; nach Runde ${S.idx + 1} / ${S.total}<span id="sec" style="float:right;font-weight:700"></span></div>
+      <div class="pcard">
+        <div class="pcKicker">Party-Karte</div>
+        <div class="pcTitle">${esc(c.title)}</div>
+        ${c.targetLabel ? `<div class="pcTarget">${esc(c.targetLabel)}</div>` : ''}
+        ${vs ? `<div class="pcTarget">${vs}</div>` : ''}
+        <div class="pcText">${esc(c.text)}</div>
+        ${info ? `<div class="pcInfo">${info}</div>` : ''}
+        ${c.resolved ? `<div class="pcOutcome${bad ? ' bad' : ''}">${esc(c.outcome)}</div>` : ''}
+      </div>
+      ${c.resolved ? `<div class="pcLb">${lb()}</div>` : ''}`;
+    return;
+  }
+
   if (S.phase === 'lobby') {
     renderLobby(title);
     return;
@@ -764,7 +814,7 @@ function renderView() {
     ? `<div id="liveAvBar" class="liveAvBar">${renderLiveAvBar(justAnswered)}</div>`
     : '';
   const header = `<div class="bar"><div id="bar" style="width:100%"></div></div>
-    <div class="hdrInfo">${title} &nbsp;|&nbsp; Runde ${S.idx + 1} / ${S.total} &nbsp;|&nbsp; <span id="doneCnt">${done}/${S.players.length} fertig</span>${finalTag}<span id="sec" style="float:right;font-weight:700"></span></div>${liveBarHtml}<div class="hdrEnd"></div>`;
+    <div class="hdrInfo">${title} &nbsp;|&nbsp; Runde ${S.idx + 1} / ${S.total} &nbsp;|&nbsp; <span id="doneCnt">${done}/${S.players.length} fertig</span>${finalTag}<span id="sec" style="float:right;font-weight:700"></span></div>${S.rule ? `<div class="ruleTag">📜 Regel: ${esc(S.rule)}</div>` : ''}${liveBarHtml}<div class="hdrEnd"></div>`;
   // Kandidaten-Chips mit Avatar für Abstimmungen (Wer würde am ehesten / Imposter)
   const voteChips = () => `<div class="voteChips">${S.players.map((p, i) => `<span style="animation-delay:${i * 45}ms"><i>${esc(p.avatar || '😎')}</i>${esc(p.name)}</span>`).join('')}</div>`;
 
@@ -1094,7 +1144,8 @@ function updateTimerUI() {
   if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return;
   if (!clientDeadline) {
     pgSetBar(b, 1);
-    pgSetText(sec, S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : S.phase === 'result' ? 'Tippe „▶ Weiter“' : '');
+    const cardIdle = S.phase === 'card' && S.card && (S.card.resolved || ['info', 'rule'].includes(S.card.act));
+    pgSetText(sec, S.paused ? '⏸ PAUSE' : S.phase === 'discuss' ? 'Diskussion' : S.phase === 'write' ? 'Ausdenken…' : (S.phase === 'result' || cardIdle) ? 'Tippe „▶ Weiter“' : '');
     return;
   }
   const left = Math.max(0, clientDeadline - performance.now());
@@ -1106,7 +1157,7 @@ function updateTimerUI() {
     sfx('tick');
   }
   if (sec) {
-    pgSetText(sec, S.phase === 'result' ? `Weiter in ${sLeft}s…` : `⏱ ${sLeft}s`);
+    pgSetText(sec, S.phase === 'result' || (S.phase === 'card' && S.card && S.card.resolved) ? `Weiter in ${sLeft}s…` : `⏱ ${sLeft}s`);
     sec.classList.toggle('urgent', (S.phase === 'question' || S.phase === 'go') && sLeft >= 1 && sLeft <= 3);
   }
 }

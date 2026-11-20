@@ -266,6 +266,39 @@ function grp(id, title, summary, body) {
 function setHtml(el, html) {
   if (el && el._html !== html) { el.innerHTML = html; el._html = html; }
 }
+const PARTY_FREQ = { off: 'Aus', rare: 'Selten', normal: 'Normal', often: 'Oft' };
+function renderCardPanel() {
+  const c = S.card;
+  const q = v => esc(JSON.stringify(v));
+  const btn = (lbl, arg, bg) => `<button class="active" style="background:${bg}" onclick="socket.emit('host:cardResolve',${q(arg)})">${lbl}</button>`;
+  const others = S.players.filter(p => p.name !== c.target);
+  let actions = '';
+  if (c.resolved) {
+    actions = `<div style="font-weight:800;color:${/^❌/u.test(c.outcome || '') ? '#ff6b81' : '#3dd68c'}">${esc(c.outcome)} — geht gleich weiter…</div>`;
+  } else if (c.act === 'yesno') {
+    const fail = c.type === 'group' ? (S.alcoholFree ? 'alle 5 Kniebeugen' : 'alle trinken') : c.minus ? `−${c.minus}` : '0 Pkt';
+    actions = `<div class="cats">${btn(`✅ Geschafft (+${c.reward}${c.type === 'group' ? ' für alle' : ''})`, { ok: true }, '#26890c')}${btn(`❌ Nicht geschafft (${fail})`, { ok: false }, '#e21b3c')}</div>`;
+  } else if (c.act === 'give' || c.act === 'take') {
+    actions = `<div class="sub">${c.act === 'give' ? `Wer bekommt die ${c.amount} Punkte?` : `Wer muss ${c.amount} Punkte abgeben?`}</div>
+      <div class="cats">${others.map(p => btn(`${esc(p.avatar || '😎')} ${esc(p.name)}`, { name: p.name }, '#4b3a9e')).join('')}</div>`;
+  } else if (c.act === 'duel') {
+    actions = `<div class="sub">Wer hat gewonnen? (+${c.reward})</div><div class="cats">${c.duel.map(n => btn(`🏆 ${esc(n)}`, { name: n }, '#26890c')).join('')}</div>`;
+  } else if (c.act === 'mode') {
+    const modes = (S.mixModes || []).map(m => GAMES.find(g => g[0] === m)).filter(Boolean);
+    actions = `<div class="sub">Welches Spiel hat ${esc(c.target)} gewählt?</div><div class="cats">${modes.map(([id, lbl]) => btn(esc(lbl), { mode: id }, '#4b3a9e')).join('')}</div>`;
+  } else if (c.act === 'vote') {
+    actions = `<div class="sub">🗳️ ${c.voters.length}/${S.players.length} haben auf dem Handy abgestimmt (wertet automatisch aus, wenn alle fertig sind).</div>
+      <div class="cats">${btn(`🏁 Jetzt auswerten (+${c.reward} für den Sieger)`, {}, '#26890c')}</div>`;
+  } else {
+    actions = `<div class="sub">${c.act === 'rule' ? '📜 Gilt für die nächsten 3 Runden.' : 'Keine Wertung nötig.'} Weiter geht’s unten mit „▶ Weiter“.</div>`;
+  }
+  const who = c.targetLabel ? `<div style="font-weight:800;color:#ffd33d;margin-top:4px">👉 ${esc(c.targetLabel)}</div>` : c.duel ? `<div style="font-weight:800;color:#ffd33d;margin-top:4px">⚔️ ${c.duel.map(esc).join(' gegen ')}</div>` : '';
+  return `<div class="card" style="border:2px solid #ffd33d;background:rgba(255,211,61,.1)">
+      <div class="label" style="color:#ffd33d">🎪 Party-Karte · ${esc(c.title)}</div>${who}
+      <div style="font-size:1.05rem;font-weight:700;margin:8px 0 10px">${esc(c.text)}</div>
+      ${actions}
+    </div>`;
+}
 function resetToLobby() {
   if (S && !['lobby', 'end'].includes(S.phase) && !confirm('Laufendes Spiel abbrechen und zurück zur Lobby?')) return;
   socket.emit('host:reset');
@@ -299,9 +332,15 @@ function render() {
   else if (S.phase === 'wait') mainBtn = `<button class="go" style="background:#555" disabled>⏳ Warte auf GRÜN…</button>`;
   else if (S.phase === 'question' || S.phase === 'go') mainBtn = `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Auswertung zeigen (${done}/${S.players.length})</button>`;
   else if (S.phase === 'result') mainBtn = `<button class="go" onclick="socket.emit('host:next')">▶ Nächste Runde</button>`;
+  else if (S.phase === 'card') {
+    const waiting = S.card && !S.card.resolved && !['info', 'rule'].includes(S.card.act);
+    mainBtn = waiting
+      ? `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Karte überspringen</button>`
+      : `<button class="go" onclick="socket.emit('host:next')">▶ Weiter zur nächsten Runde</button>`;
+  }
   else mainBtn = `<button class="go" onclick="socket.emit('host:start')">🔄 Nochmal spielen</button>`;
 
-  const PHASE_LABELS = { spin: 'Glücksrad', question: 'Frage läuft', go: 'Los!', wait: 'Warten…', write: 'Schreiben', discuss: 'Diskussion', result: 'Auflösung' };
+  const PHASE_LABELS = { spin: 'Glücksrad', question: 'Frage läuft', go: 'Los!', wait: 'Warten…', write: 'Schreiben', discuss: 'Diskussion', result: 'Auflösung', card: 'Party-Karte' };
   const phaseLbl = S.paused ? '⏸ Pausiert' : PHASE_LABELS[S.phase];
   const statusTxt = S.phase === 'lobby' ? (S.paused ? '⏸ Pausiert' : 'Lobby')
     : S.phase === 'end' ? 'Ende'
@@ -324,7 +363,8 @@ function render() {
     S.songLangs?.en !== false, S.songLangs?.de !== false,
     S.effectiveRussianShare ?? S.russianShare ?? 0, S.songOnlyArtistTitle,
     S.roundLimit, S.teamMode, S.displayMode || (S.noTvMode ? 'notv' : 'tv'),
-    S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree,
+    S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree, S.partyCards,
+    S.card ? JSON.stringify(S.card) : '', S.rule || '',
     S.lobbyBanner || '', S.spin?.id || '',
     S.q?.q || '', S.q?.drawer || '', S.q?.guessed ? S.q.guessed.length : '',
     mr ? `${mr.playerName}:${mr.resolved}:${mr.success}` : '',
@@ -364,12 +404,14 @@ function render() {
   const nowInfo = [
     S.phase === 'spin' && S.spin ? `<div class="q" style="color:#ffd33d">🎡 ${esc(S.spin.title)} → ${esc(S.spin.winnerLabel)}</div>` : '',
     S.phase === 'lobby' && S.lobbyBanner ? `<div class="q" style="color:#ffd33d">${esc(S.lobbyBanner)}</div>` : '',
-    S.q && S.q.q ? `<div class="q">${esc(S.q.q)}</div>` : '',
+    S.q && S.q.q && S.phase !== 'card' ? `<div class="q">${esc(S.q.q)}</div>` : '',
     S.mode === 'draw' && S.q && S.q.drawer ? `<div class="q">Maler: ${esc(S.q.drawer)} (${S.q.guessed.length} erraten)</div>` : '',
   ].join('');
 
   app.innerHTML = `
     <h1><span>🎛️ Admin · Raum <b>${esc(ROOM_CODE)}</b></span><span id="adminStatus" class="badge">${statusTxt}</span></h1>
+    ${S.phase === 'card' && S.card ? renderCardPanel() : ''}
+    ${S.rule && S.phase !== 'card' ? `<div class="card"><div class="label" style="color:#ffd33d">📜 Aktive Regel</div><div style="font-weight:700">${esc(S.rule)}</div></div>` : ''}
     ${S.phase === 'result' && S.missionReveal ? `
       <div class="card" style="border:1px solid rgba(255,211,61,.45);background:rgba(255,211,61,.08)">
         <div class="label" style="color:#ffd33d">🕵️ Geheime Mission von ${esc(S.missionReveal.playerName)}</div>
@@ -476,6 +518,12 @@ function render() {
         <button class="${S.wheelEnabled !== false ? 'active' : ''}" onclick="socket.emit('host:wheelEnabled',S.wheelEnabled===false)">🎡 Drehrad-Animation: ${S.wheelEnabled !== false ? 'An' : 'Aus'}</button>
         <button class="${S.secretMissions ? 'active' : ''}" onclick="socket.emit('host:secretMissions',!S.secretMissions)">🕵️ Geheime Missionen: ${S.secretMissions ? 'An' : 'Aus'}</button>
         <button class="${S.alcoholFree ? 'active' : ''}" onclick="socket.emit('host:alcoholFree',!S.alcoholFree)">🥤 Alkoholfrei: ${S.alcoholFree ? 'An' : 'Aus'}</button>
+      </div>
+    `)}
+    ${grp('cards', '🎪 Party-Karten', esc(PARTY_FREQ[S.partyCards] || 'Aus'), `
+      <div class="sub">Zwischen den Runden kommt ab und zu eine Aufgabe: Gruppen-Challenge, Kopfgeld auf den Ersten, Aufholchance für den Letzten, Duell, Reihum-Runde oder neue Regel. Du wertest hier im Admin aus.</div>
+      <div class="cats">
+        ${Object.entries(PARTY_FREQ).map(([f, lbl]) => `<button class="${(S.partyCards || 'off') === f ? 'active' : ''}" onclick="socket.emit('host:partyCards','${f}')">${lbl}</button>`).join('')}
       </div>
     `)}
     ${S.phase === 'lobby' ? grp('wheel', '🎰 Glücksrad', 'Spiel / Spieler auslosen', `
