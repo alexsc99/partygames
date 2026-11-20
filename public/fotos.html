@@ -17,6 +17,7 @@
   .grid button { padding: 0; background: #0006; border-radius: 10px; overflow: hidden; aspect-ratio: 1; position: relative; }
   .grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .grid small { position: absolute; left: 6px; bottom: 6px; background: #000a; border-radius: 6px; padding: 2px 6px; font-size: 11px; }
+  .grid .tdel { position: absolute; top: 6px; right: 6px; background: #b3261e; border-radius: 8px; padding: 5px 8px; font-size: 16px; line-height: 1; box-shadow: 0 2px 6px #0008; }
   .empty { text-align: center; opacity: .75; padding: 30px 10px; }
   #lightbox { position: fixed; inset: 0; z-index: 9000; background: rgba(10, 6, 30, .95); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 12px; }
   #lightbox.on { display: flex; }
@@ -33,8 +34,9 @@
   <div class="row" style="margin-top:10px">
     <a id="zip" class="btn dl" href="#">⬇️ Alle als ZIP</a>
     <button class="btn" type="button" onclick="copyLink()">📋 Galerie-Link kopieren</button>
+    <button id="hostBtn" class="btn" type="button" onclick="hostLogin()">🔑 Spielleitung</button>
   </div>
-  <div class="info">Alle mit dem Raum-Link können die Fotos sehen und weitere hochladen. Jedes Foto wird 3 Tage nach dem Hochladen automatisch gelöscht. Eigene Fotos (als Spielleitung alle) kannst du in der Großansicht mit 🗑️ löschen.</div>
+  <div class="info">Alle mit dem Raum-Link können die Fotos sehen und weitere hochladen. Jedes Foto wird 3 Tage nach dem Hochladen automatisch gelöscht. Eigene Fotos löschst du mit 🗑️ (auf dem Foto oder in der Großansicht); als Spielleitung kannst du nach „🔑 Spielleitung“ mit dem Host-PIN alle Fotos löschen.</div>
 </div>
 <div id="grid" class="grid"></div>
 <div id="lightbox" onclick="if(event.target===this)closeBox()">
@@ -54,8 +56,26 @@ document.getElementById('zip').href = '/api/photos/' + encodeURIComponent(ROOM_C
 let photos = [];
 let lastSig = null;
 let boxIdx = -1;
-const isHost = () => !!localStorage.getItem('pg_host_' + ROOM_CODE);
+const adminPin = () => sessionStorage.getItem('pg_rooms_pin') || '';
+const isHost = () => !!adminPin() || !!localStorage.getItem('pg_host_' + ROOM_CODE);
 const canDelete = p => !!p && (isHost() || !!pgPhotoKey(p.id));
+function renderHostBtn() { document.getElementById('hostBtn').textContent = adminPin() ? '🔑 Spielleitung ✓' : '🔑 Spielleitung'; }
+// Spielleitung: Host-PIN (wie in /rooms) prüfen und für diesen Tab merken → alle Fotos löschbar
+async function hostLogin() {
+  if (adminPin()) {
+    if (confirm('Als Spielleitung abmelden?')) { sessionStorage.removeItem('pg_rooms_pin'); renderHostBtn(); lastSig = null; load(); }
+    return;
+  }
+  const pin = (prompt('Host-PIN eingeben (damit kannst du alle Fotos löschen):') || '').trim();
+  if (!pin) return;
+  const r = await fetch('/api/rooms', { headers: { 'x-host-secret': pin } }).catch(() => null);
+  if (!r || !r.ok) { pgToast(r && r.status === 429 ? '⚠️ Zu viele Fehlversuche – bitte 1 Minute warten' : '⚠️ Falscher Host-PIN', 3500); return; }
+  sessionStorage.setItem('pg_rooms_pin', pin);
+  pgToast('🔑 Als Spielleitung angemeldet – 🗑️ auf jedem Foto');
+  renderHostBtn();
+  lastSig = null;
+  load();
+}
 
 async function load() {
   const grid = document.getElementById('grid');
@@ -66,12 +86,12 @@ async function load() {
     if (!r.ok) { grid.innerHTML = `<div class="empty">${esc(d.error || 'Fotos nicht gefunden')}</div>`; return; }
     photos = d.photos.slice().reverse(); // neueste zuerst
   } catch { return; }
-  const sig = photos.map(p => p.id).join(',');
+  const sig = photos.map(p => p.id).join(',') + '|' + isHost();
   if (sig === lastSig) return;
   lastSig = sig;
   document.getElementById('zip').style.display = photos.length ? '' : 'none';
   grid.innerHTML = photos.length
-    ? photos.map((p, i) => `<button type="button" onclick="openBox(${i})"><img src="${esc(p.url)}" loading="lazy" alt="">${p.name || pgPhotoKey(p.id) ? `<small>📸 ${esc(p.name || '')}${pgPhotoKey(p.id) ? ' · deins' : ''}</small>` : ''}</button>`).join('')
+    ? photos.map((p, i) => `<button type="button" onclick="openBox(${i})"><img src="${esc(p.url)}" loading="lazy" alt="">${p.name || pgPhotoKey(p.id) ? `<small>📸 ${esc(p.name || '')}${pgPhotoKey(p.id) ? ' · deins' : ''}</small>` : ''}${canDelete(p) ? `<span class="tdel" role="button" aria-label="Foto löschen" onclick="event.stopPropagation();deletePhoto(${i})">🗑️</span>` : ''}</button>`).join('')
     : '<div class="empty" style="grid-column:1/-1">Noch keine Fotos – lade das erste hoch! 🎉</div>';
 }
 function openBox(i) {
@@ -84,11 +104,12 @@ function openBox(i) {
   document.getElementById('lightbox').classList.add('on');
 }
 function closeBox() { document.getElementById('lightbox').classList.remove('on'); boxIdx = -1; }
-async function deleteCurrent() {
-  const p = photos[boxIdx];
+async function deleteCurrent() { deletePhoto(boxIdx); }
+async function deletePhoto(i) {
+  const p = photos[i];
   if (!p || !confirm('Dieses Foto wirklich löschen? Das geht nicht rückgängig.')) return;
   const r = await pgDeletePhoto(ROOM_CODE, p.id);
-  if (!r.ok) { pgToast('⚠️ ' + r.error, 3500); return; }
+  if (!r.ok) { pgToast('⚠️ ' + r.error + (adminPin() ? '' : ' – als Spielleitung über „🔑 Spielleitung“ anmelden'), 4500); return; }
   pgToast('🗑️ Foto gelöscht');
   closeBox();
   lastSig = null;
@@ -99,6 +120,7 @@ async function copyLink() {
   if (await pgCopyText(location.origin + '/fotos?room=' + encodeURIComponent(ROOM_CODE))) pgToast('✅ Link kopiert');
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBox(); });
+renderHostBtn();
 load();
 setInterval(load, 15000);
 </script>

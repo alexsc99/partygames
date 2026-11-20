@@ -137,8 +137,8 @@ const MODE_LABELS = {
 };
 const SPIN_DURATION_MS = 4200;
 const MIX_ROUNDS = 12;
-const MIX_ROUND_OPTIONS = [8, 12, 16, 20, 30, 50]; // Party-Mix: eigene Rundenzahl (Runden-Limit gilt dort nicht)
-const ROUND_LIMITS = [0, 5, 10, 15, 20, 30, 50]; // 0 = Alle
+const MIX_ROUND_OPTIONS = [0, 8, 12, 16, 20, 30, 50]; // Party-Mix: eigene Rundenzahl (Runden-Limit gilt dort nicht), 0 = endlos
+const ROUND_LIMITS = [0, 5, 10, 15, 20, 30, 50]; // 0 = ohne Limit (alle Fragen)
 const CATEGORIES = ['party', 'peinlich', 'kennenlernen', 'date', 'hot18'];
 const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, pantomime: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20, hotseat: 25 };
 const MIME_SKIPS = 2; // so oft darf der Darsteller einen Begriff tauschen
@@ -852,6 +852,7 @@ function freshState(mode) {
     jokerQueue: [], // gespielte Joker für die nächste passende Runde { type, by, target }
     roundJokers: [], // in dieser Runde wirksame Joker (Zeitdieb: cutAt)
     jokerNews: [], // in der Auflösung neu verteilte Joker { name, type }
+    endNow: false, // Spielleitung hat „Spiel beenden“ gedrückt (z. B. im endlosen Party-Mix)
   };
 }
 
@@ -974,12 +975,18 @@ function filteredCount(mode) {
 const totalRounds = () => {
   let n;
   if (state.mode === 'reaction') n = REACTION_ROUNDS;
-  else if (state.mode === 'mix') return mixRounds; // Party-Mix hat eigene Rundenwahl (MIX_ROUND_OPTIONS)
+  else if (state.mode === 'mix') return mixRounds || Infinity; // eigene Rundenwahl (MIX_ROUND_OPTIONS), 0 = endlos
   else if (state.mode === 'truthlie') n = state.phase === 'lobby' ? Math.max(pVals().length, 3) : Math.max(state.order.length, 1);
   else if (state.order.length && state.phase !== 'lobby') n = state.order.length;
   else n = filteredCount(state.mode);
   return roundLimit > 0 ? Math.min(n, roundLimit) : n;
 };
+
+// Party-Mix: Spielfolge (je Durchgang jeder Modus einmal, gemischt) bis mindestens n Runden auffüllen
+function fillMixOrder(n) {
+  const activeMix = mixModes.length ? mixModes : MIX_MODES_ALL;
+  while (state.mixOrder.length < n) state.mixOrder.push(...shuffle(activeMix));
+}
 
 const list = (ps = pVals()) => ps
   .map(p => ({
@@ -1128,7 +1135,7 @@ function pub() {
     };
   }).filter(t => t.members.length > 0).sort((a, b) => b.score - a.score) : null;
   return {
-    roomCode: code, mode: m, isMix: state.mode === 'mix', phase: state.phase, idx: state.idx, total,
+    roomCode: code, mode: m, isMix: state.mode === 'mix', phase: state.phase, idx: state.idx, total: Number.isFinite(total) ? total : 0, // 0 = endlos
     isFinalRound: isFinalRound(total),
     categories: activeCategories, roundLimit, teamMode,
     displayMode, noTvMode: displayMode !== 'tv',
@@ -1297,10 +1304,8 @@ function startGame() {
     state.mixPools = {};
     activeMix.forEach(m => { state.mixPools[m] = pickOrder(m); });
     state.mixOrder = [];
-    while (state.mixOrder.length < mixRounds) {
-      state.mixOrder.push(...shuffle(activeMix));
-    }
-    state.mixOrder = state.mixOrder.slice(0, mixRounds);
+    fillMixOrder(mixRounds || 2);
+    if (mixRounds) state.mixOrder = state.mixOrder.slice(0, mixRounds);
     state.order = state.mixOrder;
   } else {
     state.order = pickOrder(state.mode);
@@ -1500,7 +1505,7 @@ const rankedPlayers = () => [...pVals()].sort((a, b) => b.score - a.score);
 function partyCardDue() {
   const gap = PARTY_CARD_GAP[partyCards];
   if (!gap || state.phase !== 'result' || displayMode === 'onedevice' || pVals().length < 2) return false;
-  if (state.idx + 2 >= totalRounds()) return false; // nie vor der letzten Runde (Finalrunde) und nicht am Ende
+  if (state.endNow || state.idx + 2 >= totalRounds()) return false; // nie vor der letzten Runde (Finalrunde) und nicht am Ende
   const since = state.idx - state.lastCardIdx;
   return since > gap || (since === gap && Math.random() < 0.7);
 }
@@ -1811,9 +1816,10 @@ async function nextRound() {
   state.spin = null;
   const seq = ++roundSeq;
   state.idx++;
-  // Nach der letzten Runde: Finale-Duell der zwei Besten (falls an), danach Ende
-  const duelQ = state.idx >= totalRounds() ? nextDuelQuestion() : -1;
-  if (state.idx >= totalRounds() && duelQ < 0) {
+  // Nach der letzten Runde (oder „Spiel beenden“): Finale-Duell der zwei Besten (falls an), danach Ende
+  const over = state.endNow || state.idx >= totalRounds();
+  const duelQ = over ? nextDuelQuestion() : -1;
+  if (over && duelQ < 0) {
     if (state.duel) state.duel.active = false;
     state.phase = 'end';
     state.subMode = null;
@@ -1856,6 +1862,7 @@ async function nextRound() {
   if (duelActive()) {
     state.subIdx = duelQ;
   } else if (state.mode === 'mix') {
+    fillMixOrder(state.idx + 2); // endloser Mix (oder mitten im Spiel erhöhte Rundenzahl): Folge nachfüllen, +1 für die Vorschau
     state.subMode = state.mixOrder[state.idx];
     if (!state.mixPools[state.subMode] || !state.mixPools[state.subMode].length) {
       state.mixPools[state.subMode] = pickOrder(state.subMode);
@@ -1882,7 +1889,7 @@ async function nextRound() {
       id: ++spinSeq,
       kind: 'mode',
       title: '🎲 Welches Spiel kommt jetzt?',
-      subtitle: `Party-Mix · Runde ${state.idx + 1} / ${totalRounds()}`,
+      subtitle: `Party-Mix · Runde ${state.idx + 1}${mixRounds ? ` / ${mixRounds}` : ' · endlos'}`,
       items: pool.map(k => MODE_LABELS[k] || k),
       winnerIdx: wIdx,
       winnerLabel: MODE_LABELS[state.subMode] || state.subMode,
@@ -3350,6 +3357,12 @@ function attachSocket(socket, ip, allowEvent) {
     roundSeq++;
     state = freshState(state.mode);
     broadcast();
+  });
+  // Spiel sofort beenden: Endstand (bzw. erst das Finale-Duell) statt weiterer Runden – v. a. für den endlosen Party-Mix
+  socket.on('host:endGame', () => {
+    if (state.phase === 'lobby' || state.phase === 'end' || state.endNow) return;
+    state.endNow = true;
+    nextRound();
   });
   socket.on('host:kick', name => {
     if (name) {

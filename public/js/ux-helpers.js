@@ -427,12 +427,12 @@
     try { localStorage.setItem('pg_photo_keys', JSON.stringify(keys)); } catch { /* Speicher voll: dann eben nicht löschbar */ }
   }
   window.pgPhotoKey = id => photoKeys()[id] || '';
-  // Foto löschen: mit eigenem Lösch-Schlüssel oder als Spielleitung (Raum-Token dieses Geräts)
+  // Foto löschen: mit eigenem Lösch-Schlüssel oder als Spielleitung (Host-PIN aus /fotos bzw. /rooms, sonst Raum-Token dieses Geräts)
   window.pgDeletePhoto = async function (room, id) {
     const headers = {};
     const key = window.pgPhotoKey(id);
     if (key) headers['x-photo-key'] = key;
-    const hostTok = localStorage.getItem('pg_host_' + room);
+    const hostTok = sessionStorage.getItem('pg_rooms_pin') || localStorage.getItem('pg_host_' + room);
     if (hostTok) headers['x-host-token'] = hostTok;
     try {
       const r = await fetch('/api/photos/' + encodeURIComponent(room) + '/' + encodeURIComponent(id), { method: 'DELETE', headers });

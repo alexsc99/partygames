@@ -693,6 +693,49 @@ describe('PartyGame Server', () => {
     }
   });
 
+  it('endless party mix plays past the default 12 rounds (total 0) and host:endGame shows the end screen', async () => {
+    const { io: ioc } = require('socket.io-client');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const admin = connect();
+    const player = connect();
+    let S = null;
+    admin.on('state', s => { S = s; });
+    const until = async (pred, ms = 3000) => {
+      const end = Date.now() + ms;
+      while (Date.now() < end) { if (S && pred(S)) return S; await new Promise(r => setTimeout(r, 15)); }
+      throw new Error(`timeout, phase=${S && S.phase} idx=${S && S.idx}`);
+    };
+    try {
+      await new Promise(res => player.emit('join', { name: 'Ada', avatar: '😎' }, res));
+      admin.emit('host:mode', 'mix');
+      admin.emit('host:mixModes', ['quiz', 'estimate']);
+      admin.emit('host:mixRounds', 0);
+      admin.emit('host:wheelEnabled', false);
+      admin.emit('host:partyCards', 'off');
+      admin.emit('host:duelFinale', false);
+      await until(s => s.mode === 'mix' && s.mixRounds === 0 && s.players.length === 1);
+      admin.emit('host:start');
+      // 14 Runden – mehr als die 12 Standard-Runden; total bleibt 0 (= endlos)
+      for (let round = 0; round < 14; round++) {
+        await until(s => s.phase === 'question' && s.idx === round);
+        assert.equal(S.total, 0);
+        admin.emit('host:next');
+        await until(s => s.phase === 'result' && s.idx === round);
+        admin.emit('host:next');
+      }
+      await until(s => s.phase === 'question' && s.idx === 14);
+      assert.ok(['quiz', 'estimate'].includes(S.mode), `mix sub mode: ${S.mode}`);
+      admin.emit('host:endGame');
+      await until(s => s.phase === 'end');
+    } finally {
+      admin.close();
+      player.close();
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
   // Raum im Remote-Modus bis zur ersten Party-Karte spielen; Math.random erzwingt dort die Foto-Challenge
   async function snapRoom(names) {
     const { io: ioc } = require('socket.io-client');

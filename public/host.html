@@ -870,7 +870,7 @@ function renderLobby(title) {
   const bannerHtml = S.lobbyBanner ? `<div class="drink good" style="margin:0 0 2vh;padding:1.6vh 2vw;font-size:3.8vh">${esc(S.lobbyBanner)}</div>` : '';
   if (bannerEl.dataset.v !== bannerHtml) { bannerEl.dataset.v = bannerHtml; bannerEl.innerHTML = bannerHtml; }
   pgSetText(document.getElementById('lobbyCount'), `👥 ${S.players.length} Spieler dabei`);
-  pgSetText(document.getElementById('lobbyRounds'), S.total > 0 ? `🔁 ${S.total} Runden` : '');
+  pgSetText(document.getElementById('lobbyRounds'), S.total > 0 ? `🔁 ${S.total} Runden` : (S.isMix ? '🔁 Endlos' : ''));
   const chipsEl = document.getElementById('lobbyChips');
   const cards = S.players.map(p => ({
     team: S.teamMode && p.team ? (T_ICON[p.team] || '') : '',
@@ -1015,7 +1015,7 @@ function renderView() {
     }
     const bad = /^❌/u.test(c.outcome || '');
     app.innerHTML = `<div class="bar"><div id="bar" style="width:100%"></div></div>
-      <div class="hdrInfo">🎪 Party-Karte &nbsp;|&nbsp; nach Runde ${S.idx + 1} / ${S.total}<span id="sec" style="float:right;font-weight:700"></span></div>
+      <div class="hdrInfo">🎪 Party-Karte &nbsp;|&nbsp; nach Runde ${S.idx + 1}${S.total ? ' / ' + S.total : ''}<span id="sec" style="float:right;font-weight:700"></span></div>
       <div class="pcard">
         <div class="pcKicker">Party-Karte</div>
         <div class="pcTitle">${esc(c.title)}</div>
@@ -1071,7 +1071,7 @@ function renderView() {
   const finalTag = S.isFinalRound && !S.duel ? ` &nbsp;|&nbsp; <span style="background:#e21b3c;padding:.3vh 1vw;border-radius:8px;font-weight:800">🔥 FINALRUNDE · 2× PUNKTE</span>` : '';
   const roundTxt = S.duel
     ? `<span class="duelTag">⚔️ FINALE-DUELL · Frage ${S.duel.n}/${S.duel.total} · ${S.duel.names.map(avWho).join(' vs ')} · 2× Punkte</span>`
-    : `Runde ${S.idx + 1} / ${S.total}`;
+    : `Runde ${S.idx + 1}${S.total ? ' / ' + S.total : ''}`;
   const liveBarHtml = !res && !standup && S.phase !== 'discuss' && S.phase !== 'write'
     ? `<div id="liveAvBar" class="liveAvBar">${renderLiveAvBar(justAnswered)}</div>`
     : '';

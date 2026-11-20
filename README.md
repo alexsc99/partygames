@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.24.1)
+# 🎉 PartyGame (Version 3.25.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -234,7 +234,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.24.1 (Aktueller Stand):** Fotos werden schon nach 3 Tagen automatisch gelöscht (vorher 7).
+- **v3.25.0 (Aktueller Stand):** Party-Mix kann **♾️ endlos** laufen (Admin → Party-Mix → Runden), neuer Admin-Knopf **🏁 Beenden** zeigt jederzeit den Endstand (vorher ggf. Finale-Duell); Runden-Limit „Alle“ heißt jetzt „♾️ Ohne Limit“. Galerie `/fotos`: 🗑️ direkt auf den Fotos, und über „🔑 Spielleitung“ (Host-PIN) lassen sich alle Fotos löschen – auch ältere ohne Lösch-Schlüssel und Fotos von Räumen, die nicht mehr laufen.
+- **v3.24.1:** Fotos werden schon nach 3 Tagen automatisch gelöscht (vorher 7).
 - **v3.24.0:** Fotos löschen in der Galerie `/fotos`: eigene Uploads (Lösch-Schlüssel bleibt im Browser, mit dem hochgeladen wurde) und als Spielleitung alle Fotos des Raums – 🗑️ in der Großansicht. Gelöschte Fotos verschwinden auch aus TV-Einblendung, Diashow und laufender Foto-Challenge.
 - **v3.23.3:** Rechtlich sauber: die zwei Rybak-Songs wieder als offizielle 30-s-Vorschau (englische Fassung „Fairytale“ / „Europe's Skies“) statt YouTube-Ausschnitt.
 - **v3.23.2:** Song-Vorschauen laufen in der Schleife wieder ab der guten Stelle statt ab dem leisen Intro.

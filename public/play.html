@@ -215,7 +215,7 @@ const JOKER_INFO = {
 };
 const myGroup = () => (S && S.answerGroups ? S.answerGroups.find(g => (g.members || []).includes(name)) : null) || null;
 const jokerLabel = t => (S && S.jokerLabels && S.jokerLabels[t]) || '🃏 Joker';
-const roundLabel = () => (S && S.duel ? `⚔️ Finale-Duell · Frage ${S.duel.n}/${S.duel.total}` : `Runde ${S.idx + 1}/${S.total}`);
+const roundLabel = () => (S && S.duel ? `⚔️ Finale-Duell · Frage ${S.duel.n}/${S.duel.total}` : `Runde ${S.idx + 1}${S.total ? '/' + S.total : ''}`);
 // Warum darf ich gerade nicht antworten? ('' = darf antworten)
 function phoneAnswerLock() {
   if (!S || S.phase !== 'question') return '';
@@ -962,7 +962,7 @@ function renderOneDevice() {
     return;
   }
 
-  const top = `${ctrlBar}<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b></div>` +
+  const top = `${ctrlBar}<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}${S.total ? '/' + S.total : ''} &nbsp; <b id="psec"></b></div>` +
     (S.isFinalRound ? `<div style="background:#e21b3c;color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px;display:inline-block;margin:4px 0">🔥 FINALRUNDE · 2× PUNKTE</div>` : '') +
     renderMissionBanner();
 

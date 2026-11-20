@@ -372,6 +372,10 @@ function resetToLobby() {
   if (S && !['lobby', 'end'].includes(S.phase) && !confirm('Laufendes Spiel abbrechen und zurück zur Lobby?')) return;
   socket.emit('host:reset');
 }
+function endGameNow() {
+  if (!confirm('Spiel jetzt beenden und den Endstand zeigen?')) return;
+  socket.emit('host:endGame');
+}
 function renderBar(mainBtn, statusTxt) {
   const canPause = ['question', 'go', 'result'].includes(S.phase);
   let primary = mainBtn;
@@ -382,6 +386,7 @@ function renderBar(mainBtn, statusTxt) {
   } else if (canPause) {
     side += `<button class="barBtn" onclick="socket.emit('host:pause')" aria-label="Pause"><span>⏸</span><small>Pause</small></button>`;
   }
+  if (!['lobby', 'end'].includes(S.phase)) side += `<button class="barBtn" onclick="endGameNow()" aria-label="Spiel beenden"><span>🏁</span><small>Beenden</small></button>`;
   side += `<button class="barBtn warnBtn" onclick="resetToLobby()" aria-label="Reset (zur Lobby)"><span>🏠</span><small>Lobby</small></button>`;
   const game = GAMES.find(g => g[0] === S.mode);
   const barStatus = document.getElementById('adminBarStatus');
@@ -422,7 +427,7 @@ function render() {
   const statusTxt = S.phase === 'lobby' ? (S.paused ? '⏸ Pausiert' : 'Lobby')
     : S.phase === 'end' ? 'Ende'
     : S.duel ? `⚔️ Finale-Duell ${S.duel.n}/${S.duel.total}${phaseLbl ? ' · ' + phaseLbl : ''}`
-    : `Runde ${S.idx + 1}/${S.total}${phaseLbl ? ' · ' + phaseLbl : ''}`;
+    : `Runde ${S.idx + 1}${S.total ? '/' + S.total : ' · ♾️'}${phaseLbl ? ' · ' + phaseLbl : ''}`;
 
   // Die Aktionsleiste liegt außerhalb von #app und wird immer (diff-basiert) aktualisiert.
   renderBar(mainBtn, statusTxt);
@@ -523,23 +528,23 @@ function render() {
         <button onclick="socket.emit('host:preset','alkoholfrei')">🥤 Alkoholfrei</button>
       </div>
     `)}
-    ${isMix ? grp('mix', '🎲 Party-Mix', `${mixArr.length} Modi · ${S.mixRounds || 12} Runden`, `
+    ${isMix ? grp('mix', '🎲 Party-Mix', `${mixArr.length} Modi · ${(S.mixRounds ?? 12) ? `${S.mixRounds ?? 12} Runden` : '♾️ endlos'}`, `
       <div class="sub">Modi (min. 2)</div>
       <div class="cats">
         ${MIX_OPTS.map(([id, lbl]) => `<button class="${mixArr.includes(id) ? 'active' : ''}" onclick="toggleMixMode('${id}')">${lbl}</button>`).join('')}
       </div>
-      <div class="sub">🔁 Runden (im Party-Mix gilt diese Zahl statt des Runden-Limits)</div>
+      <div class="sub">🔁 Runden (im Party-Mix gilt diese Zahl statt des Runden-Limits; ♾️ Endlos läuft, bis du „🏁 Beenden“ drückst)</div>
       <div class="cats">
-        ${[8, 12, 16, 20, 30, 50].map(n => `<button class="${(S.mixRounds || 12) === n ? 'active' : ''}" onclick="socket.emit('host:mixRounds',${n})">${n} Runden</button>`).join('')}
+        ${[[0, '♾️ Endlos'], [8], [12], [16], [20], [30], [50]].map(([n, lbl]) => `<button class="${(S.mixRounds ?? 12) === n ? 'active' : ''}" onclick="socket.emit('host:mixRounds',${n})">${lbl || n + ' Runden'}</button>`).join('')}
       </div>
     `) : ''}
-    ${showCats ? grp('cats', '🗂️ Fragen-Kategorie', `${allActive ? 'Alle' : activeCats.length + ' von ' + CATS.length} · ${S.total} aktiv`, `
+    ${showCats ? grp('cats', '🗂️ Fragen-Kategorie', `${allActive ? 'Alle' : activeCats.length + ' von ' + CATS.length}${isMix ? '' : ` · ${S.total} aktiv`}`, `
       <div class="cats">
         <button class="${allActive ? 'active' : ''}" onclick="toggleCat('all')">🌟 Alle</button>
         ${CATS.map(([id, label]) => `<button class="${activeCats.includes(id) ? 'active' : ''} ${id === 'hot18' ? 'hot' : ''}" onclick="toggleCat('${id}')">${label}</button>`).join('')}
       </div>
     `) : ''}
-    ${showImageQuiz ? grp('imagequiz', '🖼️ Bild-Quiz Themen', `${iqAll ? 'Alle' : iqThemes.length + ' von ' + IQ_ALL.length} · ${S.total} aktiv`, `
+    ${showImageQuiz ? grp('imagequiz', '🖼️ Bild-Quiz Themen', `${iqAll ? 'Alle' : iqThemes.length + ' von ' + IQ_ALL.length}${isMix ? '' : ` · ${S.total} aktiv`}`, `
       <div class="cats">
         <button class="${iqAll ? 'active' : ''}" onclick="socket.emit('host:imageQuizThemes',['logos','landmarks','flags','cars','countries'])">🌟 Alle</button>
         <button class="${iqThemes.includes('logos') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'logos',on:${!iqThemes.includes('logos')}})">🏢 Firmen-Logos</button>
@@ -549,7 +554,7 @@ function render() {
         <button class="${iqThemes.includes('countries') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'countries',on:${!iqThemes.includes('countries')}})">🗺️ Länder-Umrisse</button>
       </div>
     `) : ''}
-    ${showSongQuiz ? grp('songquiz', '🎵 Erkenne den Song', `${songLangSum}${ruShare ? ' · RU ' + ruShare + '%' : ''}${S.songOnlyArtistTitle ? ' · Interpret & Titel' : ''} · ${S.total} aktiv`, `
+    ${showSongQuiz ? grp('songquiz', '🎵 Erkenne den Song', `${songLangSum}${ruShare ? ' · RU ' + ruShare + '%' : ''}${S.songOnlyArtistTitle ? ' · Interpret & Titel' : ''}${isMix ? '' : ` · ${S.total} aktiv`}`, `
       <div class="cats">
         <button class="${S.songLangs?.en !== false ? 'active' : ''}" onclick="socket.emit('host:songLang',{lang:'en',on:${S.songLangs?.en === false}})">🇬🇧 Englisch</button>
         <button class="${S.songLangs?.de !== false ? 'active' : ''}" onclick="socket.emit('host:songLang',{lang:'de',on:${S.songLangs?.de === false}})">🇩🇪 Deutsch</button>
@@ -569,9 +574,9 @@ function render() {
         <button class="${S.songOnlyArtistTitle ? 'active' : ''}" onclick="socket.emit('host:songDifficulty',true)">🎤 Nur Interpret & Titel</button>
       </div>
     `) : ''}
-    ${showRounds ? grp('rounds', '🔢 Runden-Limit', (S.roundLimit || 0) ? `${S.roundLimit} Runden` : 'Alle', `
+    ${showRounds ? grp('rounds', '🔢 Runden-Limit', (S.roundLimit || 0) ? `${S.roundLimit} Runden` : '♾️ Ohne Limit', `
       <div class="cats">
-        ${[[0, 'Alle'], [5, '5'], [10, '10'], [15, '15'], [20, '20'], [30, '30'], [50, '50']].map(([n, lbl]) => `<button class="${(S.roundLimit || 0) === n ? 'active' : ''}" onclick="socket.emit('host:rounds',${n})">${n ? lbl + ' Runden' : lbl}</button>`).join('')}
+        ${[[0, '♾️ Ohne Limit'], [5, '5'], [10, '10'], [15, '15'], [20, '20'], [30, '30'], [50, '50']].map(([n, lbl]) => `<button class="${(S.roundLimit || 0) === n ? 'active' : ''}" onclick="socket.emit('host:rounds',${n})">${n ? lbl + ' Runden' : lbl}</button>`).join('')}
       </div>
     `) : ''}
     ${grp('team', '👥 Spielmodus', S.teamMode ? 'Team-Spiel' : 'Einzelspieler', `
