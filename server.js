@@ -93,7 +93,7 @@ const PARTY_CARD_TYPES = {
   pass: { title: '🔄 Weitergeben', act: 'info', w: 1, local: true }, // links/rechts → nur vor Ort
   duel: { title: '⚡ Blitz-Duell', act: 'duel', w: 2 },
   rule: { title: '📜 Neue Regel', act: 'rule', w: 1 },
-  photo: { title: '📸 Foto & Pose', act: 'yesno', w: 2, local: true }, // who: 'group' (alle) oder 'pair' ({a} & {b})
+  photo: { title: '📸 Foto & Pose', act: 'yesno', w: 1, local: true }, // who: 'group' (alle) oder 'pair' ({a} & {b}); seltener, damit nicht zu viele Foto-Aufgaben kommen
   snap: { title: '📸 Foto-Challenge', act: 'snap', w: 3, remote: true }, // jeder lädt ein Foto hoch, dann Abstimmung
   snapduel: { title: '📸 Foto-Duell', act: 'snap', w: 2, remote: true, min: 4 }, // nur {a} & {b} fotografieren, die anderen stimmen ab
   crowd: { title: '👥 Mitmach-Karte', act: 'info', w: 2 }, // „Alle mit Brille …“ – ohne Wertung, photo: true = Foto-Knöpfe am Handy

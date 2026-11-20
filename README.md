@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.22.0)
+# 🎉 PartyGame (Version 3.22.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -231,7 +231,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.22.0 (Aktueller Stand):** Mehr Interaktion: neuer Modus 🔥 Heißer Stuhl (auch im Standard-Mix), 💬 Diskussion vor Abstimmungen, 🧍 Aufsteh-Runden bei „Ich hab noch nie“, 👑 Team-Kapitän, 👫 Partner-Runden, ⚔️ Finale-Duell der zwei Besten und 🃏 Joker (Doppelt, Abschreiben, Zeitdieb, Punkteklau) – alles in `/admin` unter „🤝 Interaktion“ abschaltbar.
+- **v3.22.1 (Aktueller Stand):** Pantomime-Begriffe vereinfacht (nur noch gut darstellbare Sachen wie „Auf einen Legostein treten“, „Schluckauf haben“, „Luftkuss zuwerfen“ statt langer Situationen); weniger Foto-Aufgaben bei den Party-Karten (6 Mitmach-Karten ohne Foto, „Foto & Pose“ seltener); instabilen Test (Gleichstand beim Joker-Test) behoben.
+- **v3.22.0:** Mehr Interaktion: neuer Modus 🔥 Heißer Stuhl (auch im Standard-Mix), 💬 Diskussion vor Abstimmungen, 🧍 Aufsteh-Runden bei „Ich hab noch nie“, 👑 Team-Kapitän, 👫 Partner-Runden, ⚔️ Finale-Duell der zwei Besten und 🃏 Joker (Doppelt, Abschreiben, Zeitdieb, Punkteklau) – alles in `/admin` unter „🤝 Interaktion“ abschaltbar.
 - **v3.21.0:** Mitmach-Karten mit Foto-Aufgabe: +5 Punkte fürs erste Foto pro Person (TV-Einblendung „+5 Punkte“, Hinweis am Handy); keine Fuß-Fotos mehr (Turnschuh- und Socken-Karte ersetzt).
 - **v3.20.0:** 👥 Mitmach-Karten (26 neue Party-Karten nach Merkmal/Lieblingsperson, z. B. „Alle mit Brille: Gruppenfoto mit Getränk“), Foto-Aufgaben mit Kamera-Knopf am Handy; neuer Typ auch für eigene Karten im Admin.
 - **v3.19.0:** Alle Punkte auf ein Zehntel (z. B. Quiz 50–100 statt 500–1000, Schätzen/Reaktion/Imposter 100, Party-Karten 20–50, Foto-Challenge 30 + 10 pro Foto, Mission 15), damit Spielstände nicht sofort vierstellig werden. Laufende Spiele behalten ihren alten Punktestand bis „Nochmal“.

@@ -1216,7 +1216,7 @@ describe('PartyGame Server', () => {
       const c = correctIdx(r.S);
       nodeCrypto.randomInt = (...a) => (a.length === 1 && a[0] === 4 ? 3 : realRandomInt(...a)); // Joker-Typ 3 = steal
       await r.answer(0, c); // Ada schneller → Rundensiegerin
-      await new Promise(res => setTimeout(res, 300));
+      await new Promise(res => setTimeout(res, 1000)); // klarer Punkteabstand (sonst gleichauf → beide bekommen Joker)
       await r.answer(1, c);
       await r.until(s => s.phase === 'result');
       nodeCrypto.randomInt = realRandomInt;
