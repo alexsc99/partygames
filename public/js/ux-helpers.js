@@ -426,19 +426,27 @@
   };
   // Für Seiten, die #app ständig neu zeichnen: ein dauerhaftes, verstecktes Datei-Feld außerhalb von #app,
   // sonst geht die Auswahl verloren, wenn der Button während des Foto-Pickers neu gerendert wird.
-  window.pgPickPhotos = function (room, name, onDone) {
+  // camera=true öffnet direkt die Kamera (capture) – Android bietet sonst oft nur gespeicherte Bilder an.
+  window.pgPickPhotos = function (room, name, onDone, camera = false) {
     let input = document.getElementById('pgPhotoPick');
     if (!input) {
       input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
-      input.multiple = true;
       input.id = 'pgPhotoPick';
       input.style.display = 'none';
       document.body.appendChild(input);
     }
+    if (camera) input.setAttribute('capture', 'environment');
+    else input.removeAttribute('capture');
+    input.multiple = !camera;
     input.onchange = () => pgPhotoInput(input, room, typeof name === 'function' ? name() : name, onDone);
     input.click();
+  };
+  // Zwei Knöpfe: Foto jetzt aufnehmen / aus der Handy-Galerie wählen
+  window.pgPhotoButtons = function (onclickCamera, onclickGallery) {
+    return `<button type="button" class="photoBtn" onclick="${onclickCamera}">📷 Foto aufnehmen</button>`
+      + `<button type="button" class="photoBtn" style="background:#4b3a9e" onclick="${onclickGallery}">🖼️ Aus Galerie</button>`;
   };
 
   // ---- Client-Fehler sammeln und an den Server melden (max. 5 pro Seitenaufruf) ----

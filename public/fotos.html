@@ -26,7 +26,8 @@
 <div class="card">
   <div class="row">
     <input id="name" type="text" maxlength="16" placeholder="Dein Name (optional)">
-    <label class="photoBtn">📤 Fotos hochladen<input type="file" accept="image/*" multiple onchange="upload(this)"></label>
+    <label class="photoBtn">📷 Foto aufnehmen<input type="file" accept="image/*" capture="environment" onchange="upload(this)"></label>
+    <label class="photoBtn" style="background:#4b3a9e">🖼️ Aus Galerie<input type="file" accept="image/*" multiple onchange="upload(this)"></label>
   </div>
   <div class="row" style="margin-top:10px">
     <a id="zip" class="btn dl" href="#">⬇️ Alle als ZIP</a>
@@ -49,7 +50,7 @@ nameInp.oninput = () => localStorage.setItem('qn', nameInp.value.trim());
 document.getElementById('code').textContent = ROOM_CODE || '–';
 document.getElementById('zip').href = '/api/photos/' + encodeURIComponent(ROOM_CODE) + '/zip';
 let photos = [];
-let lastSig = '';
+let lastSig = null;
 
 async function load() {
   const grid = document.getElementById('grid');

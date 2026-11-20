@@ -538,7 +538,8 @@ function render() {
       <div class="cats">
         <a href="/fotos?room=${encodeURIComponent(ROOM_CODE)}" target="_blank" style="text-decoration:none"><button type="button" class="active">🖼️ Galerie öffnen</button></a>
         <button type="button" onclick="copyGalleryLink()">📋 Galerie-Link kopieren</button>
-        <button type="button" onclick="pgPickPhotos(ROOM_CODE, '')">📤 Fotos hochladen</button>
+        <button type="button" onclick="pgPickPhotos(ROOM_CODE, '', null, true)">📷 Foto aufnehmen</button>
+        <button type="button" onclick="pgPickPhotos(ROOM_CODE, '')">🖼️ Fotos aus Galerie</button>
         ${S.photoCount ? `<a href="/api/photos/${encodeURIComponent(ROOM_CODE)}/zip" style="text-decoration:none"><button type="button">⬇️ Alle als ZIP</button></a>` : ''}
       </div>
     `)}

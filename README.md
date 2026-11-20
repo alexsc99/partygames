@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.16.1)
+# 🎉 PartyGame (Version 3.16.2)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -67,7 +67,7 @@ Es gibt drei URLs:
 - **🎪 Party-Karten:** Optional in `/admin` (Aus / Selten / Normal / Oft). Zwischen zwei Runden erscheint ab und zu eine Karte auf TV und Handys: 🎉 Gruppen-Challenge (+200 für alle oder alle trinken bzw. Kniebeugen), 👑 Kopfgeld auf den Spitzenreiter, 🆘 Aufholchance für den Letzten, 🎤 Reihum-Runde mit Handy-Abstimmung (+300), ⚡ Blitz-Duell zweier ausgeloster Spieler (+400), 🔄 Weitergeben, 📸 Foto & Pose (Paar- oder Gruppenfoto, +250 für beide bzw. +200 für alle) und 📜 Regelkarten, die 3 Runden lang am TV-Rand stehen. Ob eine Aufgabe gelungen ist, stimmen die Handys ab (alle außer den Betroffenen, mind. 2 Stimmen, Mehrheit entscheidet, Gleichstand = nicht gelungen); Duelle und Punkte-Vergaben wertet der Admin aus, der auch jederzeit überstimmen kann. Nie direkt vor der Finalrunde, nicht im Ein-Gerät-Modus. Karten aus „Peinlich“/„Hot 18+“ nur bei aktiver Kategorie, „Alkoholfrei“ tauscht Trink-Aufgaben aus.
 - **⏱️ Timer-Tempo:** *Schnell* = Antwortzeit −30 % (Wort-Assoziation mind. 16 s) und kürzere Auflösung (mind. 6 s) · *Normal* = Standard (Auflösung geht nach 7–15 s automatisch weiter) · *Entspannt* = Antwortzeit +50 %, Auflösung und Karten-Ergebnisse bleiben stehen, bis jemand „Weiter“ tippt (Admin, TV oder Handy-Abstimmung).
 - **🥁 Trommelwirbel:** Vor Auflösungen mit richtiger Antwort (Quiz, Bild-Quiz, Song, Schätzen, Sortieren, Wahrheit/Lüge, Imposter, Wer würde, Entweder-Oder) zeigen TV und Handys 1,25 s ein Trommel-Overlay, der TV spielt einen Wirbel mit Becken; die Auflösungszeit verlängert sich entsprechend.
-- **📸 Foto-Wand:** Bei 📸-Party-Karten, auf dem Endbildschirm der Handys, im Admin und in der Galerie (`/fotos?room=CODE`) lassen sich Fotos aufnehmen oder aus der Handy-Galerie hochladen (wird vorher auf max. 1600 px verkleinert). Neue Fotos erscheinen kurz auf dem TV (während Fragen klein in der Ecke); am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie. Alle mit dem Raum-Link sehen die Galerie; Fotos liegen in `data/photos/<CODE>/` und werden 7 Tage nach dem Hochladen automatisch gelöscht. Raumcodes mit noch vorhandenen Fotos werden nicht neu vergeben.
+- **📸 Foto-Wand:** Bei 📸-Party-Karten, auf dem Endbildschirm der Handys, im Admin und in der Galerie (`/fotos?room=CODE`) lassen sich Fotos direkt mit der Kamera aufnehmen („📷 Foto aufnehmen“) oder aus der Handy-Galerie hochladen (wird vorher auf max. 1600 px verkleinert). Neue Fotos erscheinen kurz auf dem TV (während Fragen klein in der Ecke); am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie. Alle mit dem Raum-Link sehen die Galerie; Fotos liegen in `data/photos/<CODE>/` und werden 7 Tage nach dem Hochladen automatisch gelöscht. Raumcodes mit noch vorhandenen Fotos werden nicht neu vergeben.
 - **Lautstärke-Regler & Auto-Timer-Sync:** Eigener Lautstärke-Slider auf TV und Handy; der Song-Timer synchronisiert sich unabhängig von unterschiedlichen Geräte-Uhrzeiten exakt mit dem Audio-Start.
 - **Finalrunde (2× Punkte):** Die letzte Runde eines Spiels zählt automatisch doppelt (in `/admin` ein-/ausschaltbar).
 - **Sieger-Awards:** Am Spielende gibt es Auszeichnungen (*Trinkkönig*, *Blitzdenker*, *Rate-Profi*, *Schätz-Meister*).
@@ -220,7 +220,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.16.1 (Aktueller Stand):** Foto-Ordner/-Dateien gruppenbeschreibbar (2775/664), damit Admins der Gruppe `games` Fotos per SSH löschen können.
+- **v3.16.2 (Aktueller Stand):** Foto-Wand: eigener Knopf „📷 Foto aufnehmen“ (öffnet direkt die Kamera) neben „🖼️ Aus Galerie“ – auf Handy, im Admin und in der Galerie; leere Galerie zeigt den Hinweis korrekt an.
+- **v3.16.1:** Foto-Ordner/-Dateien gruppenbeschreibbar (2775/664), damit Admins der Gruppe `games` Fotos per SSH löschen können.
 - **v3.16.0:** **📸 Foto-Wand**: Fotos vom Handy (Kamera oder Galerie) in die Raum-Galerie `/fotos`, Live-Einblendung am TV, Diashow + QR am Spielende, ZIP-Download, Upload auch nach der Party, automatische Löschung nach 7 Tagen; Admin-Gruppe „📸 Fotos“.
 - **v3.15.0:** Neuer Modus **🤸 Pantomime** (98 Begriffe, auch im Standard-Mix und im Ein-Gerät-Modus), **🥁 Trommelwirbel** vor der Auflösung auf TV und Handys.
 - **v3.14.1:** Party-Karten nach Test-Feedback: entfernt „10 Wörter mit Sch“, „Letzter holt sich 300 Punkte“, Socken-Tausch und Handy-Regel; „15 Länder in 30 s“ → reihum je ein Land ohne Zeitlimit; Geburtstags-Reihe bis zu 5 Minuten.

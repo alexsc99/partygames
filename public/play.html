@@ -157,7 +157,7 @@ async function joinByRoomInput() {
     if (errEl) errEl.textContent = 'Verbindungsfehler beim Prüfen des Raums.';
   }
 }
-function pickPhotos() { pgPickPhotos(ROOM_CODE, () => name); }
+function pickPhotos(camera) { pgPickPhotos(ROOM_CODE, () => name, null, camera); }
 async function copyInviteLink() {
   const link = (S && S.publicUrl) || (location.origin + '/?room=' + encodeURIComponent(ROOM_CODE));
   if (!(await pgCopyText(link))) return;
@@ -1163,7 +1163,7 @@ function renderView() {
         <div style="font-size:22px;font-weight:900;color:#ffd33d">${esc(c.title)}</div>
         ${meTarget ? '<div style="display:inline-block;background:#ffd33d;color:#1b1340;font-weight:900;border-radius:999px;padding:4px 12px;margin-top:8px">👉 Du bist dran!</div>' : ''}
         <div style="font-size:18px;font-weight:700;margin-top:10px;line-height:1.3">${esc(c.text)}</div>
-      </div>${c.type === 'photo' ? `<div style="text-align:center;margin-top:12px"><button type="button" class="photoBtn" onclick="pickPhotos()">📸 Foto machen / hochladen</button></div>` : ''}${body}`;
+      </div>${c.type === 'photo' ? `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">${pgPhotoButtons('pickPhotos(true)', 'pickPhotos(false)')}</div>` : ''}${body}`;
     if (meTarget && lastVibKey !== `card:${S.idx}`) { lastVibKey = `card:${S.idx}`; pgVibrate([40, 60, 40]); }
     return;
   }
@@ -1211,7 +1211,7 @@ function renderView() {
       ? `<div class="resBox"><div class="resTitle">🏅 Auszeichnungen</div>${S.awards.map(a => `<div class="resRow"><span>${a.icon} ${esc(a.title)}</span><b>${esc(a.name)} (${esc(a.detail)})</b></div>`).join('')}</div>`
       : '';
     const photoBox = `<div class="resBox" style="text-align:center"><div class="resTitle">📸 Fotos des Abends${S.photoCount ? ` (${S.photoCount})` : ''}</div>
-      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px"><button type="button" class="photoBtn" onclick="pickPhotos()">📤 Foto hochladen</button><a class="photoBtn" style="background:#26890c;text-decoration:none" href="/fotos?room=${encodeURIComponent(ROOM_CODE)}" target="_blank">🖼️ Galerie öffnen</a></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px">${pgPhotoButtons('pickPhotos(true)', 'pickPhotos(false)')}<a class="photoBtn" style="background:#26890c;text-decoration:none" href="/fotos?room=${encodeURIComponent(ROOM_CODE)}" target="_blank">🖼️ Galerie öffnen</a></div>
       <div style="font-size:12px;opacity:.75;margin-top:6px">Für alle im Raum · 7 Tage verfügbar</div></div>`;
     app.innerHTML = `<div class="msg" style="margin-top:2vh">Spiel vorbei! Platz ${rank} 🎉<br><small>${me ? me.score : 0} Punkte</small></div>${renderPhonePodium()}${photoBox}${awardsHtml}${renderLb('🏆 Endstand')}${renderEmojiBar()}`;
     const endVib = `end:${S.mode}`;
