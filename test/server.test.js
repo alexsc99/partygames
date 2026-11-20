@@ -693,82 +693,116 @@ describe('PartyGame Server', () => {
     }
   });
 
-  it('remote mode: photo challenge collects one photo per player, votes anonymously and awards the best photo', async () => {
+  // Raum im Remote-Modus bis zur ersten Party-Karte spielen; Math.random erzwingt dort die Foto-Challenge
+  async function snapRoom(names) {
     const { io: ioc } = require('socket.io-client');
     const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
-    const photoDir = path.join(__dirname, '..', 'data', 'photos', code);
     const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
-    const admin = connect();
-    const names = ['Ada', 'Bo', 'Cy'];
-    const players = names.map(connect);
-    let S = null;
-    let pops = 0;
-    admin.on('state', s => { S = s; });
-    admin.on('photo:new', () => { pops++; });
-    const until = async (pred, ms = 3000) => {
+    const r = { code, admin: connect(), players: names.map(connect), S: null, pops: 0 };
+    r.admin.on('state', s => { r.S = s; });
+    r.admin.on('photo:new', () => { r.pops++; });
+    r.until = async (pred, ms = 3000) => {
       const end = Date.now() + ms;
-      while (Date.now() < end) { if (S && pred(S)) return S; await new Promise(r => setTimeout(r, 20)); }
-      throw new Error(`timeout, phase=${S && S.phase} stage=${S && S.card && S.card.stage}`);
+      while (Date.now() < end) { if (r.S && pred(r.S)) return r.S; await new Promise(res => setTimeout(res, 20)); }
+      throw new Error(`timeout, phase=${r.S && r.S.phase} stage=${r.S && r.S.card && r.S.card.stage}`);
     };
-    const upload = (who, cardId, fill) => fetch(`${baseUrl}/api/photos/${code}`, {
+    r.upload = (who, fill) => fetch(`${baseUrl}/api/photos/${code}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(who), 'x-card': cardId },
+      headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(who), 'x-card': r.S.card.id },
       body: Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200, fill), Buffer.from([0xff, 0xd9])]),
     });
+    r.cleanup = () => {
+      r.admin.close();
+      r.players.forEach(p => p.close());
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+      fs.rmSync(path.join(__dirname, '..', 'data', 'photos', code), { recursive: true, force: true });
+    };
     const realRandom = Math.random;
     try {
-      await Promise.all(players.map((p, i) => new Promise(res => p.emit('join', { name: names[i], avatar: '😎' }, res))));
-      admin.emit('host:mode', 'quiz');
-      admin.emit('host:wheelEnabled', false);
-      admin.emit('host:partyCards', 'often');
-      admin.emit('host:remote', true);
-      await until(s => s.remote === true && s.players.length === 3);
-      admin.emit('host:start');
-      for (let round = 0; round < 4 && S.phase !== 'card'; round++) {
-        await until(s => s.phase === 'question' && s.idx === round);
-        await Promise.all(players.map((p, i) => new Promise(res => p.emit('answer', i, res))));
-        await until(s => s.phase === 'result');
+      await Promise.all(r.players.map((p, i) => new Promise(res => p.emit('join', { name: names[i], avatar: '😎' }, res))));
+      r.admin.emit('host:mode', 'quiz');
+      r.admin.emit('host:wheelEnabled', false);
+      r.admin.emit('host:partyCards', 'often');
+      r.admin.emit('host:remote', true);
+      await r.until(s => s.remote === true && s.players.length === names.length);
+      r.admin.emit('host:start');
+      for (let round = 0; round < 4 && r.S.phase !== 'card'; round++) {
+        await r.until(s => s.phase === 'question' && s.idx === round);
+        await Promise.all(r.players.map((p, i) => new Promise(res => p.emit('answer', i % 4, res))));
+        await r.until(s => s.phase === 'result');
         Math.random = () => 0.9999; // gewichtete Typ-Wahl → letzter Typ = Foto-Challenge
-        admin.emit('host:next');
-        await until(s => s.phase === 'card' || (s.phase === 'question' && s.idx === round + 1));
+        r.admin.emit('host:next');
+        await r.until(s => s.phase === 'card' || (s.phase === 'question' && s.idx === round + 1));
         Math.random = realRandom;
       }
-      assert.equal(S.phase, 'card');
-      assert.equal(S.card.act, 'snap');
-      assert.equal(S.card.stage, 'collect');
-      const cardId = S.card.id;
-      const before = Object.fromEntries(S.players.map(p => [p.name, p.score]));
+    } catch (e) {
+      r.cleanup();
+      throw e;
+    } finally {
+      Math.random = realRandom;
+    }
+    assert.equal(r.S.phase, 'card');
+    assert.equal(r.S.card.act, 'snap');
+    assert.equal(r.S.card.stage, 'collect');
+    return r;
+  }
 
-      assert.equal((await upload('Ada', cardId, 1)).status, 201);
-      assert.equal((await upload('Bo', cardId, 2)).status, 201);
+  it('remote mode: photo challenge collects one photo per player, votes anonymously and awards the best photo', async () => {
+    const r = await snapRoom(['Ada', 'Bo', 'Cy']);
+    const { players, until, upload, code } = r;
+    try {
+      const before = Object.fromEntries(r.S.players.map(p => [p.name, p.score]));
+
+      assert.equal((await upload('Ada', 1)).status, 201);
+      assert.equal((await upload('Bo', 2)).status, 201);
       await until(s => s.card.submitted.length === 2);
-      assert.equal(S.card.stage, 'collect');
-      assert.equal(S.card.photos, null, 'photos stay hidden while collecting');
-      assert.equal((await upload('Cy', cardId, 3)).status, 201);
+      assert.equal(r.S.card.stage, 'collect');
+      assert.equal(r.S.card.photos, null, 'photos stay hidden while collecting');
+      assert.equal((await upload('Cy', 3)).status, 201);
       await until(s => s.card.stage === 'vote');
-      assert.equal(S.card.photos.length, 3);
-      assert.ok(S.card.photos.every(p => p.name === null), 'voting is anonymous');
-      assert.equal(pops, 0, 'challenge photos must not pop up on the TV');
+      assert.equal(r.S.card.photos.length, 3);
+      assert.ok(r.S.card.photos.every(p => p.name === null), 'voting is anonymous');
+      assert.equal(r.pops, 0, 'challenge photos must not pop up on the TV');
 
       const urls = Object.fromEntries((await (await fetch(`${baseUrl}/api/photos/${code}`)).json()).photos.map(p => [p.name, p.url]));
-      const idxOf = who => S.card.photos.find(p => p.url === urls[who]).i;
+      const idxOf = who => r.S.card.photos.find(p => p.url === urls[who]).i;
       players[1].emit('card:vote', idxOf('Bo')); // eigenes Foto zählt nicht
       players[0].emit('card:vote', idxOf('Bo'));
       players[2].emit('card:vote', idxOf('Bo'));
       await until(s => s.card.voters.length === 2);
-      assert.ok(!S.card.voters.includes('Bo'));
+      assert.ok(!r.S.card.voters.includes('Bo'));
       players[1].emit('card:vote', idxOf('Ada'));
       await until(s => s.card.resolved);
-      const diff = Object.fromEntries(S.players.map(p => [p.name, p.score - before[p.name]]));
+      const diff = Object.fromEntries(r.S.players.map(p => [p.name, p.score - before[p.name]]));
       assert.deepEqual(diff, { Ada: 100, Bo: 400, Cy: 100 });
-      assert.equal(S.card.photos.find(p => p.url === urls.Bo).name, 'Bo');
+      assert.equal(r.S.card.photos.find(p => p.url === urls.Bo).name, 'Bo');
     } finally {
-      Math.random = realRandom;
-      admin.close();
-      players.forEach(p => p.close());
-      rooms.get(code)?.destroy();
-      rooms.delete(code);
-      fs.rmSync(photoDir, { recursive: true, force: true });
+      r.cleanup();
+    }
+  });
+
+  it('remote photo challenge: a player whose phone drops the connection while in the camera app still gets the photo counted', async () => {
+    const r = await snapRoom(['Ada', 'Bo']);
+    try {
+      assert.equal((await r.upload('Ada', 1)).status, 201);
+      await r.until(s => s.card.submitted.length === 1);
+      r.players[1].close(); // Kamera-App offen → Handy getrennt
+      await r.until(s => s.players.length === 1);
+      await new Promise(res => setTimeout(res, 100));
+      assert.equal(r.S.card.resolved, false, 'must not end with "too few photos" while someone is in the camera');
+      assert.equal(r.S.card.stage, 'collect');
+      assert.equal((await r.upload('Bo', 2)).status, 201); // kommt vor dem Rejoin an
+      await r.until(s => s.card.stage === 'vote');
+      assert.equal(r.S.card.photos.length, 2);
+      assert.equal(r.pops, 0);
+      // Ada stimmt für Bos Foto → fertig (Bo ist getrennt), Bo bekommt trotzdem die Punkte
+      const bosPhoto = r.S.card.photos.find(p => p.i === 1);
+      r.players[0].emit('card:vote', bosPhoto.i);
+      await r.until(s => s.card.resolved);
+      assert.match(r.S.card.outcome, /Bo gewinnt/);
+    } finally {
+      r.cleanup();
     }
   });
 

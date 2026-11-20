@@ -1168,13 +1168,17 @@ function renderView() {
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">${pgPhotoButtons('pickSnap(true)', 'pickSnap(false)')}</div>
         ${mine ? '<div class="msg" style="margin-top:6px"><small>Neues Foto ersetzt dein altes.</small></div>' : ''}`;
     } else if (c.act === 'snap') {
+      // Alle Fotos zeigen, damit klar ist, dass alles angekommen ist; das eigene ist markiert und nicht wählbar
       const own = mySnapUrl();
-      const pics = (c.photos || []).filter(ph => ph.url !== own);
+      const pics = c.photos || [];
+      const canPick = pics.some(ph => ph.url !== own);
       const progress = `${c.voters.length}/${S.players.length} haben abgestimmt`;
-      body = voted
-        ? `<div class="msg">✅ Stimme abgegeben<br><small>${progress}</small></div>`
-        : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Welches Foto ist das beste? (anonym, +${c.reward})</div>
-           <div class="snapPick">${pics.map(ph => `<button type="button" onclick="socket.emit('card:vote', ${ph.i})"><img src="${esc(ph.url)}" alt="Foto" loading="lazy"></button>`).join('')}</div>
+      body = voted || !canPick
+        ? `<div class="msg">${voted ? '✅ Stimme abgegeben' : '📸 Nur dein Foto ist da – die anderen stimmen ab'}<br><small>${progress}</small></div>`
+        : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Tippe aufs beste Foto (anonym, +${c.reward})</div>
+           <div class="snapPick">${pics.map(ph => ph.url === own
+    ? `<figure class="own"><img src="${esc(ph.url)}" alt="Dein Foto" loading="lazy"><figcaption>📸 Dein Foto</figcaption></figure>`
+    : `<button type="button" onclick="socket.emit('card:vote', ${ph.i})"><img src="${esc(ph.url)}" alt="Foto" loading="lazy"></button>`).join('')}</div>
            <div class="msg"><small>${progress}</small></div>`;
     } else if (c.act === 'yesno') {
       const judges = c.judges || [];

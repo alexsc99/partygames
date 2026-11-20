@@ -1455,16 +1455,33 @@ function startSnapVote() {
   broadcast();
 }
 
+// Android/iOS trennen beim Öffnen der Kamera oft kurz die Verbindung → Upload kann vor dem Rejoin ankommen,
+// daher auch kurz getrennte Spieler zulassen (anyPlayer statt byName).
 function cardPhoto(name, url, cardId) {
   const card = state.card;
-  if (state.phase !== 'card' || !card || card.act !== 'snap' || card.resolved || card.stage !== 'collect' || card.id !== cardId || !byName(name)) return false;
-  const own = card.entries.find(e => e.name === name);
+  const p = anyPlayer(name);
+  if (state.phase !== 'card' || !card || card.act !== 'snap' || card.resolved || card.id !== cardId || !p) return false;
+  const own = card.entries.find(e => e.name === p.name);
+  if (card.stage === 'vote') {
+    // Zu spät, aber Abstimmung läuft noch: als weiteres Foto anhängen (ersetzen nicht mehr – darauf wurde evtl. schon gestimmt)
+    if (!own) {
+      card.entries.push({ name: p.name, url });
+      card.order.push(card.entries.length - 1);
+      broadcast();
+    }
+    return true;
+  }
   if (own) own.url = url; // neues Foto ersetzt das alte
-  else card.entries.push({ name, url });
-  if (pVals().filter(x => !x.isLocal).every(p => card.entries.some(e => e.name === p.name))) startSnapVote();
+  else card.entries.push({ name: p.name, url });
+  if (snapAllSubmitted(card)) startSnapVote();
   else broadcast();
   return true;
 }
+
+// Alle verbundenen Spieler haben ein Foto – aber nie mit weniger als 2 Fotos vorzeitig abbrechen:
+// wer gerade in der Kamera-App ist, gilt kurz als getrennt; dann wartet die Karte bis zum Timer.
+const snapAllSubmitted = card => card.entries.length >= 2
+  && pVals().filter(x => !x.isLocal).every(q => card.entries.some(e => e.name === q.name));
 
 // Fertig, wenn jeder abgestimmt hat – oder nichts wählen kann, weil nur das eigene Foto da ist
 const snapVotingDone = card => pVals().filter(x => !x.isLocal)
@@ -1604,7 +1621,7 @@ function recheckOpenCard() {
     if (Object.keys(card.votes).length && voters.every(x => card.votes[x.name])) resolvePartyCard();
   }
   if (card.act === 'snap') {
-    if (card.stage === 'collect' && card.entries.length && pVals().filter(x => !x.isLocal).every(p => card.entries.some(e => e.name === p.name))) startSnapVote();
+    if (card.stage === 'collect' && snapAllSubmitted(card)) startSnapVote();
     else if (card.stage === 'vote' && snapVotingDone(card)) resolvePartyCard();
   }
 }
