@@ -347,7 +347,7 @@ function renderCardPanel() {
       <div class="cats">${btn(`🏁 Jetzt auswerten (+${c.reward} für den Sieger)`, {}, '#26890c')}</div>`;
   } else if (c.act === 'snap' && c.stage === 'collect') {
     const shooters = c.duel ? c.duel.length : S.players.length;
-    actions = `<div class="sub">📸 ${(c.submitted || []).length}/${shooters} Fotos da – die Abstimmung startet automatisch, wenn ${c.duel ? 'beide' : 'alle'} ein Foto haben oder die Zeit abläuft (nur 1 Foto: wird gezeigt, +100).</div>
+    actions = `<div class="sub">📸 ${(c.submitted || []).length}/${shooters} Fotos da – die Abstimmung startet automatisch, wenn ${c.duel ? 'beide' : 'alle'} ein Foto haben oder die Zeit abläuft (nur 1 Foto: wird gezeigt, +10).</div>
       <div class="cats"><button class="active" style="background:#4b3a9e" onclick="socket.emit('host:snapVote')">🗳️ Abstimmung jetzt starten</button></div>`;
   } else if (c.act === 'snap') {
     const ready = c.voters.length >= 2;
@@ -489,9 +489,9 @@ function render() {
         <div class="label" style="color:#ffd33d">🕵️ Geheime Mission von ${esc(S.missionReveal.playerName)}</div>
         <div style="font-size:1rem;font-weight:700;margin:6px 0 10px">„${esc(S.missionReveal.text)}“</div>
         ${S.missionReveal.resolved
-          ? `<div style="font-weight:700;color:${S.missionReveal.success ? '#3dd68c' : '#ff6b81'}">${S.missionReveal.success ? '✅ Geschafft (+150 Punkte) — geht gleich weiter…' : '❌ Aufgeflogen (0 Punkte) — geht gleich weiter…'}</div>`
+          ? `<div style="font-weight:700;color:${S.missionReveal.success ? '#3dd68c' : '#ff6b81'}">${S.missionReveal.success ? '✅ Geschafft (+15 Punkte) — geht gleich weiter…' : '❌ Aufgeflogen (0 Punkte) — geht gleich weiter…'}</div>`
           : `<div class="cats">
-              <button class="active" style="background:#26890c" onclick="socket.emit('host:resolveMission',true)">✅ Geschafft (+150 Pkt)</button>
+              <button class="active" style="background:#26890c" onclick="socket.emit('host:resolveMission',true)">✅ Geschafft (+15 Pkt)</button>
               <button class="active" style="background:#e21b3c" onclick="socket.emit('host:resolveMission',false)">❌ Aufgeflogen (0 Pkt)</button>
             </div>`}
       </div>

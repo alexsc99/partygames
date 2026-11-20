@@ -762,10 +762,10 @@ function doneImposterRead() {
 function renderMissionBanner() {
   if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return '';
   if (P && P.mission && S.phase !== 'result') {
-    return `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#ffd33d;font-weight:700;font-size:13px;padding:7px 10px;border-radius:10px;margin:6px 0;text-align:left">🕵️ <b>Geheime Mission (+150 Pkt):</b> ${esc(P.mission)}</div>`;
+    return `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#ffd33d;font-weight:700;font-size:13px;padding:7px 10px;border-radius:10px;margin:6px 0;text-align:left">🕵️ <b>Geheime Mission (+15 Pkt):</b> ${esc(P.mission)}</div>`;
   }
   if (S.phase === 'result' && S.missionReveal) {
-    return `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#fff;font-size:13px;padding:8px 10px;border-radius:10px;margin:6px 0;text-align:left"><b style="color:#ffd33d">🕵️ Geheime Mission (${esc(S.missionReveal.playerName)}):</b> „${esc(S.missionReveal.text)}“<br><b>${S.missionReveal.resolved ? (S.missionReveal.success ? '✅ Geschafft (+150 Pkt)' : '❌ Aufgeflogen (0 Pkt)') : '⏳ Host bewertet…'}</b></div>`;
+    return `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#fff;font-size:13px;padding:8px 10px;border-radius:10px;margin:6px 0;text-align:left"><b style="color:#ffd33d">🕵️ Geheime Mission (${esc(S.missionReveal.playerName)}):</b> „${esc(S.missionReveal.text)}“<br><b>${S.missionReveal.resolved ? (S.missionReveal.success ? '✅ Geschafft (+15 Pkt)' : '❌ Aufgeflogen (0 Pkt)') : '⏳ Host bewertet…'}</b></div>`;
   }
   return '';
 }
@@ -1180,7 +1180,7 @@ function renderView() {
       const progress = `${c.submitted.length}/${shooters.length} Fotos`;
       body = !shooters.includes(name)
         ? `<div class="msg">📸 ${c.duel.map(esc).join(' & ')} fotografieren gerade …<br><small>${progress} · Gleich stimmst du ab, welches Foto besser ist</small></div>`
-        : `${mine ? `<div class="msg">✅ Dein Foto ist drin!<br><img src="${esc(mine.snapUrl)}" alt="Dein Foto" style="max-width:60%;max-height:22vh;border-radius:12px;margin-top:8px"><br><small>${progress} · Die Fotos sieht man erst bei der Abstimmung</small></div>` : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Mach ein Foto dazu – ${c.duel ? 'die anderen wählen das bessere' : 'die Gruppe wählt anonym das beste'} (+${c.reward}, jedes Foto +100)</div>`}
+        : `${mine ? `<div class="msg">✅ Dein Foto ist drin!<br><img src="${esc(mine.snapUrl)}" alt="Dein Foto" style="max-width:60%;max-height:22vh;border-radius:12px;margin-top:8px"><br><small>${progress} · Die Fotos sieht man erst bei der Abstimmung</small></div>` : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Mach ein Foto dazu – ${c.duel ? 'die anderen wählen das bessere' : 'die Gruppe wählt anonym das beste'} (+${c.reward}, jedes Foto +10)</div>`}
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">${pgPhotoButtons('pickSnap(true)', 'pickSnap(false)')}</div>
         ${mine ? '<div class="msg" style="margin-top:6px"><small>Neues Foto ersetzt dein altes.</small></div>' : ''}`;
     } else if (c.act === 'snap') {
@@ -1565,7 +1565,7 @@ function renderPhoneResult() {
     body = `<div class="resBox"><div class="resTitle">${r.avg !== null && r.avg !== undefined ? `Durchschnitt: ${r.avg} / 10` : 'Bewertungen'}</div>${rows}</div>`;
   } else if (m === 'truthlie' && S.q) {
     const rows = S.q.statements.map((st, i) => `<div class="resAns ${i === r.lieIdx ? 'c0 win' : 'c1 dim'}"><span>${i === r.lieIdx ? '🚨 LÜGE: ' : ''}${esc(st)}</span><span>${(r.counts && r.counts[i]) || 0}</span></div>`).join('');
-    const info = r.caughtBy && r.caughtBy.length ? `Entlarvt von: ${r.caughtBy.map(esc).join(', ')}` : `Niemand hat's gemerkt! (+1000 Pkt für ${esc(r.storyteller || '')})`;
+    const info = r.caughtBy && r.caughtBy.length ? `Entlarvt von: ${r.caughtBy.map(esc).join(', ')}` : `Niemand hat's gemerkt! (+100 Pkt für ${esc(r.storyteller || '')})`;
     body = `<div class="resBox"><div class="resTitle">${info}</div>${rows}</div>${renderLb()}`;
   } else if (m === 'wordassoc') {
     const rows = (r.entries || []).map(e => `<div class="resRow"><span>${esc(e.avatar || '')} ${esc(e.name)}</span><b>${e.word ? esc(e.word) : '—'}</b></div>`).join('');

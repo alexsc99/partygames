@@ -95,11 +95,12 @@ const PARTY_CARD_TYPES = {
   snap: { title: '📸 Foto-Challenge', act: 'snap', w: 3, remote: true }, // jeder lädt ein Foto hoch, dann Abstimmung
   snapduel: { title: '📸 Foto-Duell', act: 'snap', w: 2, remote: true, min: 4 }, // nur {a} & {b} fotografieren, die anderen stimmen ab
 };
-const CARD_GROUP_PTS = 200;
-const CARD_VOTE_PTS = 300;
-const CARD_DUEL_PTS = 400;
-const CARD_SNAP_PTS = 300; // bestes Foto
-const CARD_SNAP_BONUS = 100; // jedes eingereichte Foto
+// Punkte bewusst klein (seit 3.19: 1/10 der früheren Werte), damit Spielstände nicht sofort vierstellig sind
+const CARD_GROUP_PTS = 20;
+const CARD_VOTE_PTS = 30;
+const CARD_DUEL_PTS = 40;
+const CARD_SNAP_PTS = 30; // bestes Foto
+const CARD_SNAP_BONUS = 10; // jedes eingereichte Foto
 const CARD_RULE_ROUNDS = 3;
 const CARD_AUTO_NEXT_MS = 6000;
 // Statistik für die Auszeichnungen am Spielende; alte Spielstände (Neustart) haben nicht alle Felder → bumpStat
@@ -132,8 +133,9 @@ const MIX_ROUNDS = 12;
 const CATEGORIES = ['party', 'peinlich', 'kennenlernen', 'date', 'hot18'];
 const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, pantomime: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20 };
 const MIME_SKIPS = 2; // so oft darf der Darsteller einen Begriff tauschen
-const MIME_GUESS_PTS = 800; // Rater
-const MIME_ACTOR_PTS = 500; // Darsteller
+const MIME_GUESS_PTS = 80; // Rater
+const MIME_ACTOR_PTS = 50; // Darsteller
+const MISSION_PTS = 15; // geheime Mission geschafft
 // Auflösungen mit Trommelwirbel-Overlay (Clients: SUSPENSE_MODES in ux-helpers.js) – die Pause verlängert sich um dessen Dauer
 const SUSPENSE_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'truthlie', 'imposter', 'mostlikely', 'wouldyourather'];
 const SUSPENSE_MS = 1250;
@@ -1986,7 +1988,7 @@ function showResult() {
     ps.forEach(p => {
       if (p.answer === q.c) {
         const left = Math.max(0, state.deadline - p.answeredAt) / roundDur;
-        p.score += (500 + Math.round(500 * left)) * mult;
+        p.score += (50 + Math.round(50 * left)) * mult;
       }
     });
     const counts = q.a.map((_, i) => ps.filter(p => p.answer === i).length);
@@ -2031,7 +2033,7 @@ function showResult() {
     const worst = entries.length > 1 ? entries[entries.length - 1].name : null;
     ps.forEach(p => {
       if (p.name === best) {
-        p.score += 1000 * mult;
+        p.score += 100 * mult;
         if (p.stats) p.stats.bestEstimate++;
       }
       if (p.name === worst || p.answer === null) p.drinks++;
@@ -2050,7 +2052,7 @@ function showResult() {
     const drinkers = entries.filter(e => e.ms === -1 || e.ms === null).map(e => e.name);
     if (valid.length > 1 && drinkers.length === 0) drinkers.push(valid[valid.length - 1].name);
     ps.forEach(p => {
-      if (p.name === fastest) p.score += 1000 * mult;
+      if (p.name === fastest) p.score += 100 * mult;
       if (p.answer > 0 && p.stats) { p.stats.fastSum += p.answer; p.stats.fastCount++; }
       if (drinkers.includes(p.name)) p.drinks++;
     });
@@ -2071,7 +2073,7 @@ function showResult() {
     const drinkers = caught ? imposters : ps.map(p => p.name).filter(n => !imposters.includes(n));
     ps.forEach(p => {
       if (drinkers.includes(p.name)) p.drinks++;
-      if ((caught && !imposters.includes(p.name)) || (!caught && imposters.includes(p.name))) p.score += 1000 * mult;
+      if ((caught && !imposters.includes(p.name)) || (!caught && imposters.includes(p.name))) p.score += 100 * mult;
     });
     state.result = { accused, imposters, words: state.imposterWords, caught, drinkers, votes };
     autoNextMs = 9000;
@@ -2103,7 +2105,7 @@ function showResult() {
         }
       }
       const left = p.answeredAt ? Math.max(0, state.deadline - p.answeredAt) / roundDur : 0;
-      const pts = Array.isArray(p.answer) ? (hits * 200 + (hits === 4 ? 400 + Math.round(200 * left) : 0)) * mult : 0;
+      const pts = Array.isArray(p.answer) ? (hits * 20 + (hits === 4 ? 40 + Math.round(20 * left) : 0)) * mult : 0;
       p.score += pts;
       return { name: p.name, hits, pts, answered: Array.isArray(p.answer) };
     }).sort((a, b) => b.pts - a.pts || b.hits - a.hits);
@@ -2121,7 +2123,7 @@ function showResult() {
       .filter(p => !(typeof p.answer === 'string' && p.answer.trim()))
       .map(p => p.name);
     ps.forEach(p => {
-      if (typeof p.answer === 'string' && p.answer.trim()) p.score += 500 * mult;
+      if (typeof p.answer === 'string' && p.answer.trim()) p.score += 50 * mult;
       else p.drinks++;
     });
     state.result = { entries, drinkers };
@@ -2137,7 +2139,7 @@ function showResult() {
       drinkers.push(...groups[minGroups[0].i]);
     }
     ps.forEach(p => {
-      if (p.answer !== null) p.score += 500 * mult;
+      if (p.answer !== null) p.score += 50 * mult;
       if (drinkers.includes(p.name)) p.drinks++;
     });
     state.result = { groups, drinkers };
@@ -2148,7 +2150,7 @@ function showResult() {
     const avg = valid.length ? Math.round((valid.reduce((s, e) => s + e.val, 0) / valid.length) * 10) / 10 : null;
     const drinkers = entries.filter(e => e.val === null).map(e => e.name);
     ps.forEach(p => {
-      if (typeof p.answer === 'number') p.score += 500 * mult;
+      if (typeof p.answer === 'number') p.score += 50 * mult;
       else p.drinks++;
     });
     state.result = { entries, avg, drinkers };
@@ -2162,9 +2164,9 @@ function showResult() {
     }
     ps.forEach(p => {
       if (p.name === state.storytellerName) {
-        if (caughtBy.length === 0 && guessers.length > 0) p.score += 1000 * mult;
+        if (caughtBy.length === 0 && guessers.length > 0) p.score += 100 * mult;
       } else if (p.answer === state.tlLieIdx) {
-        p.score += 800 * mult;
+        p.score += 80 * mult;
       }
       if (drinkers.includes(p.name)) p.drinks++;
     });
@@ -2178,7 +2180,7 @@ function showResult() {
       avatar: p.avatar || '😎',
       word: typeof p.answer === 'string' && p.answer.trim() ? p.answer.trim() : null,
     }));
-    ps.forEach(p => { if (typeof p.answer === 'string' && p.answer.trim()) p.score += 500 * mult; });
+    ps.forEach(p => { if (typeof p.answer === 'string' && p.answer.trim()) p.score += 50 * mult; });
     state.result = { entries };
     autoNextMs = 8000;
   } else if (m === 'songquiz') {
@@ -2187,7 +2189,7 @@ function showResult() {
     ps.forEach(p => {
       if (p.answer === sq.c) {
         const left = Math.max(0, state.deadline - p.answeredAt) / roundDur;
-        p.score += (500 + Math.round(500 * left)) * mult;
+        p.score += (50 + Math.round(50 * left)) * mult;
       }
     });
     const counts = sq.a.map((_, i) => ps.filter(p => p.answer === i).length);
@@ -2208,7 +2210,7 @@ function showResult() {
     const gain = (p.score || 0) - (p.prevScore ?? p.score ?? 0);
     p.lastGain = Math.max(0, gain);
     if (['quiz', 'imagequiz', 'songquiz', 'estimate', 'reaction', 'imposter', 'draw', 'taboo', 'pantomime', 'truthlie', 'sort'].includes(m)) {
-      const wonRound = m === 'sort' ? gain >= 500 : gain > 0;
+      const wonRound = m === 'sort' ? gain >= 50 : gain > 0;
       p.streak = wonRound ? (p.streak || 0) + 1 : 0;
       if (!wonRound) bumpStat(p, 'misses');
       if (p.stats && p.streak > (p.stats.bestStreak || 0)) p.stats.bestStreak = p.streak;
@@ -2509,11 +2511,11 @@ function attachSocket(socket, ip, allowEvent) {
     if (norm(txt) && norm(txt) === norm(word)) {
       guessed.push(p.name);
       const mult = isFinalRound() ? 2 : 1;
-      const pts = Math.max(200, 1000 - (guessed.length - 1) * 200) * mult;
+      const pts = Math.max(20, 100 - (guessed.length - 1) * 20) * mult;
       p.score += pts;
       if (p.stats) p.stats.guessedWords++;
       const actor = pVals().find(x => x.name === actorName);
-      if (actor && guessed.length === 1) actor.score += 500 * mult;
+      if (actor && guessed.length === 1) actor.score += 50 * mult;
       p.answer = true;
       p.answeredAt = Date.now();
       ack && ack({ ok: true });
@@ -2634,16 +2636,16 @@ function attachSocket(socket, ip, allowEvent) {
     const mult = isFinalRound() ? 2 : 1;
     if (m === 'draw' && !state.guessedBy.includes(p.name)) {
       state.guessedBy.push(p.name);
-      p.score += 1000 * mult;
+      p.score += 100 * mult;
       if (p.stats) p.stats.guessedWords++;
       const drawer = pVals().find(x => x.name === state.drawerName);
-      if (drawer) drawer.score += 500 * mult;
+      if (drawer) drawer.score += 50 * mult;
     } else if (m === 'taboo' && !state.tabooGuessedBy.includes(p.name)) {
       state.tabooGuessedBy.push(p.name);
-      p.score += 1000 * mult;
+      p.score += 100 * mult;
       if (p.stats) p.stats.guessedWords++;
       const exp = pVals().find(x => x.name === state.explainerName);
-      if (exp) exp.score += 500 * mult;
+      if (exp) exp.score += 50 * mult;
     }
     showResult();
   });
@@ -2898,8 +2900,8 @@ function attachSocket(socket, ip, allowEvent) {
     const missionTarget = players[state.mission.playerId]
       || pVals().find(p => p.name.toLowerCase() === String(state.mission.playerName || '').toLowerCase());
     if (ok && missionTarget) {
-      missionTarget.score += 150;
-      missionTarget.lastGain = (missionTarget.lastGain || 0) + 150;
+      missionTarget.score += MISSION_PTS;
+      missionTarget.lastGain = (missionTarget.lastGain || 0) + MISSION_PTS;
     }
     if (state.phase === 'result') {
       armAutoNext(3500);

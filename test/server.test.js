@@ -776,7 +776,7 @@ describe('PartyGame Server', () => {
       players[1].emit('card:vote', idxOf('Ada'));
       await until(s => s.card.resolved);
       const diff = Object.fromEntries(r.S.players.map(p => [p.name, p.score - before[p.name]]));
-      assert.deepEqual(diff, { Ada: 100, Bo: 400, Cy: 100 });
+      assert.deepEqual(diff, { Ada: 10, Bo: 40, Cy: 10 });
       assert.equal(r.S.card.photos.find(p => p.url === urls.Bo).name, 'Bo');
     } finally {
       r.cleanup();
@@ -841,7 +841,7 @@ describe('PartyGame Server', () => {
     }
   });
 
-  it('photo duel: only the two drawn players shoot, the others vote; a single photo is still shown with +100', async () => {
+  it('photo duel: only the two drawn players shoot, the others vote; a single photo is still shown with +10', async () => {
     const r = await snapRoom(['Ada', 'Bo', 'Cy', 'Dee']);
     try {
       const duel = r.S.card.duel;
@@ -862,8 +862,8 @@ describe('PartyGame Server', () => {
       names.forEach((n, i) => { if (!duel.includes(n)) r.players[i].emit('card:vote', idxOf(duel[0])); });
       await r.until(s => s.card.resolved);
       const diff = Object.fromEntries(r.S.players.map(p => [p.name, p.score - before[p.name]]));
-      assert.equal(diff[duel[0]], 400 + 100);
-      assert.equal(diff[duel[1]], 100);
+      assert.equal(diff[duel[0]], 40 + 10);
+      assert.equal(diff[duel[1]], 10);
       assert.match(r.S.card.outcome, /Foto-Duell/);
     } finally {
       r.cleanup();
@@ -878,7 +878,7 @@ describe('PartyGame Server', () => {
       await one.until(s => s.card.resolved);
       assert.equal(one.S.card.photos.length, 1);
       assert.equal(one.S.card.photos[0].name, 'Ada');
-      assert.equal(one.S.players.find(p => p.name === 'Ada').score - before.Ada, 100);
+      assert.equal(one.S.players.find(p => p.name === 'Ada').score - before.Ada, 10);
     } finally {
       one.cleanup();
     }
@@ -1027,8 +1027,8 @@ describe('PartyGame Server', () => {
       await until(() => S.phase === 'result');
       assert.deepEqual(S.result.guessedBy, [guesser]);
       const score = n => S.players.find(p => p.name === n).score;
-      assert.equal(score(guesser), 800);
-      assert.equal(score(actor), 500);
+      assert.equal(score(guesser), 80);
+      assert.equal(score(actor), 50);
     } finally {
       admin.close();
       players.forEach(p => p.close());

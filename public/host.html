@@ -251,7 +251,7 @@ const RULES = {
   quiz: 'Die Frage steht auf dem TV – tippe am Handy die richtige Antwort (Farbe & Form passen zum TV). Je schneller du richtig liegst, desto mehr Punkte.',
   mostlikely: 'Eine Frage, alle stimmen ab: Wer aus eurer Runde würde das am ehesten tun? Wer die meisten Stimmen bekommt, ist dran.',
   wouldyourather: 'Zwei Optionen, eine Wahl: Entscheide dich am Handy für eine Seite. Die kleinere Gruppe hat verloren.',
-  estimate: 'Schätze die gesuchte Zahl und tippe sie am Handy ein. Wer am nächsten dran ist, bekommt 1000 Punkte.',
+  estimate: 'Schätze die gesuchte Zahl und tippe sie am Handy ein. Wer am nächsten dran ist, bekommt 100 Punkte.',
   reaction: 'Warte, bis der Bildschirm grün wird – dann drück so schnell du kannst. Wer zu früh drückt, fliegt raus!',
   neverhavei: '„Ich hab noch nie …“ – gib am Handy ehrlich an, ob du das schon mal gemacht hast.',
   imposter: 'Alle bekommen ein geheimes Wort, der Imposter ein anderes. Sagt reihum ein Stichwort und stimmt dann ab, wer der Imposter ist.',
@@ -896,7 +896,7 @@ function renderView() {
       else if (c.act === 'snap' && c.stage === 'collect') {
         const done = c.submitted || [];
         const shooters = c.duel ? S.players.filter(p => c.duel.includes(p.name)) : S.players;
-        info = `${c.duel ? '⚔️ Nur die beiden fotografieren am Handy, alle anderen stimmen danach ab' : '📱 Jeder macht ein Foto am Handy'} – die Fotos gibt’s erst bei der Abstimmung zu sehen<br>📸 ${done.length}/${shooters.length} Fotos da · ${c.duel ? 'Besseres' : 'Bestes'} Foto +${c.reward}, jedes Foto +100
+        info = `${c.duel ? '⚔️ Nur die beiden fotografieren am Handy, alle anderen stimmen danach ab' : '📱 Jeder macht ein Foto am Handy'} – die Fotos gibt’s erst bei der Abstimmung zu sehen<br>📸 ${done.length}/${shooters.length} Fotos da · ${c.duel ? 'Besseres' : 'Bestes'} Foto +${c.reward}, jedes Foto +10
           <div class="snapWho">${shooters.map(p => `<span class="${done.includes(p.name) ? 'ok' : ''}">${esc(p.avatar || '😎')} ${esc(p.name)}${done.includes(p.name) ? ' ✓' : ''}</span>`).join('')}</div>`;
       } else if (c.act === 'snap') {
         info = `🗳️ Welches Foto ist ${c.duel ? 'besser' : 'das beste'}? Abstimmung am Handy (anonym) – ${c.voters.length}/${(c.snapVoters || []).length}${c.voters.length < 2 ? ' · weiter ab 2 Stimmen' : ''}`;
@@ -1228,7 +1228,7 @@ function renderView() {
             style: res ? '' : `animation-delay:${i * 70}ms`,
           });
         }).join('')}</div>` +
-        (res ? infoBanner(r.caughtBy.length ? `Entlarvt von: ${r.caughtBy.map(esc).join(', ')}` : `Niemand hat's gemerkt!`, `+1000 Pkt für ${esc(r.storyteller)}`, r.caughtBy.length > 0) : '');
+        (res ? infoBanner(r.caughtBy.length ? `Entlarvt von: ${r.caughtBy.map(esc).join(', ')}` : `Niemand hat's gemerkt!`, `+100 Pkt für ${esc(r.storyteller)}`, r.caughtBy.length > 0) : '');
     }
     return;
   }
@@ -1288,7 +1288,7 @@ function renderView() {
   if (S.phase === 'result' && S.missionReveal) {
     const mr = S.missionReveal;
     const status = mr.resolved
-      ? (mr.success ? '<span style="color:#3dd68c">✅ Geschafft! (+150 Pkt)</span>' : '<span style="color:#ff6b81">❌ Aufgeflogen!</span>')
+      ? (mr.success ? '<span style="color:#3dd68c">✅ Geschafft! (+15 Pkt)</span>' : '<span style="color:#ff6b81">❌ Aufgeflogen!</span>')
       : '<span style="color:#ffd33d">⏳ Host bewertet im Admin…</span>';
     app.insertAdjacentHTML('beforeend', `<div class="card" style="margin-top:2vh;border:2px solid #ffd33d;background:rgba(255,211,61,0.12);text-align:center">
       <div style="font-size:2.8vh;font-weight:800;color:#ffd33d">🕵️ Geheime Mission · ${esc(mr.playerName)}</div>
