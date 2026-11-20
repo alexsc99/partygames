@@ -337,6 +337,30 @@
     return ok;
   };
 
+  // ---- Trommelwirbel vor der Auflösung: kurzes Overlay, damit TV und Handys nicht sofort verraten, was richtig ist ----
+  const SUSPENSE_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'truthlie', 'imposter', 'mostlikely', 'wouldyourather'];
+  window.PG_SUSPENSE_MS = 1250;
+  // Nur beim echten Übergang Frage → Auflösung derselben Runde (nicht nach Reconnect mitten in die Auflösung)
+  window.pgSuspense = function (prev, s) {
+    if (!prev || !s || s.phase !== 'result' || prev.phase === 'result' || prev.idx !== s.idx || !SUSPENSE_MODES.includes(s.mode)) return false;
+    let el = document.getElementById('pgSuspense');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'pgSuspense';
+      el.className = 'suspense';
+      el.innerHTML = '<div class="suspenseDrum">🥁</div><div class="suspenseTxt">Und die Auflösung …</div>';
+      document.body.appendChild(el);
+    }
+    clearTimeout(el._t);
+    el.classList.remove('out');
+    el.classList.add('on');
+    el._t = setTimeout(() => {
+      el.classList.add('out');
+      el._t = setTimeout(() => el.classList.remove('on', 'out'), 300);
+    }, window.PG_SUSPENSE_MS);
+    return true;
+  };
+
   // ---- Client-Fehler sammeln und an den Server melden (max. 5 pro Seitenaufruf) ----
   const ASSET_VER = (() => { try { return new URL(document.currentScript.src).searchParams.get('v') || ''; } catch { return ''; } })();
   const errQueue = [];

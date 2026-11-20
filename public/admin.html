@@ -102,6 +102,7 @@ const GAMES = [
   ['imposter', '🕵️ Imposter'],
   ['draw', '🎨 Zeichnen & Raten'],
   ['taboo', '🗣️ Erklär-Spiel (Tabu)'],
+  ['pantomime', '🤸 Pantomime'],
   ['sort', '🔢 Sortier-Duell'],
   ['icebreaker', '🫶 Kennenlernen'],
   ['teams', '🏆 Team-Wahl'],
@@ -130,6 +131,7 @@ const MIX_OPTS = [
   ['icebreaker', '🫶 Kennenlernen'],
   ['wordassoc', '⚡ Wort-Assoz.'],
   ['taboo', '🗣️ Tabu'],
+  ['pantomime', '🤸 Pantomime'],
   ['sort', '🔢 Sortieren'],
   ['songquiz', '🎵 Song-Quiz'],
   ['imagequiz', '🖼️ Bild-Quiz'],
@@ -410,6 +412,7 @@ function render() {
     S.phase === 'lobby' && S.lobbyBanner ? `<div class="q" style="color:#ffd33d">${esc(S.lobbyBanner)}</div>` : '',
     S.q && S.q.q && S.phase !== 'card' ? `<div class="q">${esc(S.q.q)}</div>` : '',
     S.mode === 'draw' && S.q && S.q.drawer ? `<div class="q">Maler: ${esc(S.q.drawer)} (${S.q.guessed.length} erraten)</div>` : '',
+    S.mode === 'pantomime' && S.q && S.q.actor && S.phase === 'question' ? `<div class="q">🤸 ${esc(S.q.actor)} spielt vor</div>` : '',
   ].join('');
 
   app.innerHTML = `

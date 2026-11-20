@@ -107,7 +107,7 @@ const NAMES = {
   wouldyourather: '⚖️ Entweder-Oder', estimate: '🎯 Schätz-Duell',
   reaction: '⚡ Reaktions-Buzzer', neverhavei: '🙈 Ich hab noch nie…',
   imposter: '🕵️ Imposter', draw: '🎨 Zeichnen & Raten',
-  taboo: '🗣️ Erklär-Spiel (Tabu)', sort: '🔢 Sortier-Duell',
+  taboo: '🗣️ Erklär-Spiel (Tabu)', pantomime: '🤸 Pantomime', sort: '🔢 Sortier-Duell',
   icebreaker: '🫶 Kennenlernen', teams: '🏆 Team-Wahl',
   scale: '📊 Skala 1–10', truthlie: '🎭 2 Wahrheiten, 1 Lüge',
   wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song', imagequiz: '🖼️ Bild-Quiz', mix: '🎲 Party-Mix',
@@ -122,6 +122,7 @@ const RULES = {
   imposter: 'Alle bekommen ein geheimes Wort – der Imposter ein anderes. Gebt reihum Hinweise und stimmt ab, wer der Imposter ist!',
   draw: 'Einer malt ein geheimes Wort auf seinem Handy, alle anderen raten so schnell wie möglich.',
   taboo: 'Einer erklärt ein Wort, ohne die verbotenen Wörter zu benutzen. Die anderen tippen ihren Tipp ins Handy.',
+  pantomime: 'Einer stellt einen Begriff ohne Worte dar, alle anderen raten laut – Handy weg! Der Darsteller tippt an, wer es erraten hat.',
   sort: 'Bring vier Begriffe in die richtige Reihenfolge – tippe sie der Reihe nach an.',
   icebreaker: 'Beantworte eine persönliche Frage – die Antworten werden anonym gezeigt. Ideal zum Kennenlernen!',
   teams: 'Wähle eine Antwort – alle mit derselben Wahl landen im selben Team.',
@@ -431,6 +432,8 @@ socket.on('state', s => {
     vctx.clearRect(0, 0, viewPad.width, viewPad.height);
     localDrawStack = [];
   }
+  // Gleicher Trommelwirbel wie am TV, damit das eigene Handy die Lösung nicht vorher verrät
+  if (s.displayMode !== 'onedevice') pgSuspense(S, s);
   S = s;
   const artPre = (s.q && s.q.artPreload) || s.nextArt;
   if (artPre && artPre !== window._lastPreloadArt) { window._lastPreloadArt = artPre; const im = new Image(); im.src = artPre; }
@@ -870,6 +873,19 @@ function renderOneDevice() {
     return;
   }
 
+  if (S.mode === 'pantomime' && S.q) {
+    localActiveName = S.q.actor;
+    if (!localRevealed) {
+      app.innerHTML = `${top}<div class="msg">📱 Gib das Gerät an<br><b>🤸 ${esc(S.q.actor)}</b></div><button class="go" onclick="revealLocal(true)">🤸 Ich bin ${esc(S.q.actor)} (Begriff zeigen)</button>`;
+    } else {
+      app.innerHTML = `${top}<div class="qtxt">🤸 Stell dar – ohne Worte:</div><div class="wordBox">${esc((localSecret && localSecret.word) || '')}</div>
+        <div style="font-size:13px;opacity:.8;margin:10px 0 4px">Wer hat's erraten?</div>
+        <div class="votes">${S.players.map((p, i) => p.name !== S.q.actor ? `<button onclick="socket.emit('local:wordGuessed',S.players[${i}]?.name)">✅ ${esc(p.name)}</button>` : '').join('')}</div>
+        <button class="go" style="background:#555;margin-top:8px" onclick="socket.emit('local:wordGuessed',null)">⏭ Niemand</button>`;
+    }
+    return;
+  }
+
   if (S.mode === 'taboo' && S.q) {
     localActiveName = S.q.explainer;
     if (!localRevealed) {
@@ -1287,6 +1303,19 @@ function renderView() {
           <input id="tIn" placeholder="Dein Tipp…" onkeydown="if(event.key==='Enter')sendTabooGuess()">
           <button class="go" onclick="sendTabooGuess()">Raten</button><div class="err" id="tFb"></div>`;
       }
+    } else if (S.mode === 'pantomime') {
+      if (P && P.actor) {
+        const others = S.players.filter(p => p.name !== name);
+        app.innerHTML = `${top}<div class="qtxt">🤸 Stell dar – ohne Worte:</div><div class="wordBox">${esc(P.word || '')}</div>
+          <div style="font-size:14px;opacity:.85;margin:12px 0 6px">Wer hat's erraten? Antippen!</div>
+          <div class="votes">${others.map(p => `<button onclick="socket.emit('mime:guessed', ${esc(JSON.stringify(p.name))})">✅ ${esc(p.avatar || '😎')} ${esc(p.name)}</button>`).join('')}</div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button type="button" style="flex:1;background:#4b3a9e;padding:12px;font-weight:700;${P.skipsLeft > 0 ? '' : 'opacity:.45'}" ${P.skipsLeft > 0 ? '' : 'disabled'} onclick="socket.emit('mime:skip')">🔄 Anderer Begriff (${P.skipsLeft})</button>
+            <button type="button" style="flex:1;background:#555;padding:12px;font-weight:700" onclick="if(confirm('Wirklich aufgeben? Dann gibt es keine Punkte.'))socket.emit('mime:guessed', null)">🏳️ Niemand</button>
+          </div>`;
+      } else {
+        app.innerHTML = `${top}<div class="msg">🤸 ${esc(S.q.actor)} spielt vor!<br><small>Ratet laut – Handy weg 📵</small></div>`;
+      }
     } else if (S.mode === 'sort' && S.q) {
       if (myAnswer !== null) {
         app.innerHTML = `${top}<div class="msg">Reihenfolge gesendet! ✅<br><small>Warte auf die anderen…</small></div>`;
@@ -1446,7 +1475,7 @@ function renderPhoneResult() {
       <div class="flipFace flipFront" style="padding:12px"><div style="font-size:13px;opacity:.85">🗳️ Verdächtigt:</div><div style="font-size:22px;font-weight:900;color:#ffd33d;margin-top:4px">🔎 ${acc}</div></div>
       <div class="flipFace flipBack ${r.caught ? 'good' : 'bad'}" style="padding:12px"><div style="font-size:19px;font-weight:900">${r.caught ? '✅ IMPOSTER ENTTARNT!' : '😈 IMPOSTER ENTKOMMEN!'}</div><div style="font-size:13px;margin-top:4px">🕵️ ${imp} · ${w}</div></div>
     </div></div>${renderLb()}`;
-  } else if (m === 'draw' || m === 'taboo') {
+  } else if (m === 'draw' || m === 'taboo' || m === 'pantomime') {
     const gb = (r.guessedBy || []).map(esc).join(', ') || 'niemandem';
     body = `<div class="resBox"><div class="resTitle">Wort: „${esc(r.word || '')}“ · Erraten von: ${gb}</div></div>${renderLb()}`;
   } else if (m === 'sort') {

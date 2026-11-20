@@ -719,8 +719,8 @@ describe('PartyGame Server', () => {
     try {
       await new Promise(res => player.emit('join', { name: 'Tempo', avatar: '😎' }, res));
       admin.emit('host:wheelEnabled', false);
-      assert.equal((await resultFor('normal')).totalMs, 7000);
-      assert.equal((await resultFor('fast')).totalMs, 6000);
+      assert.equal((await resultFor('normal')).totalMs, 7000 + 1250); // + Trommelwirbel
+      assert.equal((await resultFor('fast')).totalMs, 6000 + 1250);
       const relaxed = await resultFor('relaxed');
       assert.equal(relaxed.deadline, 0, 'relaxed result must not auto-advance');
       assert.equal(relaxed.leftMs, 0);
@@ -750,6 +750,58 @@ describe('PartyGame Server', () => {
     } finally {
       admin.close();
       phone.close();
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
+  it('pantomime: only the actor sees the term, can swap it and awards the guesser and the actor', async () => {
+    const { io: ioc } = require('socket.io-client');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const admin = connect();
+    const names = ['Ada', 'Bo', 'Cy'];
+    const players = names.map(connect);
+    const priv = {};
+    players.forEach((p, i) => p.on('private', d => { priv[names[i]] = d; }));
+    let S = null;
+    admin.on('state', s => { S = s; });
+    const until = async (pred, ms = 3000) => {
+      const end = Date.now() + ms;
+      while (Date.now() < end) { if (pred()) return; await new Promise(r => setTimeout(r, 20)); }
+      throw new Error(`timeout, phase=${S && S.phase}`);
+    };
+    try {
+      await Promise.all(players.map((p, i) => new Promise(res => p.emit('join', { name: names[i], avatar: '😎' }, res))));
+      admin.emit('host:wheelEnabled', false);
+      admin.emit('host:mode', 'pantomime');
+      await until(() => S && S.mode === 'pantomime' && S.phase === 'lobby');
+      admin.emit('host:start');
+      await until(() => S.phase === 'question' && S.q && S.q.actor);
+      const actor = S.q.actor;
+      const actorIdx = names.indexOf(actor);
+      await until(() => priv[actor] && priv[actor].word);
+      assert.equal(JSON.stringify(S).includes(priv[actor].word), false, 'term must not leak into the public state');
+      names.filter(n => n !== actor).forEach(n => assert.ok(!priv[n] || !priv[n].word, 'only the actor gets the term'));
+
+      const firstWord = priv[actor].word;
+      players[actorIdx].emit('mime:skip');
+      await until(() => priv[actor].word !== firstWord);
+      assert.equal(priv[actor].skipsLeft, 1);
+
+      const guesser = names.find(n => n !== actor);
+      players[names.indexOf(guesser)].emit('mime:guessed', guesser); // nur der Darsteller darf melden
+      await new Promise(r => setTimeout(r, 100));
+      assert.equal(S.phase, 'question');
+      players[actorIdx].emit('mime:guessed', guesser);
+      await until(() => S.phase === 'result');
+      assert.deepEqual(S.result.guessedBy, [guesser]);
+      const score = n => S.players.find(p => p.name === n).score;
+      assert.equal(score(guesser), 800);
+      assert.equal(score(actor), 500);
+    } finally {
+      admin.close();
+      players.forEach(p => p.close());
       rooms.get(code)?.destroy();
       rooms.delete(code);
     }

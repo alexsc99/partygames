@@ -37,6 +37,7 @@ const DATA = {
   taboo: require('./data/taboo.json'),
   sort: require('./data/sort.json'),
   imagequiz: require('./data/imagequiz.json'),
+  pantomime: require('./data/pantomime.json'),
 };
 DATA.songs.forEach((s, i) => { s._idx = i; });
 
@@ -54,10 +55,10 @@ try {
   writeLog('WARN', 'custom_json_load_failed', { error: err?.message || String(err) });
 }
 
-const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'mix'];
-const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'sort', 'songquiz', 'imagequiz'];
+const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'pantomime', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'mix'];
+const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'pantomime', 'sort', 'songquiz', 'imagequiz'];
 // Standard-Mix (auch für die Presets Klassik/18+/Alkoholfrei): ohne Kennenlernen, Wort-Assoziation & Skala – die bleiben manuell zuschaltbar
-const DEFAULT_MIX_MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams'];
+const DEFAULT_MIX_MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'pantomime'];
 const IQ_THEMES = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
 // ---- Party-Karten: Aufgaben zwischen zwei Runden (Gruppe, Spitzenreiter, Letzter, Duell, Regel …) ----
 const PARTY_CARDS = require('./data/partycards.json');
@@ -88,6 +89,7 @@ const MODE_LABELS = {
   imposter: '🕵️ Imposter',
   draw: '🎨 Zeichnen',
   taboo: '🗣️ Tabu',
+  pantomime: '🤸 Pantomime',
   sort: '🔢 Sortieren',
   icebreaker: '🫶 Kennenlernen',
   teams: '🏆 Team-Wahl',
@@ -101,7 +103,13 @@ const MODE_LABELS = {
 const SPIN_DURATION_MS = 4200;
 const MIX_ROUNDS = 12;
 const CATEGORIES = ['party', 'peinlich', 'kennenlernen', 'date', 'hot18'];
-const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20 };
+const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, pantomime: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20 };
+const MIME_SKIPS = 2; // so oft darf der Darsteller einen Begriff tauschen
+const MIME_GUESS_PTS = 800; // Rater
+const MIME_ACTOR_PTS = 500; // Darsteller
+// Auflösungen mit Trommelwirbel-Overlay (Clients: SUSPENSE_MODES in ux-helpers.js) – die Pause verlängert sich um dessen Dauer
+const SUSPENSE_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'truthlie', 'imposter', 'mostlikely', 'wouldyourather'];
+const SUSPENSE_MS = 1250;
 const TIMER_MULT = { fast: 0.7, normal: 1.0, relaxed: 1.5 }; // Antwortzeit
 const RESULT_MULT = { fast: 0.7, normal: 1.0, relaxed: 0 }; // Auflösung/Karten-Ergebnis; 0 = kein Auto-Weiter (Zeit zum Quatschen)
 const REACTION_ROUNDS = 5;
@@ -603,11 +611,11 @@ let mixRounds = MIX_ROUNDS;
 const MIN_ANSWER_S = { wordassoc: 16 }; // Tipp-Modi brauchen auch bei „Schnell“ genug Zeit
 const roundTimeMs = m => Math.max(4000, (MIN_ANSWER_S[m] || 0) * 1000, Math.round((TIME[m] || 20) * (m === 'reaction' ? 1 : (TIMER_MULT[timerSpeed] || 1)) * 1000));
 // Pause nach Auflösung, Missions- oder Karten-Ergebnis: „Entspannt“ wartet auf „Weiter“ (Admin, TV oder Handy-Abstimmung)
-function armAutoNext(baseMs) {
+function armAutoNext(baseMs, extraMs = 0) {
   clearTimeout(timer);
   const mult = RESULT_MULT[timerSpeed] ?? 1;
   // Kürzer als „Normal“, aber mind. 6 s (bzw. die Normal-Dauer, falls die schon kürzer ist), damit man die Rangliste noch lesen kann
-  const ms = baseMs > 0 && mult > 0 ? Math.max(Math.min(baseMs, 6000), Math.round(baseMs * mult)) : 0;
+  const ms = baseMs > 0 && mult > 0 ? Math.max(Math.min(baseMs, 6000), Math.round(baseMs * mult)) + extraMs : 0;
   state.totalMs = ms;
   state.deadline = ms ? Date.now() + ms : 0;
   broadcast();
@@ -688,6 +696,7 @@ function freshState(mode) {
     imposterIds: [], imposterWords: null,
     drawerName: null, drawWord: null, drawRevealed: [], strokes: [], guessedBy: [],
     explainerName: null, tabooWord: null, tabooRevealed: [], tabooForbidden: [], tabooGuessedBy: [],
+    mimeName: null, mimeWord: null, mimeIdx: -1, mimeGuessedBy: [], mimeSkips: 0,
     sortOrder: [],
     storytellerName: null, tlStatements: [], tlLieIdx: -1,
     songQ: null,
@@ -855,6 +864,7 @@ function currentQuestion() {
     case 'imposter': return { q: state.phase === 'discuss' ? 'Lies dein geheimes Wort und gib einen Hinweis!' : 'Wer ist der Imposter?' };
     case 'draw': return { drawer: state.drawerName, len: state.drawWord ? state.drawWord.length : 0, mask: formatWordMask(state.drawWord, state.drawRevealed), guessed: state.guessedBy };
     case 'taboo': return { explainer: state.explainerName, len: state.tabooWord ? state.tabooWord.length : 0, mask: formatWordMask(state.tabooWord, state.tabooRevealed), guessed: state.tabooGuessedBy };
+    case 'pantomime': return { actor: state.mimeName };
     case 'sort': return item && state.sortOrder.length === 4 ? { q: item.q, items: state.sortOrder.map((origIdx, dispIdx) => ({ idx: dispIdx, label: item.items[origIdx].label })) } : null;
     case 'icebreaker': return item ? { q: item.q ?? item } : null;
     case 'teams': return item ? { q: item.q, a: item.a } : null;
@@ -1009,6 +1019,8 @@ function sendPrivate(socket, id) {
         guessed: state.tabooGuessedBy.includes(p.name),
         mission,
       };
+    } else if (m === 'pantomime' && state.phase === 'question' && p.name === state.mimeName) {
+      priv = { mode: 'pantomime', actor: true, word: state.mimeWord, skipsLeft: MIME_SKIPS - state.mimeSkips, mission };
     } else if (mission) {
       priv = { mission };
     }
@@ -1489,6 +1501,11 @@ async function nextRound() {
   state.tabooRevealed = [];
   state.tabooForbidden = [];
   state.tabooGuessedBy = [];
+  state.mimeName = null;
+  state.mimeWord = null;
+  state.mimeIdx = -1;
+  state.mimeGuessedBy = [];
+  state.mimeSkips = 0;
   state.sortOrder = [];
   state.storytellerName = null;
   state.tlStatements = [];
@@ -1530,11 +1547,12 @@ async function nextRound() {
   }
 
   const ps = pVals();
-  if (m === 'truthlie' || m === 'draw' || m === 'taboo') {
+  if (m === 'truthlie' || m === 'draw' || m === 'taboo' || m === 'pantomime') {
     const chosenName = pickNextActor(m);
     if (m === 'truthlie') state.storytellerName = chosenName;
     else if (m === 'draw') state.drawerName = chosenName;
     else if (m === 'taboo') state.explainerName = chosenName;
+    else if (m === 'pantomime') state.mimeName = chosenName;
 
     if (ps.length >= 2 && chosenName) {
       const wIdx = Math.max(0, ps.findIndex(p => p.name === chosenName));
@@ -1544,6 +1562,8 @@ async function nextRound() {
         ? '🎨 Wer malt als Nächstes?'
         : m === 'taboo'
         ? '🗣️ Wer erklärt als Nächstes?'
+        : m === 'pantomime'
+        ? '🤸 Wer spielt als Nächstes vor?'
         : '🎭 Wer ist als Nächstes dran?';
       spins.push({
         id: ++spinSeq,
@@ -1563,6 +1583,19 @@ async function nextRound() {
   }
 
   runSpinsThen(spins, () => activateRound(seq, m, playedIdx));
+}
+
+function mimeGuessed(winnerName) {
+  const winner = winnerName ? byName(winnerName) : null;
+  if (winner && winner.name !== state.mimeName && !state.mimeGuessedBy.includes(winner.name)) {
+    const mult = isFinalRound() ? 2 : 1;
+    state.mimeGuessedBy.push(winner.name);
+    winner.score += MIME_GUESS_PTS * mult;
+    if (winner.stats) winner.stats.guessedWords++;
+    const actor = byName(state.mimeName);
+    if (actor) actor.score += MIME_ACTOR_PTS * mult;
+  }
+  showResult();
 }
 
 async function activateRound(seq, m, playedIdx) {
@@ -1632,6 +1665,18 @@ async function activateRound(seq, m, playedIdx) {
     state.tabooForbidden = item.taboo || [];
     state.phase = 'question';
     state.totalMs = roundTimeMs('taboo');
+    state.deadline = Date.now() + state.totalMs;
+    broadcast();
+    timer = setTimeout(showResult, state.totalMs);
+    return;
+  }
+
+  if (m === 'pantomime') {
+    if (!state.mimeName) state.mimeName = pickNextActor('pantomime');
+    state.mimeIdx = playedIdx;
+    state.mimeWord = getPool('pantomime')[playedIdx].w;
+    state.phase = 'question';
+    state.totalMs = roundTimeMs('pantomime');
     state.deadline = Date.now() + state.totalMs;
     broadcast();
     timer = setTimeout(showResult, state.totalMs);
@@ -1811,6 +1856,11 @@ function showResult() {
     if (state.tabooGuessedBy.length === 0 && state.explainerName) drinkers.push(state.explainerName);
     ps.forEach(p => { if (drinkers.includes(p.name)) p.drinks++; });
     state.result = { word: state.tabooWord, explainer: state.explainerName, guessedBy: state.tabooGuessedBy, drinkers };
+  } else if (m === 'pantomime') {
+    // Niemand hat's erraten → der Darsteller trinkt
+    const drinkers = state.mimeGuessedBy.length === 0 && state.mimeName ? [state.mimeName] : [];
+    ps.forEach(p => { if (drinkers.includes(p.name)) p.drinks++; });
+    state.result = { word: state.mimeWord, actor: state.mimeName, guessedBy: state.mimeGuessedBy, drinkers };
   } else if (m === 'sort') {
     const item = DATA.sort[qIdx];
     const roundDur = Math.max(1000, state.totalMs || roundTimeMs('sort'));
@@ -1926,14 +1976,14 @@ function showResult() {
   ps.forEach(p => {
     const gain = (p.score || 0) - (p.prevScore ?? p.score ?? 0);
     p.lastGain = Math.max(0, gain);
-    if (['quiz', 'imagequiz', 'songquiz', 'estimate', 'reaction', 'imposter', 'draw', 'taboo', 'truthlie', 'sort'].includes(m)) {
+    if (['quiz', 'imagequiz', 'songquiz', 'estimate', 'reaction', 'imposter', 'draw', 'taboo', 'pantomime', 'truthlie', 'sort'].includes(m)) {
       const wonRound = m === 'sort' ? gain >= 500 : gain > 0;
       p.streak = wonRound ? (p.streak || 0) + 1 : 0;
     }
   });
 
   state.phase = 'result';
-  armAutoNext(state.mission && !state.mission.resolved ? 0 : autoNextMs);
+  armAutoNext(state.mission && !state.mission.resolved ? 0 : autoNextMs, SUSPENSE_MODES.includes(m) ? SUSPENSE_MS : 0);
 }
 
 
@@ -2333,11 +2383,15 @@ function attachSocket(socket, ip, allowEvent) {
     if (m === 'taboo' && name === state.explainerName) {
       return ack && ack({ word: state.tabooWord, taboo: state.tabooForbidden });
     }
+    if (m === 'pantomime' && name === state.mimeName) {
+      return ack && ack({ word: state.mimeWord });
+    }
     ack && ack(null);
   });
   socket.on('local:wordGuessed', winnerName => {
     if (displayMode !== 'onedevice' || state.phase !== 'question') return;
     const m = activeMode();
+    if (m === 'pantomime') return mimeGuessed(winnerName || null);
     if (m !== 'draw' && m !== 'taboo') return;
     if (!winnerName) return showResult();
     const p = pVals().find(x => x.name === winnerName);
@@ -2357,6 +2411,23 @@ function attachSocket(socket, ip, allowEvent) {
       if (exp) exp.score += 500 * mult;
     }
     showResult();
+  });
+  // Pantomime: nur der Darsteller meldet am eigenen Handy, wer es erraten hat (oder niemand) bzw. tauscht den Begriff
+  socket.on('mime:guessed', winnerName => {
+    const p = players[socket.id];
+    if (!p || activeMode() !== 'pantomime' || state.phase !== 'question' || p.name !== state.mimeName) return;
+    mimeGuessed(winnerName || null);
+  });
+  socket.on('mime:skip', () => {
+    const p = players[socket.id];
+    if (!p || activeMode() !== 'pantomime' || state.phase !== 'question' || p.name !== state.mimeName) return;
+    if (state.mimeSkips >= MIME_SKIPS) return;
+    const others = filteredIndices('pantomime').filter(i => i !== state.mimeIdx);
+    if (!others.length) return;
+    state.mimeSkips++;
+    state.mimeIdx = others[crypto.randomInt(others.length)];
+    state.mimeWord = getPool('pantomime')[state.mimeIdx].w;
+    broadcast();
   });
 
   socket.on('host:auth', (secret, ack) => {

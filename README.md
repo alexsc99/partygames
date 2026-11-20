@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.14.1)
+# 🎉 PartyGame (Version 3.15.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -36,6 +36,7 @@ Es gibt drei URLs:
 | 🕵️ **Imposter** | Alle bekommen dasselbe Wort, 1–2 Imposter ein leicht anderes – danach wird abgestimmt |
 | 🎨 **Zeichnen & Raten** | Einer malt live auf dem Handy, alle anderen raten den Begriff |
 | 🗣️ **Erklär-Spiel (Tabu)** | Einer erklärt das Wort mündlich ohne die verbotenen Tabu-Wörter, der Rest tippt die Lösung |
+| 🤸 **Pantomime** | Einer stellt einen Begriff ohne Worte dar, alle anderen raten laut (Handys weg); der Darsteller tippt an, wer es erraten hat (+800 Rater, +500 Darsteller), bis zu 2× Begriff tauschen |
 | 🔢 **Sortier-Duell** | 4 Begriffe/Ereignisse von 1 bis 4 in die richtige Reihenfolge bringen |
 | 🫶 **Kennenlernen** | Offene Fragen zum Austauschen und Vorlesen |
 | 🏆 **Team-Wahl** | Alle wählen eine Antwort; die kleinste Gruppe trinkt |
@@ -44,13 +45,13 @@ Es gibt drei URLs:
 | ⚡ **Wort-Assoziation** | Schnell das erste Wort eintippen, das zum Begriff passt |
 | 🎵 **Erkenne den Song** | Spielt 30s-iTunes-Previews ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe |
 | 🖼️ **Bild-Quiz** | Firmenlogos ohne Schriftzug (50), Sehenswürdigkeiten (40), Flaggen (41), Automarken-Embleme ohne Schriftzug (30) & Länder-Umrisse (40) per 4-Optionen-Quiz erraten |
-| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl – Kennenlernen, Wort-Assoziation & Skala nur manuell zuschaltbar) |
+| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl, Pantomime – Kennenlernen, Wort-Assoziation & Skala nur manuell zuschaltbar) |
 
 ---
 
 ## ✨ Weitere Features & Animationen
 - **🎡 Animiertes Glücksrad (Drehrad):**
-  - **Spieler-Rad:** Vor jeder Runde bei *Zeichnen & Raten*, *Erklär-Spiel (Tabu)* und *2 Wahrheiten, 1 Lüge* dreht sich ein Glücksrad mit Soundeffekten und lost fair aus, wer als Nächstes dran ist.
+  - **Spieler-Rad:** Vor jeder Runde bei *Zeichnen & Raten*, *Erklär-Spiel (Tabu)*, *Pantomime* und *2 Wahrheiten, 1 Lüge* dreht sich ein Glücksrad mit Soundeffekten und lost fair aus, wer als Nächstes dran ist.
   - **Modus-Rad im Party-Mix:** Vor jeder Mix-Runde dreht sich das Rad und zeigt, welches Minispiel als Nächstes kommt.
   - **Zufalls-Rad in der Lobby (`/admin` & Taste `W`):** Jederzeit per Knopfdruck ein zufälliges Spiel (`🎰 Zufalls-Spiel`) oder einen zufälligen Spieler (`🎡 Spieler auslosen`) bestimmen. In `/admin` auch komplett abschaltbar.
 - **💿 Vinyl-Schallplatte & Equalizer (`songquiz`):** Drehende Schallplatte mit animierten Frequenz-Balken während der Song läuft; bei der Auflösung erscheint das echte Album-Cover auf der Schallplatte.
@@ -64,6 +65,7 @@ Es gibt drei URLs:
 - **🕵️ Geheime Missionen:** Optional in `/admin` aktivierbar — ein zufälliger Spieler erhält auf seinem Handy eine geheime Runden-Aufgabe (+150 Bonus-Punkte bei Erfolg, Auflösung & Bewertung am Rundenende).
 - **🎪 Party-Karten:** Optional in `/admin` (Aus / Selten / Normal / Oft). Zwischen zwei Runden erscheint ab und zu eine Karte auf TV und Handys: 🎉 Gruppen-Challenge (+200 für alle oder alle trinken bzw. Kniebeugen), 👑 Kopfgeld auf den Spitzenreiter, 🆘 Aufholchance für den Letzten, 🎤 Reihum-Runde mit Handy-Abstimmung (+300), ⚡ Blitz-Duell zweier ausgeloster Spieler (+400), 🔄 Weitergeben, 📸 Foto & Pose (Paar- oder Gruppenfoto, +250 für beide bzw. +200 für alle) und 📜 Regelkarten, die 3 Runden lang am TV-Rand stehen. Ob eine Aufgabe gelungen ist, stimmen die Handys ab (alle außer den Betroffenen, mind. 2 Stimmen, Mehrheit entscheidet, Gleichstand = nicht gelungen); Duelle und Punkte-Vergaben wertet der Admin aus, der auch jederzeit überstimmen kann. Nie direkt vor der Finalrunde, nicht im Ein-Gerät-Modus. Karten aus „Peinlich“/„Hot 18+“ nur bei aktiver Kategorie, „Alkoholfrei“ tauscht Trink-Aufgaben aus.
 - **⏱️ Timer-Tempo:** *Schnell* = Antwortzeit −30 % (Wort-Assoziation mind. 16 s) und kürzere Auflösung (mind. 6 s) · *Normal* = Standard (Auflösung geht nach 7–15 s automatisch weiter) · *Entspannt* = Antwortzeit +50 %, Auflösung und Karten-Ergebnisse bleiben stehen, bis jemand „Weiter“ tippt (Admin, TV oder Handy-Abstimmung).
+- **🥁 Trommelwirbel:** Vor Auflösungen mit richtiger Antwort (Quiz, Bild-Quiz, Song, Schätzen, Sortieren, Wahrheit/Lüge, Imposter, Wer würde, Entweder-Oder) zeigen TV und Handys 1,25 s ein Trommel-Overlay, der TV spielt einen Wirbel mit Becken; die Auflösungszeit verlängert sich entsprechend.
 - **Lautstärke-Regler & Auto-Timer-Sync:** Eigener Lautstärke-Slider auf TV und Handy; der Song-Timer synchronisiert sich unabhängig von unterschiedlichen Geräte-Uhrzeiten exakt mit dem Audio-Start.
 - **Finalrunde (2× Punkte):** Die letzte Runde eines Spiels zählt automatisch doppelt (in `/admin` ein-/ausschaltbar).
 - **Sieger-Awards:** Am Spielende gibt es Auszeichnungen (*Trinkkönig*, *Blitzdenker*, *Rate-Profi*, *Schätz-Meister*).
@@ -98,6 +100,7 @@ partygame/
 │   ├── imposter.json    # Imposter-Wortpaare
 │   ├── draw.json        # Zeichenbegriffe
 │   ├── taboo.json       # Erklär-Spiel (Tabu)
+│   ├── pantomime.json   # Pantomime-Begriffe (98, nach Kategorie)
 │   ├── sort.json        # Sortier-Duell
 │   ├── icebreaker.json  # Kennenlernen
 │   ├── teams.json       # Team-Wahl
@@ -214,7 +217,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.14.1 (Aktueller Stand):** Party-Karten nach Test-Feedback: entfernt „10 Wörter mit Sch“, „Letzter holt sich 300 Punkte“, Socken-Tausch und Handy-Regel; „15 Länder in 30 s“ → reihum je ein Land ohne Zeitlimit; Geburtstags-Reihe bis zu 5 Minuten.
+- **v3.15.0 (Aktueller Stand):** Neuer Modus **🤸 Pantomime** (98 Begriffe, auch im Standard-Mix und im Ein-Gerät-Modus), **🥁 Trommelwirbel** vor der Auflösung auf TV und Handys.
+- **v3.14.1:** Party-Karten nach Test-Feedback: entfernt „10 Wörter mit Sch“, „Letzter holt sich 300 Punkte“, Socken-Tausch und Handy-Regel; „15 Länder in 30 s“ → reihum je ein Land ohne Zeitlimit; Geburtstags-Reihe bis zu 5 Minuten.
 - **v3.14.0:** Party-Karten mit „gelungen / nicht gelungen“ (Gruppe, Foto & Pose, Kopfgeld, Underdog) bewerten die Spieler am Handy: alle außer den Betroffenen, mind. 2 Stimmen, Mehrheit entscheidet; Admin-Buttons bleiben als Notfall-Override.
 - **v3.13.0:** Neuer Party-Karten-Typ **📸 Foto & Pose** (11 Karten: Paar-Fotos/Posen für zwei ausgeloste Spieler, Gruppenfotos), Skala nicht mehr im Standard-Mix.
 - **v3.12.1:** Fragen-Kategorie „Kennenlernen & Deep Talk“ nicht mehr im Standard und nicht in den Presets Klassik (jetzt Party + Peinlich) und Alkoholfrei (jetzt Party); bei Date bleibt sie drin.

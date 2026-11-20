@@ -36,6 +36,18 @@ button:active:not(:disabled) { transform: scale(.96); }
   70% { transform: scale(1.04); }
   100% { opacity: 1; transform: scale(1); }
 }
+/* Trommelwirbel-Overlay vor der Auflösung (pgSuspense) */
+.suspense { position: fixed; inset: 0; z-index: 9000; display: none; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 45%, #3b2a8a, #160e38 70%); transition: opacity .28s ease; }
+.suspense.on { display: flex; animation: suspenseIn .12s ease-out both; }
+@keyframes suspenseIn { from { opacity: 0; } }
+.suspense.out { opacity: 0; }
+.suspenseDrum { font-size: clamp(80px, 22vmin, 260px); line-height: 1; animation: drumShake .11s infinite alternate ease-in-out; }
+.suspenseTxt { font-size: clamp(22px, 5vmin, 64px); font-weight: 900; color: #ffd33d; margin-top: 2vh; text-shadow: 0 4px 18px rgba(0,0,0,.45); }
+@keyframes drumShake {
+  from { transform: rotate(-7deg) scale(1); }
+  to { transform: rotate(7deg) scale(1.07); }
+}
+@media (prefers-reduced-motion: reduce) { .suspenseDrum { animation: none; } }
 @keyframes pulseGo {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.02); }

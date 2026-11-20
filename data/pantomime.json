@@ -1,0 +1,394 @@
+[
+  {
+    "w": "Zähne putzen",
+    "cat": "party"
+  },
+  {
+    "w": "Fallschirmspringen",
+    "cat": "party"
+  },
+  {
+    "w": "Kuh melken",
+    "cat": "party"
+  },
+  {
+    "w": "Pizza backen",
+    "cat": "party"
+  },
+  {
+    "w": "Surfen",
+    "cat": "party"
+  },
+  {
+    "w": "Zelt aufbauen",
+    "cat": "party"
+  },
+  {
+    "w": "Karaoke singen",
+    "cat": "party"
+  },
+  {
+    "w": "DJ auflegen",
+    "cat": "party"
+  },
+  {
+    "w": "Bowling",
+    "cat": "party"
+  },
+  {
+    "w": "Achterbahn fahren",
+    "cat": "party"
+  },
+  {
+    "w": "Staubsaugen",
+    "cat": "party"
+  },
+  {
+    "w": "Fenster putzen",
+    "cat": "party"
+  },
+  {
+    "w": "Spaghetti essen",
+    "cat": "party"
+  },
+  {
+    "w": "Hund Gassi führen",
+    "cat": "party"
+  },
+  {
+    "w": "Baby wickeln",
+    "cat": "party"
+  },
+  {
+    "w": "Reifen wechseln",
+    "cat": "party"
+  },
+  {
+    "w": "Golf spielen",
+    "cat": "party"
+  },
+  {
+    "w": "Bergsteigen",
+    "cat": "party"
+  },
+  {
+    "w": "Angeln",
+    "cat": "party"
+  },
+  {
+    "w": "Eis essen bei 35 Grad",
+    "cat": "party"
+  },
+  {
+    "w": "Selfie machen",
+    "cat": "party"
+  },
+  {
+    "w": "Haare föhnen",
+    "cat": "party"
+  },
+  {
+    "w": "Tango tanzen",
+    "cat": "party"
+  },
+  {
+    "w": "Luftgitarre spielen",
+    "cat": "party"
+  },
+  {
+    "w": "Feuerwehrmann",
+    "cat": "party"
+  },
+  {
+    "w": "Zahnarzt",
+    "cat": "party"
+  },
+  {
+    "w": "Pilot",
+    "cat": "party"
+  },
+  {
+    "w": "Koch",
+    "cat": "party"
+  },
+  {
+    "w": "Friseur",
+    "cat": "party"
+  },
+  {
+    "w": "Bodybuilder",
+    "cat": "party"
+  },
+  {
+    "w": "Ballerina",
+    "cat": "party"
+  },
+  {
+    "w": "Roboter",
+    "cat": "party"
+  },
+  {
+    "w": "Zombie",
+    "cat": "party"
+  },
+  {
+    "w": "Pinguin",
+    "cat": "party"
+  },
+  {
+    "w": "Affe",
+    "cat": "party"
+  },
+  {
+    "w": "Elefant",
+    "cat": "party"
+  },
+  {
+    "w": "Känguru",
+    "cat": "party"
+  },
+  {
+    "w": "Katze",
+    "cat": "party"
+  },
+  {
+    "w": "Schlange",
+    "cat": "party"
+  },
+  {
+    "w": "Dinosaurier",
+    "cat": "party"
+  },
+  {
+    "w": "Torwart beim Elfmeter",
+    "cat": "party"
+  },
+  {
+    "w": "Basketball-Dunk",
+    "cat": "party"
+  },
+  {
+    "w": "Schmetterlingsschwimmen",
+    "cat": "party"
+  },
+  {
+    "w": "Skifahren",
+    "cat": "party"
+  },
+  {
+    "w": "Rasen mähen",
+    "cat": "party"
+  },
+  {
+    "w": "Geschenk auspacken",
+    "cat": "party"
+  },
+  {
+    "w": "Kerzen auspusten",
+    "cat": "party"
+  },
+  {
+    "w": "Luftballon aufblasen",
+    "cat": "party"
+  },
+  {
+    "w": "Sonnencreme auftragen",
+    "cat": "party"
+  },
+  {
+    "w": "Regenschirm im Sturm",
+    "cat": "party"
+  },
+  {
+    "w": "Gegen eine Glastür laufen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Mit Klopapier am Schuh aus dem Klo kommen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Falsche Person zurückwinken",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Hose platzt beim Bücken",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Beim Karaoke den Text vergessen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Im Aufzug pupsen und unschuldig gucken",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Nachts betrunken nach Hause schleichen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Handy ins Klo fallen lassen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Im Bus auf der Schulter des Nachbarn einschlafen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Auf einer Bananenschale ausrutschen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Sich selbst im Spiegel anflirten",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Schlüssel im Auto einschließen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Mit Kopfhörern laut in der Bahn singen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Tür aufziehen, auf der „Drücken“ steht",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Kater am Morgen danach",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Beim Sport komplett außer Atem",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Moonwalk, der misslingt",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Zu spät zur Arbeit rennen",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Tanzen wie Papa auf der Hochzeit",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Hinfallen und so tun, als wäre nichts",
+    "cat": "peinlich"
+  },
+  {
+    "w": "Heiratsantrag",
+    "cat": "date"
+  },
+  {
+    "w": "Candlelight-Dinner",
+    "cat": "date"
+  },
+  {
+    "w": "Liebesbrief schreiben",
+    "cat": "date"
+  },
+  {
+    "w": "Blumen überreichen",
+    "cat": "date"
+  },
+  {
+    "w": "Romantischer Spaziergang am Strand",
+    "cat": "date"
+  },
+  {
+    "w": "Langsamer Tanz auf einer Hochzeit",
+    "cat": "date"
+  },
+  {
+    "w": "Kino mit Popcorn",
+    "cat": "date"
+  },
+  {
+    "w": "Nervös Händchen halten",
+    "cat": "date"
+  },
+  {
+    "w": "Ständchen unterm Balkon",
+    "cat": "date"
+  },
+  {
+    "w": "Erstes Date im Restaurant",
+    "cat": "date"
+  },
+  {
+    "w": "Erster Schultag",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Vorstellungsgespräch",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Umzug in die erste Wohnung",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Führerscheinprüfung",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Abiball",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Erstes Konzert",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Elternabend",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Hochzeitsrede halten",
+    "cat": "kennenlernen"
+  },
+  {
+    "w": "Strip-Tanz (nur andeuten!)",
+    "cat": "hot18"
+  },
+  {
+    "w": "Walk of Shame",
+    "cat": "hot18"
+  },
+  {
+    "w": "Flirten an der Bar",
+    "cat": "hot18"
+  },
+  {
+    "w": "Massage (nur andeuten!)",
+    "cat": "hot18"
+  },
+  {
+    "w": "Lapdance auf einem Stuhl (nur andeuten!)",
+    "cat": "hot18"
+  },
+  {
+    "w": "Duschszene im Film",
+    "cat": "hot18"
+  },
+  {
+    "w": "Verführerisch eine Erdbeere essen",
+    "cat": "hot18"
+  },
+  {
+    "w": "Speed-Dating",
+    "cat": "hot18"
+  },
+  {
+    "w": "Romantischer Whirlpool",
+    "cat": "hot18"
+  },
+  {
+    "w": "Pole Dance",
+    "cat": "hot18"
+  }
+]
