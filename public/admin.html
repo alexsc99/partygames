@@ -82,6 +82,29 @@
   <div id="cFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
   </div>
 </details>
+<details class="card grp" id="cardCustom">
+  <summary><span class="gt">🎪 Eigene Party-Karte</span><span class="gs" id="ccSum">0 eigene</span></summary>
+  <div class="gb">
+   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+     <select id="ccType" style="flex:1;min-width:140px;padding:9px;border-radius:10px;background:#1b1340;color:#fff;border:1px solid #ffffff33;font-size:14px">
+       <option value="group">🎉 Gruppen-Challenge (Handys stimmen „geschafft?“ ab)</option>
+       <option value="vote">🎤 Reihum-Runde (bester Beitrag per Handy)</option>
+       <option value="duel">⚡ Blitz-Duell (2 Ausgeloste)</option>
+       <option value="rule">📜 Neue Regel (3 Runden)</option>
+       <option value="snap">📸 Foto-Challenge (nur Remote)</option>
+     </select>
+     <select id="ccWhere" style="flex:1;min-width:140px;padding:9px;border-radius:10px;background:#1b1340;color:#fff;border:1px solid #ffffff33;font-size:14px">
+       <option value="both">🏠🌍 Vor Ort & Remote</option>
+       <option value="local">🏠 Nur vor Ort</option>
+       <option value="remote">🌍 Nur Remote</option>
+     </select>
+   </div>
+   <textarea id="ccText" rows="2" maxlength="200" placeholder="Aufgabe, z. B. „Jeder erzählt seinen peinlichsten Moment mit Tim“ – {a}/{b} = zwei zufällige Spieler, {player} = einer" style="width:100%;box-sizing:border-box;padding:9px;border-radius:10px;background:#1b1340;color:#fff;border:1px solid #ffffff33;font-size:14px;font-family:inherit"></textarea>
+   <button class="go" style="margin-top:8px;padding:11px;font-size:15px" onclick="addPartyCard()">Karte hinzufügen</button>
+   <div id="ccFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
+   <div id="ccList" class="plist" style="margin-top:8px"></div>
+  </div>
+</details>
 <div style="text-align:center;font-size:11px;opacity:.45;margin:14px 0 4px">PartyGame v__APP_VERSION__</div>
 <div id="adminBar">
   <div class="barInner">
@@ -227,8 +250,32 @@ function toggleMixMode(id) {
   } else cur.add(id);
   socket.emit('host:mixModes', [...cur]);
 }
+// Eigene Party-Karten: Formular ist statisch (Eingaben gehen bei Status-Updates nicht verloren), nur die Liste wird aktualisiert
+const CC_ICON = { group: '🎉', vote: '🎤', duel: '⚡', rule: '📜', snap: '📸' };
+const CC_WHERE = { both: '🏠🌍', local: '🏠', remote: '🌍' };
+let ccSig = '';
+function renderCustomCardList() {
+  const list = (S && S.customCards) || [];
+  const sig = JSON.stringify(list);
+  if (sig === ccSig) return;
+  ccSig = sig;
+  document.getElementById('ccSum').textContent = `${list.length} eigene`;
+  document.getElementById('ccList').innerHTML = list.map(c => `<div class="prow"><span>${CC_ICON[c.type] || '🎪'} ${CC_WHERE[c.where] || ''} ${esc(c.text)}</span>
+    <button class="kick" title="Löschen" onclick="if(confirm('Karte löschen?'))socket.emit('host:delCard',${esc(JSON.stringify(c.id))})">✕</button></div>`).join('');
+}
+function addPartyCard() {
+  const type = document.getElementById('ccType').value;
+  const where = type === 'snap' ? 'remote' : document.getElementById('ccWhere').value;
+  const text = document.getElementById('ccText').value;
+  socket.emit('host:addCard', { type, where, text }, r => {
+    const fb = document.getElementById('ccFb');
+    if (r && r.ok) { fb.textContent = '✓ Karte gespeichert – kommt ab jetzt im Kartenstapel vor'; document.getElementById('ccText').value = ''; }
+    else fb.textContent = '❌ ' + ((r && r.error) || 'Fehler');
+  });
+}
 socket.on('state', s => {
   S = s;
+  renderCustomCardList();
   if (!qrInited && s.publicUrl) {
     document.getElementById('qrInput').value = s.publicUrl;
     qrInited = true;
@@ -299,11 +346,13 @@ function renderCardPanel() {
     actions = `<div class="sub">🗳️ ${c.voters.length}/${S.players.length} haben auf dem Handy abgestimmt (wertet automatisch aus, wenn alle fertig sind).</div>
       <div class="cats">${btn(`🏁 Jetzt auswerten (+${c.reward} für den Sieger)`, {}, '#26890c')}</div>`;
   } else if (c.act === 'snap' && c.stage === 'collect') {
-    actions = `<div class="sub">📸 ${(c.submitted || []).length}/${S.players.length} Fotos da – die Abstimmung startet automatisch, wenn alle ein Foto haben oder die Zeit abläuft (unter 2 Fotos: keine Wertung).</div>
+    const shooters = c.duel ? c.duel.length : S.players.length;
+    actions = `<div class="sub">📸 ${(c.submitted || []).length}/${shooters} Fotos da – die Abstimmung startet automatisch, wenn ${c.duel ? 'beide' : 'alle'} ein Foto haben oder die Zeit abläuft (nur 1 Foto: wird gezeigt, +100).</div>
       <div class="cats"><button class="active" style="background:#4b3a9e" onclick="socket.emit('host:snapVote')">🗳️ Abstimmung jetzt starten</button></div>`;
   } else if (c.act === 'snap') {
-    actions = `<div class="sub">🗳️ ${c.voters.length}/${S.players.length} haben auf dem Handy abgestimmt (wertet automatisch aus, wenn alle fertig sind).</div>
-      <div class="cats">${btn(`🏁 Jetzt auswerten (+${c.reward} fürs beste Foto)`, {}, '#26890c')}</div>`;
+    const ready = c.voters.length >= 2;
+    actions = `<div class="sub">🗳️ ${c.voters.length}/${(c.snapVoters || []).length} haben auf dem Handy abgestimmt – wertet automatisch aus, wenn alle fertig sind. Kein Zeitlimit; selbst auswerten geht ab 2 Stimmen.</div>
+      <div class="cats">${ready ? btn(`🏁 Jetzt auswerten (+${c.reward} fürs beste Foto)`, {}, '#26890c') : '<button disabled style="opacity:.45">🏁 Auswerten ab 2 Stimmen</button>'}</div>`;
   } else {
     actions = `<div class="sub">${c.act === 'rule' ? '📜 Gilt für die nächsten 3 Runden.' : 'Keine Wertung nötig.'} Weiter geht’s unten mit „▶ Weiter“.</div>`;
   }
@@ -351,9 +400,14 @@ function render() {
   else if (S.phase === 'result') mainBtn = `<button class="go" onclick="socket.emit('host:next')">▶ Nächste Runde</button>`;
   else if (S.phase === 'card') {
     const waiting = S.card && !S.card.resolved && !['info', 'rule'].includes(S.card.act);
-    mainBtn = waiting
-      ? `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Karte überspringen</button>`
-      : `<button class="go" onclick="socket.emit('host:next')">▶ Weiter zur nächsten Runde</button>`;
+    const snapVote = waiting && S.card.act === 'snap' && S.card.stage === 'vote';
+    mainBtn = snapVote
+      ? (S.card.voters.length >= 2
+        ? `<button class="go" onclick="socket.emit('host:next')">🏁 Foto-Abstimmung auswerten</button>`
+        : '<button class="go" disabled style="opacity:.5">⏳ Warte auf 2 Foto-Stimmen</button>')
+      : waiting
+        ? `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Karte überspringen</button>`
+        : `<button class="go" onclick="socket.emit('host:next')">▶ Weiter zur nächsten Runde</button>`;
   }
   else mainBtn = `<button class="go" onclick="socket.emit('host:start')">🔄 Nochmal spielen</button>`;
 

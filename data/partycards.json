@@ -1,10 +1,10 @@
 [
   { "id": "g01", "type": "group", "local": true, "sec": 15, "text": "Alle stehen auf und tauschen die Plätze – in 15 Sekunden sitzt jeder auf einem neuen Platz!" },
-  { "id": "g02", "type": "group", "sec": 60, "text": "Zählt gemeinsam bis 20: Jeder darf jederzeit eine Zahl sagen, aber reden zwei gleichzeitig, geht's von vorne los." },
+  { "id": "g02", "type": "group", "local": true, "sec": 60, "text": "Zählt gemeinsam bis 20: Jeder darf jederzeit eine Zahl sagen, aber reden zwei gleichzeitig, geht's von vorne los." },
   { "id": "g03", "type": "group", "local": true, "sec": 30, "text": "Gruppenfoto in 30 Sekunden – jeder macht das dümmste Gesicht seines Lebens!" },
   { "id": "g04", "type": "group", "sec": 60, "text": "Summt zusammen einen Song – ein Handy muss ihn mit Shazam erkennen." },
   { "id": "g05", "type": "group", "local": true, "sec": 300, "text": "Stellt euch in eine Reihe, sortiert nach Geburtstag (Tag & Monat) – ohne zu reden! Ihr habt bis zu 5 Minuten." },
-  { "id": "g06", "type": "group", "sec": 45, "text": "Sagt auf „3“ alle gleichzeitig ein Wort zum Thema „Urlaub“. Sagen alle dasselbe? Ihr habt 3 Versuche." },
+  { "id": "g06", "type": "group", "local": true, "sec": 45, "text": "Sagt auf „3“ alle gleichzeitig ein Wort zum Thema „Urlaub“. Sagen alle dasselbe? Ihr habt 3 Versuche." },
   { "id": "g07", "type": "group", "local": true, "sec": 30, "text": "La-Ola-Welle! Dreimal reihum, ohne dass sie abreißt." },
   { "id": "g08", "type": "group", "sec": 45, "text": "Erfindet in 45 Sekunden einen Gruppen-Schlachtruf mit Choreo – und führt ihn vor." },
   { "id": "g09", "type": "group", "sec": 60, "text": "Alphabet-Zoo: Reihum ein Tier nennen, jedes mit dem nächsten Buchstaben (Affe, Bär, Chamäleon …). Schafft ihr es bis H?" },
@@ -99,5 +99,13 @@
   { "id": "rv1", "type": "vote", "remote": true, "text": "Kamera-Schwenk durch dein Zimmer in 10 Sekunden – wer hat die beste Party-Location?" },
   { "id": "rv2", "type": "vote", "remote": true, "text": "Zeig in die Kamera, was du heute Abend trinkst, und erklär, warum es das beste Getränk ist." },
   { "id": "rd1", "type": "duel", "remote": true, "text": "{a} gegen {b}: Wer hält zuerst einen Löffel in die Kamera?" },
-  { "id": "rd2", "type": "duel", "remote": true, "text": "{a} gegen {b}: Wer zeigt zuerst eine Socke in die Kamera?" }
+  { "id": "rd2", "type": "duel", "remote": true, "text": "{a} gegen {b}: Wer zeigt zuerst eine Socke in die Kamera?" },
+  { "id": "sd1", "type": "snapduel", "sec": 60, "text": "{a} gegen {b}: Wer hat das stilvollste Getränk?" },
+  { "id": "sd2", "type": "snapduel", "sec": 60, "text": "{a} gegen {b}: Bester Bodybuilder-Pose-Selfie!" },
+  { "id": "sd3", "type": "snapduel", "sec": 90, "text": "{a} gegen {b}: Wer findet den absurdesten Gegenstand in der Wohnung?" },
+  { "id": "sd4", "type": "snapduel", "sec": 60, "text": "{a} gegen {b}: Wer macht das überzeugendste „Ich bin total überrascht“-Gesicht?" },
+  { "id": "sd5", "type": "snapduel", "sec": 90, "text": "{a} gegen {b}: Wer baut den besseren Hut aus Küchenkram?" },
+  { "id": "sd6", "type": "snapduel", "sec": 60, "text": "{a} gegen {b}: Bestes Foto von eurem Snack – inszeniert wie im Kochbuch!" },
+  { "id": "sd7", "type": "snapduel", "sec": 90, "text": "{a} gegen {b}: Wer stellt ein Filmplakat besser nach?" },
+  { "id": "sd8", "type": "snapduel", "sec": 60, "text": "{a} gegen {b}: Das peinlichste Foto, das ihr gerade auf dem Handy findet!", "cat": "peinlich" }
 ]

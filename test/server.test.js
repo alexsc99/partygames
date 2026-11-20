@@ -698,9 +698,10 @@ describe('PartyGame Server', () => {
     const { io: ioc } = require('socket.io-client');
     const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
     const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
-    const r = { code, admin: connect(), players: names.map(connect), S: null, pops: 0 };
+    const r = { code, admin: connect(), players: names.map(connect), S: null, pops: 0, priv: names.map(() => null) };
     r.admin.on('state', s => { r.S = s; });
     r.admin.on('photo:new', () => { r.pops++; });
+    r.players.forEach((p, i) => p.on('private', v => { r.priv[i] = v; }));
     r.until = async (pred, ms = 3000) => {
       const end = Date.now() + ms;
       while (Date.now() < end) { if (r.S && pred(r.S)) return r.S; await new Promise(res => setTimeout(res, 20)); }
@@ -803,6 +804,122 @@ describe('PartyGame Server', () => {
       assert.match(r.S.card.outcome, /Bo gewinnt/);
     } finally {
       r.cleanup();
+    }
+  });
+
+  it('photo vote has no time limit: "Weiter" only evaluates once 2 votes are in; phones learn which photo is their own', async () => {
+    const r = await snapRoom(['Ada', 'Bo', 'Cy']);
+    try {
+      for (const [i, n] of ['Ada', 'Bo', 'Cy'].entries()) assert.equal((await r.upload(n, i + 1)).status, 201);
+      await r.until(s => s.card.stage === 'vote');
+      assert.equal(r.S.card.photos.length, 3);
+      // Server meldet jedem Handy privat sein eigenes Foto (Index passt zur anonymen Liste)
+      await new Promise(res => setTimeout(res, 50));
+      const mine = r.priv[0];
+      assert.equal(mine.mode, 'snap');
+      assert.equal(r.S.card.photos.find(p => p.i === mine.snapMine).url, mine.snapUrl);
+      assert.equal(r.S.skipVote, null, 'no skip vote before 2 votes');
+
+      const other = r.S.card.photos.find(p => p.i !== mine.snapMine).i;
+      r.players[0].emit('card:vote', other);
+      await r.until(s => s.card.voters.length === 1);
+      r.admin.emit('host:next');
+      r.admin.emit('host:cardResolve', {});
+      await new Promise(res => setTimeout(res, 150));
+      assert.equal(r.S.phase, 'card');
+      assert.equal(r.S.card.resolved, false, 'one vote is not enough to continue');
+
+      const bosPick = r.S.card.photos.find(p => p.i !== r.priv[1].snapMine).i;
+      r.players[1].emit('card:vote', bosPick);
+      await r.until(s => s.card.voters.length === 2);
+      r.admin.emit('host:next'); // ab 2 Stimmen: auswerten statt überspringen
+      await r.until(s => s.card.resolved);
+      assert.equal(r.S.phase, 'card');
+      assert.ok(r.S.card.photos.every(p => p.name), 'names are revealed after evaluation');
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  it('photo duel: only the two drawn players shoot, the others vote; a single photo is still shown with +100', async () => {
+    const r = await snapRoom(['Ada', 'Bo', 'Cy', 'Dee']);
+    try {
+      const duel = r.S.card.duel;
+      assert.equal(r.S.card.type, 'snapduel');
+      assert.equal(duel.length, 2);
+      const outsider = ['Ada', 'Bo', 'Cy', 'Dee'].find(n => !duel.includes(n));
+      await r.upload(outsider, 9); // gehört nicht zum Duell → landet nur in der Foto-Wand
+      await r.until(() => r.pops === 1);
+      assert.deepEqual(r.S.card.submitted, []);
+      const before = Object.fromEntries(r.S.players.map(p => [p.name, p.score]));
+      await r.upload(duel[0], 1);
+      await r.upload(duel[1], 2);
+      await r.until(s => s.card.stage === 'vote');
+      assert.deepEqual([...r.S.card.snapVoters].sort(), ['Ada', 'Bo', 'Cy', 'Dee'].filter(n => !duel.includes(n)).sort());
+      const urls = Object.fromEntries((await (await fetch(`${baseUrl}/api/photos/${r.code}`)).json()).photos.map(p => [p.name, p.url]));
+      const idxOf = who => r.S.card.photos.find(p => p.url === urls[who]).i;
+      const names = ['Ada', 'Bo', 'Cy', 'Dee'];
+      names.forEach((n, i) => { if (!duel.includes(n)) r.players[i].emit('card:vote', idxOf(duel[0])); });
+      await r.until(s => s.card.resolved);
+      const diff = Object.fromEntries(r.S.players.map(p => [p.name, p.score - before[p.name]]));
+      assert.equal(diff[duel[0]], 400 + 100);
+      assert.equal(diff[duel[1]], 100);
+      assert.match(r.S.card.outcome, /Foto-Duell/);
+    } finally {
+      r.cleanup();
+    }
+
+    const one = await snapRoom(['Ada', 'Bo']);
+    try {
+      const before = Object.fromEntries(one.S.players.map(p => [p.name, p.score]));
+      await one.upload('Ada', 1);
+      await one.until(s => s.card.submitted.length === 1);
+      one.admin.emit('host:snapVote'); // Zeit abgelaufen / Admin startet: nur 1 Foto
+      await one.until(s => s.card.resolved);
+      assert.equal(one.S.card.photos.length, 1);
+      assert.equal(one.S.card.photos[0].name, 'Ada');
+      assert.equal(one.S.players.find(p => p.name === 'Ada').score - before.Ada, 100);
+    } finally {
+      one.cleanup();
+    }
+  });
+
+  it('custom party cards from /admin are stored, listed and deletable', async () => {
+    const { io: ioc } = require('socket.io-client');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const admin = ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const file = path.join(__dirname, '..', 'data', 'customcards.json');
+    const hadFile = fs.existsSync(file);
+    const backup = hadFile ? fs.readFileSync(file) : null;
+    let S = null;
+    admin.on('state', s => { S = s; });
+    const until = async pred => {
+      const end = Date.now() + 3000;
+      while (Date.now() < end) { if (S && pred(S)) return S; await new Promise(res => setTimeout(res, 20)); }
+      throw new Error('timeout');
+    };
+    try {
+      await until(s => Array.isArray(s.customCards));
+      const n0 = S.customCards.length;
+      const bad = await new Promise(res => admin.emit('host:addCard', { type: 'nope', text: 'Hallo Welt' }, res));
+      assert.equal(bad.ok, false);
+      const ok = await new Promise(res => admin.emit('host:addCard', { type: 'duel', where: 'remote', text: 'Wer trinkt schneller aus?' }, res));
+      assert.equal(ok.ok, true);
+      await until(s => s.customCards.length === n0 + 1);
+      const card = S.customCards[S.customCards.length - 1];
+      assert.equal(card.text, '{a} gegen {b}: Wer trinkt schneller aus?');
+      assert.equal(card.where, 'remote');
+      await new Promise(res => setTimeout(res, 100));
+      assert.ok(JSON.parse(fs.readFileSync(file, 'utf8')).some(c => c.id === card.id), 'saved to data/customcards.json');
+      admin.emit('host:delCard', card.id);
+      await until(s => s.customCards.length === n0);
+    } finally {
+      admin.close();
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+      await new Promise(res => setTimeout(res, 100));
+      if (hadFile) fs.writeFileSync(file, backup);
+      else fs.rmSync(file, { force: true });
     }
   });
 

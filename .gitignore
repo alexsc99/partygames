@@ -10,3 +10,6 @@ data/used.json
 data/rooms.json
 data/rooms.json.*.tmp
 data/photos/
+data/custom.json
+data/customcards.json
+data/customcards.json.*.tmp

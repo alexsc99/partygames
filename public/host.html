@@ -121,6 +121,10 @@
  .ruleTag { display: inline-block; margin-top: .6vh; background: rgba(255,211,61,.16); border: 1px solid #ffd33d; color: #ffd33d; border-radius: 10px; padding: .3vh 1vw; font-size: clamp(13px, 2vmin, 24px); font-weight: 700; }
  .endPhotos { display: flex; gap: clamp(12px, 3vw, 40px); align-items: center; justify-content: center; margin: 1.5vh 0 2vh; }
  #endSlide { height: clamp(140px, 30vh, 420px); max-width: 55vw; object-fit: contain; border-radius: 14px; border: 5px solid #fff; background: #000; transition: opacity .4s ease; }
+ .endSlideBox { display: flex; flex-direction: column; align-items: center; }
+ .endSlideCap { margin-top: .8vh; max-width: 55vw; min-height: 1.3em; text-align: center; font-weight: 800; font-size: clamp(14px, 2.4vmin, 28px); color: #ffd33d; }
+ .awardGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(22vw, 300px), 1fr)); gap: 1.2vmin; margin-bottom: 2vh; }
+ .awardGrid .card { text-align: center; margin: 0; padding: 1.2vh 1vw; }
  .endNoPhoto { font-size: clamp(60px, 14vmin, 160px); opacity: .5; }
  .endQr { width: clamp(110px, 18vmin, 220px); height: clamp(110px, 18vmin, 220px); background: #fff; padding: 6px; border-radius: 10px; margin: 1vh 0; }
  .photoPop.mini { inset: auto 2vw 2vh auto; background: transparent; }
@@ -494,9 +498,10 @@ socket.on('photo:new', p => {
   sfx('pop');
   clearTimeout(photoPopTimer);
   photoPopTimer = setTimeout(() => el.classList.remove('on'), busy ? 4000 : 6000);
-  if (endSlideTimer) endSlideList.push(p);
+  if (endSlideTimer) endSlideList.push({ ...p, cap: p.name ? `📸 ${p.name}` : '' });
 });
-// Diashow läuft weiter, auch wenn neue Fotos kommen (photo:new hängt sie an) – kein Neustart, keine doppelten Timer
+// Diashow läuft weiter, auch wenn neue Fotos kommen (photo:new hängt sie an) – kein Neustart, keine doppelten Timer.
+// Abend-Rückblick: zuerst die Siegerfotos der Foto-Challenges (mit Aufgabe), dann alle anderen.
 let endSlideTimer = 0, endSlideGen = 0, endSlideList = [], endSlideIdx = 0;
 function stopEndSlides() { clearInterval(endSlideTimer); endSlideTimer = 0; endSlideGen++; }
 async function startEndSlides() {
@@ -505,13 +510,22 @@ async function startEndSlides() {
   let list = [];
   try { list = (await (await fetch('/api/photos/' + encodeURIComponent(ROOM_CODE))).json()).photos || []; } catch { return; }
   if (gen !== endSlideGen || endSlideTimer || !list.length) return;
-  endSlideList = list;
+  const have = new Set(list.map(p => p.url)); // per SSH gelöschte Siegerfotos überspringen
+  const best = (S.snapHighlights || []).filter(h => have.has(h.url)).map(h => ({ url: h.url, cap: `🏆 ${h.name} · ${h.text}` }));
+  const bestUrls = new Set(best.map(h => h.url));
+  endSlideList = [...best, ...list.filter(p => !bestUrls.has(p.url)).map(p => ({ url: p.url, cap: p.name ? `📸 ${p.name}` : '' }))];
   endSlideIdx = 0;
   const show = () => {
     const img = document.getElementById('endSlide');
     if (!img || !endSlideList.length) return;
     img.style.opacity = '0';
-    setTimeout(() => { img.src = endSlideList[endSlideIdx++ % endSlideList.length].url; img.style.opacity = '1'; }, 350);
+    setTimeout(() => {
+      const s = endSlideList[endSlideIdx++ % endSlideList.length];
+      img.src = s.url;
+      img.style.opacity = '1';
+      const cap = document.getElementById('endSlideCap');
+      if (cap) cap.textContent = s.cap;
+    }, 350);
   };
   show();
   endSlideTimer = setInterval(show, 4000);
@@ -801,7 +815,7 @@ function snapWall(c) {
   const sz = Math.floor(Math.min((w - (cols - 1) * gap) / cols, (h - (rows - 1) * gap) / rows));
   return `<div class="snapWall" style="--sz:${sz}px">${list.map((p, n) => `<figure class="${c.resolved && top > 0 && p.votes === top ? 'win' : ''}" style="--d:${n * 80}ms">
     <img src="${esc(p.url)}" alt="${c.resolved ? `Foto von ${esc(p.name)}` : `Foto ${n + 1}`}">
-    <figcaption>${c.resolved ? `${p.votes === top && top > 0 ? '🏆 ' : ''}${esc(p.name)} · ${p.votes} 🗳️` : `#${n + 1}`}</figcaption></figure>`).join('')}</div>`;
+    <figcaption>${c.resolved ? `${p.votes === top && top > 0 ? '🏆 ' : ''}${esc(p.name)}${top > 0 ? ` · ${p.votes} 🗳️` : ''}` : `#${n + 1}`}</figcaption></figure>`).join('')}</div>`;
 }
 
 function renderView() {
@@ -812,9 +826,11 @@ function renderView() {
   const hostNextBtn = document.getElementById('hostNextBtn');
   if (hostNextBtn) {
     const cardWaiting = S.phase === 'card' && S.card && !S.card.resolved && !['info', 'rule'].includes(S.card.act);
-    const showNext = ['lobby', 'result', 'discuss', 'end'].includes(S.phase) || (S.phase === 'card' && !cardWaiting);
+    // Foto-Abstimmung: ab 2 Stimmen darf der TV auswerten (ohne Zeitlimit)
+    const snapReady = cardWaiting && S.card.act === 'snap' && S.card.stage === 'vote' && S.card.voters.length >= 2;
+    const showNext = ['lobby', 'result', 'discuss', 'end'].includes(S.phase) || (S.phase === 'card' && (!cardWaiting || snapReady));
     hostNextBtn.style.display = showNext ? 'inline-block' : 'none';
-    hostNextBtn.textContent = S.phase === 'lobby' ? '▶ Spiel starten' : S.phase === 'end' ? '🔄 Nochmal' : '▶ Weiter';
+    hostNextBtn.textContent = S.phase === 'lobby' ? '▶ Spiel starten' : S.phase === 'end' ? '🔄 Nochmal' : snapReady ? '🏁 Auswerten' : '▶ Weiter';
   }
   qrUrl.textContent = url;
   const drawing = S.mode === 'draw' && S.phase === 'question';
@@ -879,9 +895,12 @@ function renderView() {
       }
       else if (c.act === 'snap' && c.stage === 'collect') {
         const done = c.submitted || [];
-        info = `📱 Jeder macht ein Foto am Handy – die Fotos gibt’s erst bei der Abstimmung zu sehen<br>📸 ${done.length}/${S.players.length} Fotos da · Bestes Foto +${c.reward}, jedes Foto +100
-          <div class="snapWho">${S.players.map(p => `<span class="${done.includes(p.name) ? 'ok' : ''}">${esc(p.avatar || '😎')} ${esc(p.name)}${done.includes(p.name) ? ' ✓' : ''}</span>`).join('')}</div>`;
-      } else if (c.act === 'snap') info = `🗳️ Welches Foto ist das beste? Abstimmung am Handy (anonym) – ${c.voters.length}/${S.players.length}`;
+        const shooters = c.duel ? S.players.filter(p => c.duel.includes(p.name)) : S.players;
+        info = `${c.duel ? '⚔️ Nur die beiden fotografieren am Handy, alle anderen stimmen danach ab' : '📱 Jeder macht ein Foto am Handy'} – die Fotos gibt’s erst bei der Abstimmung zu sehen<br>📸 ${done.length}/${shooters.length} Fotos da · ${c.duel ? 'Besseres' : 'Bestes'} Foto +${c.reward}, jedes Foto +100
+          <div class="snapWho">${shooters.map(p => `<span class="${done.includes(p.name) ? 'ok' : ''}">${esc(p.avatar || '😎')} ${esc(p.name)}${done.includes(p.name) ? ' ✓' : ''}</span>`).join('')}</div>`;
+      } else if (c.act === 'snap') {
+        info = `🗳️ Welches Foto ist ${c.duel ? 'besser' : 'das beste'}? Abstimmung am Handy (anonym) – ${c.voters.length}/${(c.snapVoters || []).length}${c.voters.length < 2 ? ' · weiter ab 2 Stimmen' : ''}`;
+      }
       else info = '⏳ Der Gastgeber wertet im Admin aus…';
     }
     const bad = /^❌/u.test(c.outcome || '');
@@ -912,11 +931,12 @@ function renderView() {
     const endSig = `end:${S.mode}:${S.players.length}:${S.photoCount > 0}`;
     if (lastRenderSig === endSig) return;
     lastRenderSig = endSig;
+    // Abend-Rückblick: alle Auszeichnungen kompakt im Raster
     const awardsHtml = S.awards && S.awards.length
-      ? `<div class="cols" style="margin-bottom:2vh">${S.awards.map(a => `<div class="card" style="text-align:center"><div style="font-size:3.2vh">${a.icon} ${esc(a.title)}</div><div style="font-size:3.6vh;font-weight:800;color:#ffd33d;margin:.4vh 0">${esc(a.name)}</div><div style="opacity:.8;font-size:2.4vh">${esc(a.detail)}</div></div>`).join('')}</div>`
+      ? `<div class="awardGrid">${S.awards.map(a => `<div class="card"><div style="font-size:2.8vh">${a.icon} ${esc(a.title)}</div><div style="font-size:3.4vh;font-weight:800;color:#ffd33d;margin:.3vh 0">${esc(a.name)}</div><div style="opacity:.8;font-size:2.2vh">${esc(a.detail)}</div></div>`).join('')}</div>`
       : '';
     const photosHtml = `<div class="card endPhotos">
-        ${S.photoCount ? '<img id="endSlide" alt="">' : '<div class="endNoPhoto">📸</div>'}
+        ${S.photoCount ? '<div class="endSlideBox"><img id="endSlide" alt=""><div id="endSlideCap" class="endSlideCap"></div></div>' : '<div class="endNoPhoto">📸</div>'}
         <div style="text-align:center"><div style="font-size:clamp(18px,3.4vmin,40px);font-weight:900;color:#ffd33d">📸 Fotos des Abends<span id="endPhotoCount">${S.photoCount ? ` (${S.photoCount})` : ''}</span></div>
           <img class="endQr" src="/qr.png?room=${encodeURIComponent(ROOM_CODE)}&for=fotos" alt="QR zur Galerie">
           <div style="opacity:.85;font-size:clamp(13px,2.2vmin,26px)">Scannen: ansehen, herunterladen & hochladen · 7 Tage</div></div>
@@ -924,7 +944,11 @@ function renderView() {
     app.innerHTML = `<h1>🏆 Endergebnis – ${title}</h1>${renderPodium()}${photosHtml}${awardsHtml}${lb()}`;
     startEndSlides();
     const slide = document.getElementById('endSlide');
-    if (slide && endSlideList.length && endSlideTimer) slide.src = endSlideList[Math.max(0, endSlideIdx - 1) % endSlideList.length].url;
+    if (slide && endSlideList.length && endSlideTimer) {
+      const cur = endSlideList[Math.max(0, endSlideIdx - 1) % endSlideList.length];
+      slide.src = cur.url;
+      document.getElementById('endSlideCap').textContent = cur.cap;
+    }
     return;
   }
 

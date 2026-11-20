@@ -32,6 +32,7 @@
  .sz.on { border-color: #ffd33d; background: #4b3a9e; }
  .clr { background: #e21b3c; padding: 8px 12px; font-size: 14px; font-weight: 700; border-radius: 10px; }
  #connBanner { display: none; position: sticky; top: max(6px, env(safe-area-inset-top)); z-index: 95; background: rgba(226,27,60,.94); color: #fff; font-weight: 700; font-size: 14px; padding: 9px 12px; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+ #connBanner.tap { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
  h1 { margin: 10px 0; } .msg { font-size: 25px; margin-top: 14vh; animation: popIn .28s ease-out both; }
  .qtxt { font-size: 20px; font-weight: 700; margin: 12px 0; animation: fadeSlideUp .25s ease-out both; }
  .err { color: #ff8a8a; min-height: 24px; }
@@ -158,21 +159,12 @@ async function joinByRoomInput() {
   }
 }
 function pickPhotos(camera) { pgPickPhotos(ROOM_CODE, () => name, null, camera); }
-// Foto-Challenge (Remote-Party-Karte): ein Foto mit x-card hochladen; eigene URL merken, damit das Handy es bei der Abstimmung ausblendet
-const snapKey = () => `pg_snap_${ROOM_CODE}_${S && S.idx}_${S && S.card && S.card.id}`;
+// Foto-Challenge (Remote-Party-Karte): ein Foto mit x-card hochladen; welches Foto meins ist, meldet der Server (private)
 function pickSnap(camera) {
   if (!S || !S.card) return;
-  const key = snapKey();
-  pgPickPhotos(ROOM_CODE, () => name, r => {
-    if (r.photos && r.photos[0]) {
-      try { sessionStorage.setItem(key, r.photos[0].url); } catch { /* privates Fenster */ }
-      render();
-    }
-  }, camera, { single: true, selfie: true, headers: { 'x-card': S.card.id } });
+  pgPickPhotos(ROOM_CODE, () => name, null, camera, { single: true, selfie: true, headers: { 'x-card': S.card.id } });
 }
-function mySnapUrl() {
-  try { return sessionStorage.getItem(snapKey()); } catch { return null; }
-}
+const mySnap = () => (P && P.mode === 'snap' ? P : null);
 async function copyInviteLink() {
   const link = (S && S.publicUrl) || (location.origin + '/?room=' + encodeURIComponent(ROOM_CODE));
   if (!(await pgCopyText(link))) return;
@@ -461,16 +453,35 @@ socket.on('state', s => {
   render();
 });
 socket.on('private', p => { P = p; render(); });
+// Verbindung weg: erst automatisch neu verbinden; dauert es länger, kann man tippen (Neu verbinden, später Seite neu laden –
+// der Auto-Rejoin bringt einen mit Punktestand zurück)
 const connBanner = document.getElementById('connBanner');
-socket.on('disconnect', () => {
-  if (connBanner) connBanner.style.display = 'block';
-});
-if (socket.io) {
-  socket.io.on('reconnect_attempt', () => {
-    if (connBanner) connBanner.style.display = 'block';
+let connLostAt = 0, connBannerT = 0;
+function showConnBanner() {
+  if (!connBanner || socket.connected) return;
+  if (!connLostAt) connLostAt = Date.now();
+  const gone = Date.now() - connLostAt;
+  connBanner.style.display = 'block';
+  connBanner.classList.toggle('tap', gone >= 6000);
+  connBanner.textContent = gone < 6000 ? '🔄 Verbindung unterbrochen — verbinde neu…'
+    : gone < 20000 ? '📶 Verbindung weg – hier tippen zum Neu-Verbinden' : '📶 Immer noch keine Verbindung – hier tippen zum Neuladen';
+  clearTimeout(connBannerT);
+  if (gone < 20000) connBannerT = setTimeout(showConnBanner, gone < 6000 ? 6000 - gone : 20000 - gone);
+}
+if (connBanner) {
+  connBanner.addEventListener('click', () => {
+    if (socket.connected || Date.now() - connLostAt < 6000) return;
+    if (Date.now() - connLostAt >= 20000) return location.reload();
+    connBanner.textContent = '🔄 Verbinde neu…';
+    socket.disconnect();
+    socket.connect();
   });
 }
+socket.on('disconnect', showConnBanner);
+if (socket.io) socket.io.on('reconnect_attempt', showConnBanner);
 socket.on('connect', () => {
+  connLostAt = 0;
+  clearTimeout(connBannerT);
   if (connBanner) connBanner.style.display = 'none';
   // Auto-Rejoin: auch nach Neuladen / wenn iOS den Tab im Hintergrund verworfen hat
   if ((joined || localStorage.getItem(JOINED_KEY)) && name) doJoin(true);
@@ -1098,7 +1109,7 @@ function renderView() {
     mr ? `${mr.resolved}:${mr.success}` : '',
     S.phase === 'lobby' ? `${S.lobbyBanner || ''}:${avatar}:${avPickerOpen ? 1 : 0}:${S.isMix ? 1 : 0}` : '',
     S.phase === 'spin' && S.spin ? S.spin.id : '',
-    S.phase === 'card' && S.card ? JSON.stringify(S.card) + (S.card.act === 'snap' ? mySnapUrl() : '') : '',
+    S.phase === 'card' && S.card ? JSON.stringify(S.card) : '',
     S.rule || '',
     S.phase === 'end' ? S.photoCount : '',
     playersSig,
@@ -1151,8 +1162,9 @@ function renderView() {
     const voted = c.voters.includes(name);
     let body = '';
     if (c.resolved) {
+      const tallied = c.tally && Object.keys(c.tally).length > 0;
       const snapRes = c.act === 'snap' && c.photos && c.photos.length
-        ? `<div class="snapPick done">${[...c.photos].sort((a, b) => b.votes - a.votes).map(ph => `<figure><img src="${esc(ph.url)}" alt="Foto von ${esc(ph.name)}" loading="lazy"><figcaption>${esc(ph.name)} · ${ph.votes} 🗳️</figcaption></figure>`).join('')}</div>`
+        ? `<div class="snapPick done">${[...c.photos].sort((a, b) => b.votes - a.votes).map(ph => `<figure><img src="${esc(ph.url)}" alt="Foto von ${esc(ph.name)}" loading="lazy"><figcaption>${esc(ph.name)}${tallied ? ` · ${ph.votes} 🗳️` : ''}</figcaption></figure>`).join('')}</div>`
         : '';
       body = `<div class="resBox" style="text-align:center;font-size:20px;font-weight:900;background:${/^❌/u.test(c.outcome || '') ? '#e21b3c' : '#26890c'}">${esc(c.outcome)}</div>${snapRes}${renderLb()}`;
     } else if (c.act === 'vote') {
@@ -1162,23 +1174,32 @@ function renderView() {
         : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px">Wer hatte den besten Beitrag? (+${c.reward})</div>
            <div class="grid">${others.map((p, i) => `<button class="c${i % 4}" style="font-size:16px;min-height:9vh" onclick="socket.emit('card:vote', ${esc(JSON.stringify(p.name))})">${esc(p.avatar || '😎')} ${esc(p.name)}</button>`).join('')}</div>`;
     } else if (c.act === 'snap' && c.stage === 'collect') {
-      const mine = (c.submitted || []).includes(name);
-      const url = mine && mySnapUrl();
-      body = `${mine ? `<div class="msg">✅ Dein Foto ist drin!${url ? `<br><img src="${esc(url)}" alt="Dein Foto" style="max-width:60%;max-height:22vh;border-radius:12px;margin-top:8px">` : ''}<br><small>${c.submitted.length}/${S.players.length} Fotos · Die Fotos sieht man erst bei der Abstimmung</small></div>` : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Mach ein Foto dazu – die Gruppe wählt anonym das beste (+${c.reward}, jedes Foto +100)</div>`}
+      // Foto-Duell: nur die zwei Ausgelosten fotografieren
+      const shooters = c.duel || S.players.map(p => p.name);
+      const mine = mySnap();
+      const progress = `${c.submitted.length}/${shooters.length} Fotos`;
+      body = !shooters.includes(name)
+        ? `<div class="msg">📸 ${c.duel.map(esc).join(' & ')} fotografieren gerade …<br><small>${progress} · Gleich stimmst du ab, welches Foto besser ist</small></div>`
+        : `${mine ? `<div class="msg">✅ Dein Foto ist drin!<br><img src="${esc(mine.snapUrl)}" alt="Dein Foto" style="max-width:60%;max-height:22vh;border-radius:12px;margin-top:8px"><br><small>${progress} · Die Fotos sieht man erst bei der Abstimmung</small></div>` : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Mach ein Foto dazu – ${c.duel ? 'die anderen wählen das bessere' : 'die Gruppe wählt anonym das beste'} (+${c.reward}, jedes Foto +100)</div>`}
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">${pgPhotoButtons('pickSnap(true)', 'pickSnap(false)')}</div>
         ${mine ? '<div class="msg" style="margin-top:6px"><small>Neues Foto ersetzt dein altes.</small></div>' : ''}`;
     } else if (c.act === 'snap') {
       // Alle Fotos zeigen, damit klar ist, dass alles angekommen ist; das eigene ist markiert und nicht wählbar
-      const own = mySnapUrl();
+      const ownI = mySnap() ? mySnap().snapMine : -1;
       const pics = c.photos || [];
-      const canPick = pics.some(ph => ph.url !== own);
-      const progress = `${c.voters.length}/${S.players.length} haben abgestimmt`;
-      body = voted || !canPick
-        ? `<div class="msg">${voted ? '✅ Stimme abgegeben' : '📸 Nur dein Foto ist da – die anderen stimmen ab'}<br><small>${progress}</small></div>`
-        : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Tippe aufs beste Foto (anonym, +${c.reward})</div>
-           <div class="snapPick">${pics.map(ph => ph.url === own
-    ? `<figure class="own"><img src="${esc(ph.url)}" alt="Dein Foto" loading="lazy"><figcaption>📸 Dein Foto</figcaption></figure>`
-    : `<button type="button" onclick="socket.emit('card:vote', ${ph.i})"><img src="${esc(ph.url)}" alt="Foto" loading="lazy"></button>`).join('')}</div>
+      const voters = c.snapVoters || [];
+      const progress = `${c.voters.length}/${voters.length} haben abgestimmt${c.voters.length < 2 ? ' · weiter ab 2 Stimmen' : ''}`;
+      const canVote = voters.includes(name) && pics.some(ph => ph.i !== ownI);
+      const tile = ph => ph.i === ownI
+        ? `<figure class="own"><img src="${esc(ph.url)}" alt="Dein Foto" loading="lazy"><figcaption>📸 Dein Foto</figcaption></figure>`
+        : canVote ? `<button type="button" onclick="socket.emit('card:vote', ${ph.i})"><img src="${esc(ph.url)}" alt="Foto" loading="lazy"></button>`
+          : `<figure><img src="${esc(ph.url)}" alt="Foto" loading="lazy"></figure>`;
+      const hint = canVote ? `Tippe aufs beste Foto (anonym, +${c.reward})`
+        : c.duel && c.duel.includes(name) ? '⚔️ Die anderen entscheiden, welches Foto besser ist' : '📸 Nur dein Foto ist da – die anderen stimmen ab';
+      body = voted
+        ? `<div class="msg">✅ Stimme abgegeben<br><small>${progress}</small></div>`
+        : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">${hint}</div>
+           <div class="snapPick">${pics.map(tile).join('')}</div>
            <div class="msg"><small>${progress}</small></div>`;
     } else if (c.act === 'yesno') {
       const judges = c.judges || [];

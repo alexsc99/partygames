@@ -63,6 +63,25 @@ const DEFAULT_MIX_MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', '
 const IQ_THEMES = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
 // ---- Party-Karten: Aufgaben zwischen zwei Runden (Gruppe, Spitzenreiter, Letzter, Duell, Regel …) ----
 const PARTY_CARDS = require('./data/partycards.json');
+// Eigene Party-Karten aus /admin (global für alle Räume, nicht im Git – können Insider enthalten)
+const CUSTOM_CARDS_FILE = path.join(__dirname, 'data', 'customcards.json');
+const CUSTOM_CARD_TYPES = ['group', 'vote', 'duel', 'rule', 'snap'];
+let CUSTOM_CARDS = [];
+try {
+  if (fs.existsSync(CUSTOM_CARDS_FILE)) {
+    const saved = JSON.parse(fs.readFileSync(CUSTOM_CARDS_FILE, 'utf8'));
+    if (Array.isArray(saved)) CUSTOM_CARDS = saved.filter(c => c && CUSTOM_CARD_TYPES.includes(c.type) && typeof c.text === 'string');
+  }
+} catch (err) {
+  writeLog('WARN', 'customcards_load_failed', { error: err?.message || String(err) });
+}
+function saveCustomCards() {
+  const tmp = `${CUSTOM_CARDS_FILE}.${process.pid}.tmp`;
+  fs.writeFile(tmp, JSON.stringify(CUSTOM_CARDS, null, 2), err => {
+    if (!err) fs.rename(tmp, CUSTOM_CARDS_FILE, e => e && writeLog('WARN', 'customcards_save_failed', { error: e.message }));
+    else writeLog('WARN', 'customcards_save_failed', { error: err.message });
+  });
+}
 const PARTY_CARD_GAP = { rare: 5, normal: 3, often: 2 }; // ungefährer Rundenabstand je Häufigkeit
 const PARTY_CARD_TYPES = {
   group: { title: '🎉 Gruppen-Challenge', act: 'yesno', w: 3 },
@@ -74,6 +93,7 @@ const PARTY_CARD_TYPES = {
   rule: { title: '📜 Neue Regel', act: 'rule', w: 1 },
   photo: { title: '📸 Foto & Pose', act: 'yesno', w: 2, local: true }, // who: 'group' (alle) oder 'pair' ({a} & {b})
   snap: { title: '📸 Foto-Challenge', act: 'snap', w: 3, remote: true }, // jeder lädt ein Foto hoch, dann Abstimmung
+  snapduel: { title: '📸 Foto-Duell', act: 'snap', w: 2, remote: true, min: 4 }, // nur {a} & {b} fotografieren, die anderen stimmen ab
 };
 const CARD_GROUP_PTS = 200;
 const CARD_VOTE_PTS = 300;
@@ -82,6 +102,9 @@ const CARD_SNAP_PTS = 300; // bestes Foto
 const CARD_SNAP_BONUS = 100; // jedes eingereichte Foto
 const CARD_RULE_ROUNDS = 3;
 const CARD_AUTO_NEXT_MS = 6000;
+// Statistik für die Auszeichnungen am Spielende; alte Spielstände (Neustart) haben nicht alle Felder → bumpStat
+const freshStats = () => ({ fastSum: 0, fastCount: 0, bestEstimate: 0, guessedWords: 0, misses: 0, bestStreak: 0, cardPts: 0, snapVotes: 0 });
+const bumpStat = (p, k, n = 1) => { if (p && p.stats) p.stats[k] = (p.stats[k] || 0) + n; };
 const CARD_SKIP_DELAY_MS = 5000; // ab dann dürfen die Handys per „Weiter“-Abstimmung die Karte beenden
 const MODE_LABELS = {
   quiz: '🎉 Party-Quiz',
@@ -766,7 +789,7 @@ function freshState(mode) {
     storytellerName: null, tlStatements: [], tlLieIdx: -1,
     songQ: null,
     mission: null,
-    card: null, rule: null, lastCardIdx: -1, usedCards: [], cardShownAt: 0,
+    card: null, rule: null, lastCardIdx: -1, usedCards: [], cardShownAt: 0, snapHighlights: [],
   };
 }
 
@@ -1006,6 +1029,16 @@ function computeAwards() {
   if (topEst) {
     awards.push({ icon: '🎯', title: 'Schätz-Meister', name: topEst.name, detail: `${topEst.stats.bestEstimate}× am nächsten` });
   }
+  // Abend-Rückblick: Foto-Stimmen, Party-Karten-Punkte, längste Serie, am häufigsten leer ausgegangen
+  const top = (key, min) => [...ps].filter(p => p.stats && (p.stats[key] || 0) >= min).sort((a, b) => b.stats[key] - a.stats[key])[0];
+  const photog = top('snapVotes', 1);
+  if (photog) awards.push({ icon: '📸', title: 'Fotograf des Abends', name: photog.name, detail: `${photog.stats.snapVotes} Foto-Stimmen` });
+  const cardKing = top('cardPts', 1);
+  if (cardKing) awards.push({ icon: '🎪', title: 'Party-Tier', name: cardKing.name, detail: `+${cardKing.stats.cardPts} aus Party-Karten` });
+  const onFire = top('bestStreak', 3);
+  if (onFire) awards.push({ icon: '🔥', title: 'Auf Feuer', name: onFire.name, detail: `${onFire.stats.bestStreak} Runden in Folge gepunktet` });
+  const missed = top('misses', 3);
+  if (missed) awards.push({ icon: '🙈', title: 'Daneben-König', name: missed.name, detail: `${missed.stats.misses}× leer ausgegangen` });
   return awards;
 }
 
@@ -1050,7 +1083,7 @@ function pub() {
     nextAudio,
     nextArt,
     result: state.phase === 'result' ? state.result : null,
-    skipVote: ['question', 'go', 'write', 'discuss', 'result', 'card'].includes(state.phase) && displayMode !== 'onedevice' ? (() => {
+    skipVote: ['question', 'go', 'write', 'discuss', 'result', 'card'].includes(state.phase) && displayMode !== 'onedevice' && !snapVoteBlocked() ? (() => {
       const count = ps.length;
       const needed = Math.max(1, Math.ceil(count * 0.65));
       const voters = Array.from(skipVotes).filter(n => ps.some(pl => pl.name.toLowerCase() === n));
@@ -1061,6 +1094,9 @@ function pub() {
       ? { playerName: state.mission.playerName, text: state.mission.text, resolved: state.mission.resolved, success: state.mission.success }
       : null,
     awards: state.phase === 'end' ? computeAwards() : [],
+    // Siegerfotos der Foto-Challenges für die Diashow am Ende
+    snapHighlights: state.phase === 'end' ? (state.snapHighlights || []) : [],
+    customCards: CUSTOM_CARDS.map(c => ({ id: c.id, type: c.type, text: c.text, where: c.where })),
     players: list(ps),
   };
 }
@@ -1088,6 +1124,10 @@ function sendPrivate(socket, id) {
       };
     } else if (m === 'pantomime' && state.phase === 'question' && p.name === state.mimeName) {
       priv = { mode: 'pantomime', actor: true, word: state.mimeWord, skipsLeft: MIME_SKIPS - state.mimeSkips, mission };
+    } else if (state.phase === 'card' && state.card && state.card.act === 'snap' && state.card.entries.some(e => e.name === p.name)) {
+      // Foto-Challenge: welches Foto ist meins? (auch nach Neuladen, damit es bei der Abstimmung markiert ist)
+      const i = state.card.entries.findIndex(e => e.name === p.name);
+      priv = { mode: 'snap', snapMine: i, snapUrl: state.card.entries[i].url, mission };
     } else if (mission) {
       priv = { mission };
     }
@@ -1186,9 +1226,10 @@ function startGame() {
   }
   state.idx = -1;
   state.card = null;
+  state.snapHighlights = [];
   state.rule = null;
   state.lastCardIdx = -1;
-  pVals().forEach(p => { p.score = 0; p.prevScore = 0; p.lastGain = 0; p.streak = 0; p.drinks = 0; p.stats = { fastSum: 0, fastCount: 0, bestEstimate: 0, guessedWords: 0 }; });
+  pVals().forEach(p => { p.score = 0; p.prevScore = 0; p.lastGain = 0; p.streak = 0; p.drinks = 0; p.stats = freshStats(); });
   nextRound();
 }
 
@@ -1380,7 +1421,7 @@ function pickPartyCard() {
   const ranked = rankedPlayers();
   const n = ranked.length;
   const hasRanking = n >= 2 && ranked[0].score > ranked[n - 1].score;
-  const pool = PARTY_CARDS.filter(c => {
+  const pool = [...PARTY_CARDS, ...CUSTOM_CARDS].filter(c => {
     const t = PARTY_CARD_TYPES[c.type];
     if (!t || n < (t.min || 2)) return false;
     // Vor Ort keine Remote-Karten (Kamera/Foto-Challenge), remote keine Karten mit Nachbarn/Gruppenfoto im selben Raum
@@ -1421,11 +1462,12 @@ function maybeStartPartyCard() {
   state.lastCardIdx = state.idx;
   state.cardShownAt = Date.now();
   const isPair = c.type === 'photo' && c.who === 'pair';
-  const reward = c.type === 'group' ? CARD_GROUP_PTS : act === 'vote' ? CARD_VOTE_PTS : act === 'duel' ? CARD_DUEL_PTS : act === 'snap' ? CARD_SNAP_PTS : (c.pts || c.amount || 0);
+  const isDuel = act === 'duel' || c.type === 'snapduel';
+  const reward = c.type === 'group' ? CARD_GROUP_PTS : act === 'vote' ? CARD_VOTE_PTS : isDuel ? CARD_DUEL_PTS : act === 'snap' ? CARD_SNAP_PTS : (c.pts || c.amount || 0);
   state.card = {
     id: c.id, type: c.type, title: PARTY_CARD_TYPES[c.type].title, act, text,
     target: target ? target.name : null,
-    duel: act === 'duel' ? [roles.a.name, roles.b.name] : null,
+    duel: isDuel ? [roles.a.name, roles.b.name] : null,
     pair: isPair ? [roles.a.name, roles.b.name] : null,
     reward, minus: c.minus || 0, amount: c.amount || 0,
     votes: {}, tally: null, resolved: false, outcome: null,
@@ -1442,7 +1484,8 @@ function maybeStartPartyCard() {
   return true;
 }
 
-// ---- Foto-Challenge (Remote): jeder lädt ein Foto hoch, dann wählen alle anonym das beste ----
+// ---- Foto-Challenge (Remote): Fotos hochladen, dann anonym das beste wählen ----
+// Foto-Duell: nur die zwei Ausgelosten (card.duel) fotografieren, abstimmen dürfen nur die anderen.
 function startSnapVote() {
   const card = state.card;
   if (state.phase !== 'card' || !card || card.act !== 'snap' || card.resolved || card.stage !== 'collect') return;
@@ -1461,6 +1504,7 @@ function cardPhoto(name, url, cardId) {
   const card = state.card;
   const p = anyPlayer(name);
   if (state.phase !== 'card' || !card || card.act !== 'snap' || card.resolved || card.id !== cardId || !p) return false;
+  if (card.duel && !card.duel.includes(p.name)) return false;
   const own = card.entries.find(e => e.name === p.name);
   if (card.stage === 'vote') {
     // Zu spät, aber Abstimmung läuft noch: als weiteres Foto anhängen (ersetzen nicht mehr – darauf wurde evtl. schon gestimmt)
@@ -1478,14 +1522,30 @@ function cardPhoto(name, url, cardId) {
   return true;
 }
 
-// Alle verbundenen Spieler haben ein Foto – aber nie mit weniger als 2 Fotos vorzeitig abbrechen:
+// Alle, die fotografieren sollen, haben ein Foto – aber nie mit weniger als 2 Fotos vorzeitig abbrechen:
 // wer gerade in der Kamera-App ist, gilt kurz als getrennt; dann wartet die Karte bis zum Timer.
-const snapAllSubmitted = card => card.entries.length >= 2
-  && pVals().filter(x => !x.isLocal).every(q => card.entries.some(e => e.name === q.name));
+const snapAllSubmitted = card => card.entries.length >= 2 && (card.duel
+  ? card.duel.every(n => card.entries.some(e => e.name === n))
+  : pVals().filter(x => !x.isLocal).every(q => card.entries.some(e => e.name === q.name)));
 
+const snapVoters = card => pVals().filter(x => !x.isLocal && !(card.duel || []).includes(x.name)).map(x => x.name);
 // Fertig, wenn jeder abgestimmt hat – oder nichts wählen kann, weil nur das eigene Foto da ist
-const snapVotingDone = card => pVals().filter(x => !x.isLocal)
-  .every(p => p.name in card.votes || card.entries.every(e => e.name === p.name));
+const snapVotingDone = card => snapVoters(card).every(n => n in card.votes || card.entries.every(e => e.name === n));
+
+// Foto-Abstimmung läuft ohne Zeitlimit; „Weiter“ (Admin, TV, Handy-Abstimmung) wertet erst ab 2 Stimmen aus
+function snapVoteBlocked() {
+  const c = state.card;
+  return state.phase === 'card' && !!c && c.act === 'snap' && !c.resolved && c.stage === 'vote' && Object.keys(c.votes).length < 2;
+}
+
+function cardNext() {
+  const c = state.card;
+  if (c && c.act === 'snap' && !c.resolved && c.stage === 'vote') {
+    if (!snapVoteBlocked()) resolvePartyCard();
+    return;
+  }
+  nextRound();
+}
 
 // Ja/Nein-Karten bewerten die Spieler selbst: alle außer den Betroffenen ({leader}/{last}/Foto-Paar);
 // bleiben dafür weniger als 2 übrig, stimmen alle ab. Mindestens 2 Stimmen, Mehrheit entscheidet (Gleichstand = nicht gelungen).
@@ -1556,18 +1616,29 @@ function resolvePartyCard(arg) {
     card.tally = tally;
     outcome = winners.length ? `🏆 ${winners.join(' & ')} ${winners.length > 1 ? 'gewinnen' : 'gewinnt'}! +${card.reward}` : 'Keine Stimmen – keine Punkte';
   } else if (card.act === 'snap') {
-    if (card.entries.length < 2) {
-      outcome = '📸 Zu wenige Fotos – diesmal keine Punkte';
+    const what = card.duel ? 'das Foto-Duell' : 'die Foto-Challenge';
+    if (!card.entries.length) {
+      outcome = '📸 Keine Fotos – diesmal keine Punkte';
+    } else if (card.entries.length === 1) {
+      // Nur ein Foto: trotzdem zeigen, Fotograf bekommt den Foto-Bonus
+      const e = card.entries[0];
+      addPoints(anyPlayer(e.name), CARD_SNAP_BONUS);
+      card.order = [0];
+      card.tally = {};
+      outcome = `📸 Nur ein Foto – ${e.name} bekommt +${CARD_SNAP_BONUS}`;
     } else {
       const tally = {};
       for (const i of Object.values(card.votes)) tally[i] = (tally[i] || 0) + 1;
       const max = Math.max(0, ...Object.values(tally));
-      const winners = max > 0 ? Object.keys(tally).filter(i => tally[i] === max).map(i => card.entries[i].name) : [];
+      const winIdx = max > 0 ? Object.keys(tally).filter(i => tally[i] === max).map(Number) : [];
+      const winners = winIdx.map(i => card.entries[i].name);
       card.entries.forEach(e => addPoints(anyPlayer(e.name), CARD_SNAP_BONUS));
       winners.forEach(n => addPoints(anyPlayer(n), card.reward));
+      for (const [i, n] of Object.entries(tally)) bumpStat(anyPlayer(card.entries[i].name), 'snapVotes', n);
+      (state.snapHighlights ||= []).push(...winIdx.map(i => ({ url: card.entries[i].url, name: card.entries[i].name, text: card.text })));
       card.tally = tally;
       outcome = winners.length
-        ? `🏆 ${winners.join(' & ')} ${winners.length > 1 ? 'gewinnen' : 'gewinnt'} die Foto-Challenge! +${card.reward} (jedes Foto +${CARD_SNAP_BONUS})`
+        ? `🏆 ${winners.join(' & ')} ${winners.length > 1 ? 'gewinnen' : 'gewinnt'} ${what}! +${card.reward} (jedes Foto +${CARD_SNAP_BONUS})`
         : `📸 Keine Stimmen – jedes Foto +${CARD_SNAP_BONUS}`;
     }
   } else if (card.act === 'mode') {
@@ -1581,6 +1652,7 @@ function resolvePartyCard(arg) {
   for (const [p, prev] of before) {
     p.prevScore = prev;
     p.lastGain = Math.max(0, (p.score || 0) - prev);
+    bumpStat(p, 'cardPts', (p.score || 0) - prev);
   }
   card.resolved = true;
   if (card.act === 'yesno' && Object.keys(card.votes).length) {
@@ -1589,7 +1661,7 @@ function resolvePartyCard(arg) {
   }
   card.outcome = outcome;
   // Foto-Challenge: Siegerfoto und alle Fotos mit Namen etwas länger zeigen
-  armAutoNext(card.act === 'snap' && card.entries.length >= 2 ? CARD_AUTO_NEXT_MS * 2 : CARD_AUTO_NEXT_MS);
+  armAutoNext(card.act === 'snap' && card.entries.length >= 1 ? CARD_AUTO_NEXT_MS * 2 : CARD_AUTO_NEXT_MS);
 }
 
 function publicCard() {
@@ -1605,6 +1677,7 @@ function publicCard() {
     // Foto-Challenge: beim Sammeln nur, wer schon hat; ab der Abstimmung anonyme Fotos, Namen erst nach der Auswertung
     stage: c.stage,
     submitted: c.act === 'snap' ? c.entries.map(e => e.name) : null,
+    snapVoters: c.act === 'snap' ? snapVoters(c) : null,
     photos: c.act === 'snap' && c.order ? c.order.map(i => ({
       i, url: c.entries[i].url, name: c.resolved ? c.entries[i].name : null, votes: c.resolved ? (c.tally && c.tally[i]) || 0 : null,
     })) : null,
@@ -2137,6 +2210,8 @@ function showResult() {
     if (['quiz', 'imagequiz', 'songquiz', 'estimate', 'reaction', 'imposter', 'draw', 'taboo', 'pantomime', 'truthlie', 'sort'].includes(m)) {
       const wonRound = m === 'sort' ? gain >= 500 : gain > 0;
       p.streak = wonRound ? (p.streak || 0) + 1 : 0;
+      if (!wonRound) bumpStat(p, 'misses');
+      if (p.stats && p.streak > (p.stats.bestStreak || 0)) p.stats.bestStreak = p.streak;
     }
   });
 
@@ -2269,7 +2344,7 @@ function attachSocket(socket, ip, allowEvent) {
         writeLog('INFO', 'player_rejoined', { name, socketId: socket.id, score: players[socket.id].score });
       } else {
         token = crypto.randomBytes(16).toString('base64url');
-        players[socket.id] = { name, avatar: rawAvatar, reconnectToken: token, team: null, score: 0, drinks: 0, answer: null, answeredAt: 0, stats: { fastSum: 0, fastCount: 0, bestEstimate: 0, guessedWords: 0 } };
+        players[socket.id] = { name, avatar: rawAvatar, reconnectToken: token, team: null, score: 0, drinks: 0, answer: null, answeredAt: 0, stats: freshStats() };
         writeLog('INFO', 'player_joined', { name, socketId: socket.id });
       }
     }
@@ -2289,6 +2364,7 @@ function attachSocket(socket, ip, allowEvent) {
     if (!allowEvent('skipVote', 4_000, 10)) return;
     if (!['question', 'go', 'write', 'discuss', 'result', 'card'].includes(state.phase) || displayMode === 'onedevice') return;
     if (state.phase === 'card' && Date.now() - state.cardShownAt < CARD_SKIP_DELAY_MS) return;
+    if (snapVoteBlocked()) return;
     const p = players[socket.id];
     if (!p) return;
     const key = p.name.toLowerCase();
@@ -2300,7 +2376,8 @@ function attachSocket(socket, ip, allowEvent) {
     if (activeCount >= needed) {
       writeLog('INFO', 'skip_vote_triggered', { phase: state.phase, activeCount, needed, total: ps.length });
       if (state.phase === 'discuss') startImposterVote();
-      else if (state.phase === 'write' || state.phase === 'result' || state.phase === 'card') nextRound();
+      else if (state.phase === 'card') cardNext();
+      else if (state.phase === 'write' || state.phase === 'result') nextRound();
       else showResult();
     } else {
       broadcast();
@@ -2488,7 +2565,7 @@ function attachSocket(socket, ip, allowEvent) {
     if (pVals().some(p => p.name.toLowerCase() === name.toLowerCase())) return ack && ack({ ok: false, error: 'Name schon vergeben' });
     if (Object.keys(players).length >= MAX_PLAYERS) return ack && ack({ ok: false, error: 'Max. 12 Spieler' });
     const id = `local:${Date.now()}:${++localCounter}`;
-    players[id] = { name, avatar, team: null, score: 0, drinks: 0, answer: null, answeredAt: 0, stats: { fastSum: 0, fastCount: 0, bestEstimate: 0, guessedWords: 0 }, isLocal: true };
+    players[id] = { name, avatar, team: null, score: 0, drinks: 0, answer: null, answeredAt: 0, stats: freshStats(), isLocal: true };
     ack && ack({ ok: true });
     broadcast();
   });
@@ -2712,8 +2789,35 @@ function attachSocket(socket, ip, allowEvent) {
     partyCards = freq;
     broadcast();
   });
-  socket.on('host:cardResolve', arg => resolvePartyCard(arg));
+  socket.on('host:cardResolve', arg => { if (!snapVoteBlocked()) resolvePartyCard(arg); });
   socket.on('host:snapVote', () => startSnapVote());
+  // Eigene Party-Karten: type ∈ CUSTOM_CARD_TYPES, where = both|local|remote
+  socket.on('host:addCard', (payload, ack) => {
+    if (!allowEvent('addCard', 60_000, 20)) return ack && ack({ ok: false, error: 'Zu viele Karten, kurz warten' });
+    const type = payload && CUSTOM_CARD_TYPES.includes(payload.type) ? payload.type : null;
+    let text = String((payload && payload.text) || '').trim().replace(/\s+/g, ' ').slice(0, 200);
+    const where = ['local', 'remote'].includes(payload && payload.where) ? payload.where : 'both';
+    if (!type) return ack && ack({ ok: false, error: 'Kartentyp fehlt' });
+    if (text.length < 5) return ack && ack({ ok: false, error: 'Text zu kurz' });
+    if (type === 'duel' && !/\{a\}/.test(text)) text = `{a} gegen {b}: ${text}`;
+    const card = { id: `c${Date.now().toString(36)}${crypto.randomBytes(2).toString('hex')}`, type, text, where };
+    if (where === 'local') card.local = true;
+    if (where === 'remote') card.remote = true;
+    if (type === 'group') card.sec = 30;
+    if (type === 'snap') card.sec = 90;
+    CUSTOM_CARDS.push(card);
+    saveCustomCards();
+    writeLog('INFO', 'custom_card_added', { room: code, type, where });
+    broadcast();
+    ack && ack({ ok: true });
+  });
+  socket.on('host:delCard', id => {
+    const i = CUSTOM_CARDS.findIndex(c => c.id === id);
+    if (i < 0) return;
+    CUSTOM_CARDS.splice(i, 1);
+    saveCustomCards();
+    broadcast();
+  });
   socket.on('host:remote', on => {
     remoteMode = !!on;
     broadcast();
@@ -2733,7 +2837,7 @@ function attachSocket(socket, ip, allowEvent) {
     if (card.act === 'snap') {
       // Ziel = Index des (anonymen) Fotos; das eigene Foto zählt nicht
       const entry = card.stage === 'vote' && Number.isInteger(targetName) ? card.entries[targetName] : null;
-      if (!entry || entry.name === p.name) return;
+      if (!entry || entry.name === p.name || !snapVoters(card).includes(p.name)) return;
       card.votes[p.name] = targetName;
       if (snapVotingDone(card)) return resolvePartyCard();
       return broadcast();
@@ -2936,7 +3040,8 @@ function attachSocket(socket, ip, allowEvent) {
       fn();
     } else if (state.phase === 'discuss') startImposterVote();
     else if (state.phase === 'write') nextRound();
-    else if (state.phase === 'result' || state.phase === 'card') nextRound();
+    else if (state.phase === 'card') cardNext();
+    else if (state.phase === 'result') nextRound();
     else if (state.phase === 'question' || state.phase === 'go') showResult();
   });
   socket.on('host:pause', () => {
@@ -3098,7 +3203,7 @@ function applySnapshot(snap) {
     const name = ps.name.trim().slice(0, 16);
     const data = {
       team: null, score: 0, drinks: 0, answer: null, answeredAt: 0,
-      stats: { fastSum: 0, fastCount: 0, bestEstimate: 0, guessedWords: 0 },
+      stats: freshStats(),
       ...playerSnap(name, ps),
     };
     if (ps.local) {
