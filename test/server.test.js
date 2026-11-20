@@ -923,6 +923,82 @@ describe('PartyGame Server', () => {
     }
   });
 
+  it('Mitmach photo card: the first photo of each player during the card gives +5, later ones nothing', async () => {
+    const { io: ioc } = require('socket.io-client');
+    const nodeCrypto = require('node:crypto');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const admin = connect();
+    const names = ['Ada', 'Bo'];
+    const players = names.map(connect);
+    const file = path.join(__dirname, '..', 'data', 'customcards.json');
+    const backup = fs.existsSync(file) ? fs.readFileSync(file) : null;
+    let S = null;
+    let pops = [];
+    admin.on('state', s => { S = s; });
+    admin.on('photo:new', p => { pops.push(p); });
+    const until = async (pred, ms = 3000) => {
+      const end = Date.now() + ms;
+      while (Date.now() < end) { if (S && pred(S)) return S; await new Promise(res => setTimeout(res, 20)); }
+      throw new Error(`timeout, phase=${S && S.phase}`);
+    };
+    const upload = (who, fill) => fetch(`${baseUrl}/api/photos/${code}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(who) },
+      body: Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200, fill), Buffer.from([0xff, 0xd9])]),
+    });
+    const realRandom = Math.random;
+    const realRandomInt = nodeCrypto.randomInt;
+    let cardId = null;
+    try {
+      await Promise.all(players.map((p, i) => new Promise(res => p.emit('join', { name: names[i], avatar: '😎' }, res))));
+      const added = await new Promise(res => admin.emit('host:addCard', { type: 'crowd', where: 'local', text: 'Alle machen ein Gruppenfoto mit Grimasse!' }, res));
+      assert.equal(added.ok, true);
+      await until(s => s.customCards.some(c => c.text.includes('Grimasse')));
+      cardId = S.customCards.find(c => c.text.includes('Grimasse')).id;
+      admin.emit('host:mode', 'quiz');
+      admin.emit('host:wheelEnabled', false);
+      admin.emit('host:partyCards', 'often');
+      await until(s => s.partyCards === 'often' && s.players.length === 2);
+      admin.emit('host:start');
+      for (let round = 0; round < 4 && S.phase !== 'card'; round++) {
+        await until(s => s.phase === 'question' && s.idx === round);
+        await Promise.all(players.map((p, i) => new Promise(res => p.emit('answer', i, res))));
+        await until(s => s.phase === 'result');
+        // vor Ort ist „Mitmach“ der letzte Kartentyp, die eigene Karte die letzte darin
+        Math.random = () => 0.9999;
+        nodeCrypto.randomInt = (...a) => (a.length === 1 && typeof a[0] === 'number' ? a[0] - 1 : realRandomInt(...a));
+        admin.emit('host:next');
+        await until(s => s.phase === 'card' || (s.phase === 'question' && s.idx === round + 1));
+        Math.random = realRandom;
+        nodeCrypto.randomInt = realRandomInt;
+      }
+      assert.equal(S.card.type, 'crowd');
+      assert.equal(S.card.photo, true);
+      assert.deepEqual(S.card.photoBonus, { pts: 5, got: [] });
+      const before = Object.fromEntries(S.players.map(p => [p.name, p.score]));
+      await upload('Ada', 1);
+      await upload('Ada', 2);
+      await upload('Bo', 3);
+      await until(s => s.card.photoBonus.got.length === 2);
+      const diff = Object.fromEntries(S.players.map(p => [p.name, p.score - before[p.name]]));
+      assert.deepEqual(diff, { Ada: 5, Bo: 5 });
+      assert.deepEqual(pops.map(p => p.bonus || 0), [5, 0, 5]);
+    } finally {
+      Math.random = realRandom;
+      nodeCrypto.randomInt = realRandomInt;
+      if (cardId) admin.emit('host:delCard', cardId);
+      await new Promise(res => setTimeout(res, 100));
+      admin.close();
+      players.forEach(p => p.close());
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+      fs.rmSync(path.join(__dirname, '..', 'data', 'photos', code), { recursive: true, force: true });
+      if (backup) fs.writeFileSync(file, backup);
+      else fs.rmSync(file, { force: true });
+    }
+  });
+
   it('timer tempo scales the result pause: "relaxed" waits for Weiter, "fast" is shorter', async () => {
     const { io: ioc } = require('socket.io-client');
     const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();

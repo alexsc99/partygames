@@ -102,6 +102,7 @@ const CARD_VOTE_PTS = 30;
 const CARD_DUEL_PTS = 40;
 const CARD_SNAP_PTS = 30; // bestes Foto
 const CARD_SNAP_BONUS = 10; // jedes eingereichte Foto
+const CARD_PHOTO_BONUS = 5; // Mitmach-Karte mit Foto-Aufgabe: erstes Foto pro Spieler
 const CARD_RULE_ROUNDS = 3;
 const CARD_AUTO_NEXT_MS = 6000;
 // Statistik für die Auszeichnungen am Spielende; alte Spielstände (Neustart) haben nicht alle Felder → bumpStat
@@ -1541,6 +1542,18 @@ function snapVoteBlocked() {
   return state.phase === 'card' && !!c && c.act === 'snap' && !c.resolved && c.stage === 'vote' && Object.keys(c.votes).length < 2;
 }
 
+// Mitmach-Karte mit Foto-Aufgabe: das erste hochgeladene Foto pro Spieler bringt +5 (Rückgabe: vergebene Punkte)
+function crowdPhotoBonus(name) {
+  const card = state.card;
+  if (state.phase !== 'card' || !card || card.type !== 'crowd' || !card.photo) return 0;
+  const p = anyPlayer(name);
+  if (!p || (card.photoBonus ||= []).includes(p.name)) return 0;
+  card.photoBonus.push(p.name);
+  addPoints(p, CARD_PHOTO_BONUS);
+  bumpStat(p, 'cardPts', CARD_PHOTO_BONUS);
+  return CARD_PHOTO_BONUS;
+}
+
 function cardNext() {
   const c = state.card;
   if (c && c.act === 'snap' && !c.resolved && c.stage === 'vote') {
@@ -1674,6 +1687,7 @@ function publicCard() {
     id: c.id, type: c.type, title: c.title, act: c.act, text: c.text,
     target: c.target, targetLabel: c.target ? lbl(c.target) : null,
     duel: c.duel, pair: c.pair, reward: c.reward, minus: c.minus, amount: c.amount, photo: !!c.photo,
+    photoBonus: c.type === 'crowd' && c.photo ? { pts: CARD_PHOTO_BONUS, got: c.photoBonus || [] } : null,
     voters: c.act === 'vote' || c.act === 'yesno' || c.act === 'snap' ? Object.keys(c.votes) : [],
     judges: c.act === 'yesno' ? cardJudges(c) : null,
     tally: c.tally, resolved: c.resolved, outcome: c.outcome,
@@ -3285,7 +3299,8 @@ return {
   // Neues Foto: TV blendet es kurz ein, Zähler in Admin/Handys aktualisieren
   onPhoto: (photo, { card, name } = {}) => {
     if (card && cardPhoto(name, photo.url, card)) return; // Foto-Challenge: erst bei der Abstimmung zeigen
-    io.to(ROOM_CHAN).emit('photo:new', photo);
+    const bonus = crowdPhotoBonus(name);
+    io.to(ROOM_CHAN).emit('photo:new', bonus ? { ...photo, bonus } : photo);
     broadcast();
   },
   serialize,
