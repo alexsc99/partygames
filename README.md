@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.10.0)
+# 🎉 PartyGame (Version 3.11.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -63,6 +63,7 @@ Es gibt drei URLs:
 - **Song-Sprachen & Russisch-Anteil:** In `/admin` unter *Erkenne den Song* sind `🇬🇧 Englisch` und `🇩🇪 Deutsch` standardmäßig aktiv; der `🇷🇺 Russisch-Anteil` lässt sich per Slider von `0%` bis `100%` regeln (Standard: `0%`). Optional auf *Nur Interpret & Titel* begrenzbar.
 - **🕵️ Geheime Missionen:** Optional in `/admin` aktivierbar — ein zufälliger Spieler erhält auf seinem Handy eine geheime Runden-Aufgabe (+150 Bonus-Punkte bei Erfolg, Auflösung & Bewertung am Rundenende).
 - **🎪 Party-Karten:** Optional in `/admin` (Aus / Selten / Normal / Oft). Zwischen zwei Runden erscheint ab und zu eine Karte auf TV und Handys: 🎉 Gruppen-Challenge (+200 für alle oder alle trinken bzw. Kniebeugen), 👑 Kopfgeld auf den Spitzenreiter, 🆘 Aufholchance für den Letzten, 🎤 Reihum-Runde mit Handy-Abstimmung (+300), ⚡ Blitz-Duell zweier ausgeloster Spieler (+400), 🔄 Weitergeben und 📜 Regelkarten, die 3 Runden lang am TV-Rand stehen. Ausgewertet wird im Admin; nie direkt vor der Finalrunde, nicht im Ein-Gerät-Modus. Karten aus „Peinlich“/„Hot 18+“ nur bei aktiver Kategorie, „Alkoholfrei“ tauscht Trink-Aufgaben aus.
+- **⏱️ Timer-Tempo:** *Schnell* = Antwortzeit −30 % und kürzere Auflösung · *Normal* = Standard (Auflösung geht nach 7–15 s automatisch weiter) · *Entspannt* = Antwortzeit +50 %, Auflösung und Karten-Ergebnisse bleiben stehen, bis jemand „Weiter“ tippt (Admin, TV oder Handy-Abstimmung).
 - **Lautstärke-Regler & Auto-Timer-Sync:** Eigener Lautstärke-Slider auf TV und Handy; der Song-Timer synchronisiert sich unabhängig von unterschiedlichen Geräte-Uhrzeiten exakt mit dem Audio-Start.
 - **Finalrunde (2× Punkte):** Die letzte Runde eines Spiels zählt automatisch doppelt (in `/admin` ein-/ausschaltbar).
 - **Sieger-Awards:** Am Spielende gibt es Auszeichnungen (*Trinkkönig*, *Blitzdenker*, *Rate-Profi*, *Schätz-Meister*).
@@ -213,7 +214,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.10.0 (Aktueller Stand):** Neue Option **🎪 Party-Karten** (Aufgaben zwischen den Runden: Gruppen-Challenge, Kopfgeld, Underdog, Reihum-Runde mit Handy-Abstimmung, Blitz-Duell, Weitergeben, Regelkarten; Auswertung im Admin), Karten in `data/partycards.json`.
+- **v3.11.0 (Aktueller Stand):** Timer-Tempo wirkt jetzt auch auf die Pausen: *Schnell* verkürzt Auflösung/Karten-Ergebnis um 30 %, *Entspannt* gibt +50 % Antwortzeit (vorher +40 %) und wartet nach der Auflösung auf „Weiter“.
+- **v3.10.0:** Neue Option **🎪 Party-Karten** (Aufgaben zwischen den Runden: Gruppen-Challenge, Kopfgeld, Underdog, Reihum-Runde mit Handy-Abstimmung, Blitz-Duell, Weitergeben, Regelkarten; Auswertung im Admin), Karten in `data/partycards.json`.
 - **v3.9.2:** „Link kopieren“ (Admin, Handy, TV) funktioniert auch über `http://<IP>`: gemeinsamer Helfer `pgCopyText` mit Fallback, wenn die Clipboard-API fehlt; „✅ kopiert“ erscheint nur noch, wenn wirklich kopiert wurde.
 - **v3.9.1:** Versionsnummer wird unten in `/admin` angezeigt (Platzhalter `__APP_VERSION__` wird beim Start aus `package.json` gefüllt).
 - **v3.9.0:** Neues Bild-Quiz-Thema **🗺️ Länder-Umrisse** (40 Länder, "Welches Land hat diese Umrisse?"), in `/admin` unter *Bild-Quiz Themen* einzeln an-/abwählbar und in „Alle“ enthalten.

@@ -98,7 +98,8 @@ const SPIN_DURATION_MS = 4200;
 const MIX_ROUNDS = 12;
 const CATEGORIES = ['party', 'peinlich', 'kennenlernen', 'date', 'hot18'];
 const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20 };
-const TIMER_MULT = { fast: 0.7, normal: 1.0, relaxed: 1.4 };
+const TIMER_MULT = { fast: 0.7, normal: 1.0, relaxed: 1.5 }; // Antwortzeit
+const RESULT_MULT = { fast: 0.7, normal: 1.0, relaxed: 0 }; // Auflösung/Karten-Ergebnis; 0 = kein Auto-Weiter (Zeit zum Quatschen)
 const REACTION_ROUNDS = 5;
 const PORT = Number(process.env.PORT) || 3002;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -596,6 +597,16 @@ let partyCards = 'off'; // 'off' | 'rare' | 'normal' | 'often'
 let timerSpeed = 'normal';
 let mixRounds = MIX_ROUNDS;
 const roundTimeMs = m => Math.max(4000, Math.round((TIME[m] || 20) * (m === 'reaction' ? 1 : (TIMER_MULT[timerSpeed] || 1)) * 1000));
+// Pause nach Auflösung, Missions- oder Karten-Ergebnis: „Entspannt“ wartet auf „Weiter“ (Admin, TV oder Handy-Abstimmung)
+function armAutoNext(baseMs) {
+  clearTimeout(timer);
+  const mult = RESULT_MULT[timerSpeed] ?? 1;
+  const ms = baseMs > 0 && mult > 0 ? Math.max(3000, Math.round(baseMs * mult)) : 0;
+  state.totalMs = ms;
+  state.deadline = ms ? Date.now() + ms : 0;
+  broadcast();
+  if (ms) timer = setTimeout(nextRound, ms);
+}
 const SECRET_MISSIONS = [
   'Bau das Wort „Banane“ unauffällig in einen Satz ein.',
   'Bau das Wort „Montag“ unauffällig in deine Aussage ein.',
@@ -1390,11 +1401,7 @@ function resolvePartyCard(arg) {
   }
   card.resolved = true;
   card.outcome = outcome;
-  clearTimeout(timer);
-  state.totalMs = CARD_AUTO_NEXT_MS;
-  state.deadline = Date.now() + CARD_AUTO_NEXT_MS;
-  broadcast();
-  timer = setTimeout(nextRound, CARD_AUTO_NEXT_MS);
+  armAutoNext(CARD_AUTO_NEXT_MS);
 }
 
 function publicCard() {
@@ -1885,12 +1892,8 @@ function showResult() {
     }
   });
 
-  if (state.mission && !state.mission.resolved) autoNextMs = 0;
   state.phase = 'result';
-  state.totalMs = autoNextMs;
-  state.deadline = autoNextMs > 0 ? Date.now() + autoNextMs : 0;
-  broadcast();
-  if (autoNextMs > 0) timer = setTimeout(nextRound, autoNextMs);
+  armAutoNext(state.mission && !state.mission.resolved ? 0 : autoNextMs);
 }
 
 
@@ -2486,11 +2489,7 @@ function attachSocket(socket, ip, allowEvent) {
       missionTarget.lastGain = (missionTarget.lastGain || 0) + 150;
     }
     if (state.phase === 'result') {
-      clearTimeout(timer);
-      state.totalMs = 3500;
-      state.deadline = Date.now() + 3500;
-      broadcast();
-      timer = setTimeout(nextRound, 3500);
+      armAutoNext(3500);
     } else {
       broadcast();
     }

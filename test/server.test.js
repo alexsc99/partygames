@@ -691,4 +691,43 @@ describe('PartyGame Server', () => {
       rooms.delete(code);
     }
   });
+
+  it('timer tempo scales the result pause: "relaxed" waits for Weiter, "fast" is shorter', async () => {
+    const { io: ioc } = require('socket.io-client');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const admin = connect();
+    const player = connect();
+    let S = null;
+    admin.on('state', s => { S = s; });
+    const until = async pred => {
+      const end = Date.now() + 3000;
+      while (Date.now() < end) { if (S && pred(S)) return S; await new Promise(r => setTimeout(r, 20)); }
+      throw new Error(`timeout, phase=${S && S.phase}`);
+    };
+    const resultFor = async speed => {
+      admin.emit('host:reset');
+      admin.emit('host:mode', 'quiz');
+      admin.emit('host:timerSpeed', speed);
+      await until(s => s.phase === 'lobby' && s.timerSpeed === speed);
+      admin.emit('host:start');
+      await until(s => s.phase === 'question');
+      await new Promise(res => player.emit('answer', 0, res));
+      return until(s => s.phase === 'result');
+    };
+    try {
+      await new Promise(res => player.emit('join', { name: 'Tempo', avatar: '😎' }, res));
+      admin.emit('host:wheelEnabled', false);
+      assert.equal((await resultFor('normal')).totalMs, 7000);
+      assert.equal((await resultFor('fast')).totalMs, 4900);
+      const relaxed = await resultFor('relaxed');
+      assert.equal(relaxed.deadline, 0, 'relaxed result must not auto-advance');
+      assert.equal(relaxed.leftMs, 0);
+    } finally {
+      admin.close();
+      player.close();
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
 });
