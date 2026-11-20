@@ -10,6 +10,7 @@
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .btn { background: #4b3a9e; color: #fff; padding: 12px 16px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
   .btn.dl { background: #26890c; }
+  .btn.del { background: #b3261e; }
   input[type=text] { padding: 11px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: #1b1340; color: #fff; font-size: 15px; min-width: 160px; flex: 1; }
   .info { font-size: 13px; opacity: .8; margin-top: 8px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
@@ -33,12 +34,12 @@
     <a id="zip" class="btn dl" href="#">⬇️ Alle als ZIP</a>
     <button class="btn" type="button" onclick="copyLink()">📋 Galerie-Link kopieren</button>
   </div>
-  <div class="info">Alle mit dem Raum-Link können die Fotos sehen und weitere hochladen. Jedes Foto wird 7 Tage nach dem Hochladen automatisch gelöscht.</div>
+  <div class="info">Alle mit dem Raum-Link können die Fotos sehen und weitere hochladen. Jedes Foto wird 7 Tage nach dem Hochladen automatisch gelöscht. Eigene Fotos (als Spielleitung alle) kannst du in der Großansicht mit 🗑️ löschen.</div>
 </div>
 <div id="grid" class="grid"></div>
 <div id="lightbox" onclick="if(event.target===this)closeBox()">
   <img id="lbImg" alt="">
-  <div class="row"><a id="lbDl" class="btn dl" href="#">⬇️ Herunterladen</a><button class="btn" type="button" onclick="closeBox()">✕ Schließen</button></div>
+  <div class="row"><a id="lbDl" class="btn dl" href="#">⬇️ Herunterladen</a><button id="lbDel" class="btn del" type="button" onclick="deleteCurrent()">🗑️ Löschen</button><button class="btn" type="button" onclick="closeBox()">✕ Schließen</button></div>
 </div>
 <script src="/js/ux-helpers.js"></script>
 <script>
@@ -52,6 +53,9 @@ document.getElementById('code').textContent = ROOM_CODE || '–';
 document.getElementById('zip').href = '/api/photos/' + encodeURIComponent(ROOM_CODE) + '/zip';
 let photos = [];
 let lastSig = null;
+let boxIdx = -1;
+const isHost = () => !!localStorage.getItem('pg_host_' + ROOM_CODE);
+const canDelete = p => !!p && (isHost() || !!pgPhotoKey(p.id));
 
 async function load() {
   const grid = document.getElementById('grid');
@@ -67,17 +71,29 @@ async function load() {
   lastSig = sig;
   document.getElementById('zip').style.display = photos.length ? '' : 'none';
   grid.innerHTML = photos.length
-    ? photos.map((p, i) => `<button type="button" onclick="openBox(${i})"><img src="${esc(p.url)}" loading="lazy" alt="">${p.name ? `<small>📸 ${esc(p.name)}</small>` : ''}</button>`).join('')
+    ? photos.map((p, i) => `<button type="button" onclick="openBox(${i})"><img src="${esc(p.url)}" loading="lazy" alt="">${p.name || pgPhotoKey(p.id) ? `<small>📸 ${esc(p.name || '')}${pgPhotoKey(p.id) ? ' · deins' : ''}</small>` : ''}</button>`).join('')
     : '<div class="empty" style="grid-column:1/-1">Noch keine Fotos – lade das erste hoch! 🎉</div>';
 }
 function openBox(i) {
   const p = photos[i];
   if (!p) return;
+  boxIdx = i;
   document.getElementById('lbImg').src = p.url;
   document.getElementById('lbDl').href = p.url + '?dl=1';
+  document.getElementById('lbDel').style.display = canDelete(p) ? '' : 'none';
   document.getElementById('lightbox').classList.add('on');
 }
-function closeBox() { document.getElementById('lightbox').classList.remove('on'); }
+function closeBox() { document.getElementById('lightbox').classList.remove('on'); boxIdx = -1; }
+async function deleteCurrent() {
+  const p = photos[boxIdx];
+  if (!p || !confirm('Dieses Foto wirklich löschen? Das geht nicht rückgängig.')) return;
+  const r = await pgDeletePhoto(ROOM_CODE, p.id);
+  if (!r.ok) { pgToast('⚠️ ' + r.error, 3500); return; }
+  pgToast('🗑️ Foto gelöscht');
+  closeBox();
+  lastSig = null;
+  load();
+}
 function upload(input) { pgPhotoInput(input, ROOM_CODE, nameInp.value.trim(), load); }
 async function copyLink() {
   if (await pgCopyText(location.origin + '/fotos?room=' + encodeURIComponent(ROOM_CODE))) pgToast('✅ Link kopiert');

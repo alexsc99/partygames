@@ -528,6 +528,13 @@ socket.on('photo:new', p => {
   photoPopTimer = setTimeout(() => el.classList.remove('on'), busy ? 4000 : 6000);
   if (endSlideTimer) endSlideList.push({ ...p, cap: p.name ? `📸 ${p.name}` : '' });
 });
+// Gelöschtes Foto: Einblendung schließen, aus der laufenden Diashow nehmen
+socket.on('photo:deleted', p => {
+  if (!p || !p.url) return;
+  const pop = document.getElementById('photoPop');
+  if (pop && pop.querySelector('img')?.getAttribute('src') === p.url) pop.classList.remove('on');
+  endSlideList = endSlideList.filter(s => s.url !== p.url);
+});
 // ---- Joker: Einsatz groß auf dem TV einblenden ----
 let jokerPopTimer = 0;
 socket.on('joker:played', j => {

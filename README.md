@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.23.3)
+# 🎉 PartyGame (Version 3.24.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -234,7 +234,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.23.3 (Aktueller Stand):** Rechtlich sauber: die zwei Rybak-Songs wieder als offizielle 30-s-Vorschau (englische Fassung „Fairytale“ / „Europe's Skies“) statt YouTube-Ausschnitt.
+- **v3.24.0 (Aktueller Stand):** Fotos löschen in der Galerie `/fotos`: eigene Uploads (Lösch-Schlüssel bleibt im Browser, mit dem hochgeladen wurde) und als Spielleitung alle Fotos des Raums – 🗑️ in der Großansicht. Gelöschte Fotos verschwinden auch aus TV-Einblendung, Diashow und laufender Foto-Challenge.
+- **v3.23.3:** Rechtlich sauber: die zwei Rybak-Songs wieder als offizielle 30-s-Vorschau (englische Fassung „Fairytale“ / „Europe's Skies“) statt YouTube-Ausschnitt.
 - **v3.23.2:** Song-Vorschauen laufen in der Schleife wieder ab der guten Stelle statt ab dem leisen Intro.
 - **v3.23.1:** Alle 373 Song-Vorschauen per Audio-Fingerabdruck (Chromaprint gegen Deezer) und Shazam geprüft: Es laufen überall die richtigen Songs. Serebro-Titel an die gespielte Fassung angepasst („Мама Люба“ statt „Mama Lover“).
 - **v3.23.0:** Runden-Limit zusätzlich 20/30/50, Party-Mix-Runden 8–50; im Party-Mix wird das (dort wirkungslose) Runden-Limit ausgeblendet. Songs mit leisem Intro oder Stille am Anfang (26 von 373) starten an der ersten lauten Stelle.

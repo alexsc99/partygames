@@ -415,6 +415,38 @@
     if (bmp) bmp.close();
     return new Promise(res => c.toBlob(res, 'image/jpeg', quality));
   }
+  // Lösch-Schlüssel eigener Uploads (id → key); Einträge älter als 8 Tage fallen weg (Fotos leben 7 Tage)
+  function photoKeys() {
+    try { return JSON.parse(localStorage.getItem('pg_photo_keys') || '{}') || {}; } catch { return {}; }
+  }
+  function savePhotoKey(id, key) {
+    const keys = photoKeys();
+    const cutoff = Date.now() - 8 * 86_400_000;
+    for (const k of Object.keys(keys)) if (Number(k.split('-')[0]) < cutoff) delete keys[k];
+    keys[id] = key;
+    try { localStorage.setItem('pg_photo_keys', JSON.stringify(keys)); } catch { /* Speicher voll: dann eben nicht löschbar */ }
+  }
+  window.pgPhotoKey = id => photoKeys()[id] || '';
+  // Foto löschen: mit eigenem Lösch-Schlüssel oder als Spielleitung (Raum-Token dieses Geräts)
+  window.pgDeletePhoto = async function (room, id) {
+    const headers = {};
+    const key = window.pgPhotoKey(id);
+    if (key) headers['x-photo-key'] = key;
+    const hostTok = localStorage.getItem('pg_host_' + room);
+    if (hostTok) headers['x-host-token'] = hostTok;
+    try {
+      const r = await fetch('/api/photos/' + encodeURIComponent(room) + '/' + encodeURIComponent(id), { method: 'DELETE', headers });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok || r.status === 404) {
+        const keys = photoKeys();
+        delete keys[id];
+        try { localStorage.setItem('pg_photo_keys', JSON.stringify(keys)); } catch { /* egal */ }
+      }
+      return r.ok ? { ok: true } : { ok: false, error: j.error || 'Löschen fehlgeschlagen' };
+    } catch {
+      return { ok: false, error: 'Löschen fehlgeschlagen – Verbindung prüfen' };
+    }
+  };
   // headers: zusätzliche Header (z. B. x-card für die Foto-Challenge); Rückgabe enthält die hochgeladenen Fotos
   window.pgUploadPhotos = async function (room, files, name, onProgress, headers = {}) {
     const list = Array.from(files || []);
@@ -443,6 +475,7 @@
             fileError = '';
             const j = await r.json().catch(() => ({}));
             if (j.photo) photos.push(j.photo);
+            if (j.photo && j.deleteKey) savePhotoKey(j.photo.id, j.deleteKey);
             break;
           }
           fileError = (await r.json().catch(() => ({}))).error || (r.status === 429 ? 'Zu viele Uploads gleichzeitig' : 'Upload fehlgeschlagen');

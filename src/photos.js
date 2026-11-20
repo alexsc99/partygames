@@ -84,9 +84,27 @@ function createPhotoStore(dir) {
     const id = `${ts}-${crypto.randomBytes(4).toString('hex')}`;
     writeShared(path.join(roomDir(code), `${id}.jpg`), buf);
     totalBytes += buf.length;
-    const entry = { id, name: String(name || '').trim().slice(0, 16), ts };
+    // key: Lösch-Schlüssel nur für den Hochladenden (bleibt in meta.json, nie in der öffentlichen Liste)
+    const entry = { id, name: String(name || '').trim().slice(0, 16), ts, key: crypto.randomBytes(12).toString('hex') };
     saveMeta(code, [...photos, entry]);
     return { entry };
+  }
+
+  const keyMatches = (code, id, key) => {
+    const p = list(code).find(x => x.id === id);
+    if (!p || typeof p.key !== 'string' || typeof key !== 'string' || key.length !== p.key.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(key), Buffer.from(p.key));
+  };
+
+  // Ein Foto löschen (z. B. aus Versehen hochgeladen); gibt den entfernten Eintrag zurück oder null
+  function remove(code, id) {
+    const photos = list(code);
+    const p = photos.find(x => x.id === id);
+    if (!p) return null;
+    fs.rmSync(path.join(roomDir(code), `${id}.jpg`), { force: true });
+    saveMeta(code, photos.filter(x => x !== p));
+    totalBytes = null; // beim nächsten Upload neu zählen
+    return p;
   }
 
   const file = (code, id) => (CODE_RE.test(code) && ID_RE.test(id) ? path.join(roomDir(code), `${id}.jpg`) : null);
@@ -156,7 +174,7 @@ function createPhotoStore(dir) {
     out.end(end);
   }
 
-  return { list, add, exists, file, cleanup, streamZip };
+  return { list, add, exists, file, cleanup, streamZip, keyMatches, remove };
 }
 
 const CRC_TABLE = (() => {

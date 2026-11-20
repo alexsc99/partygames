@@ -1384,6 +1384,33 @@ describe('PartyGame Server', () => {
     }
   });
 
+  it('photo delete: only the uploader (delete key) or the room host may delete; key never leaks into the list', async () => {
+    const { code, hostToken } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(100, 3), Buffer.from([0xff, 0xd9])]);
+    const photoDir = path.join(__dirname, '..', 'data', 'photos', code);
+    const upload = async () => (await fetch(`${baseUrl}/api/photos/${code}`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: jpeg })).json();
+    const del = (id, headers = {}) => fetch(`${baseUrl}/api/photos/${code}/${id}`, { method: 'DELETE', headers });
+    try {
+      const a = await upload();
+      const b = await upload();
+      assert.match(a.deleteKey, /^[a-f0-9]{24}$/);
+      const listed = (await (await fetch(`${baseUrl}/api/photos/${code}`)).json()).photos;
+      assert.ok(listed.every(p => !('key' in p)), 'delete key must not be public');
+
+      assert.equal((await del(a.photo.id)).status, 403, 'guests without key cannot delete');
+      assert.equal((await del(a.photo.id, { 'x-photo-key': b.deleteKey })).status, 403, 'another photo\'s key does not work');
+      assert.equal((await del(a.photo.id, { 'x-photo-key': a.deleteKey })).status, 200);
+      assert.equal((await fetch(baseUrl + a.photo.url)).status, 404);
+      assert.equal((await del(b.photo.id, { 'x-host-token': hostToken })).status, 200, 'room host may delete any photo');
+      assert.equal((await (await fetch(`${baseUrl}/api/photos/${code}`)).json()).photos.length, 0);
+      assert.equal((await del(b.photo.id, { 'x-host-token': hostToken })).status, 404);
+    } finally {
+      fs.rmSync(photoDir, { recursive: true, force: true });
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
   it('photo store deletes photos older than 7 days and keeps newer ones', () => {
     const os = require('node:os');
     const { createPhotoStore, PHOTO_TTL_MS } = require('../src/photos');

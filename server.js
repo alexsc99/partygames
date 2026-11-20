@@ -491,7 +491,24 @@ app.post('/api/photos/:code', express.raw({ type: 'image/jpeg', limit: PHOTO_MAX
   writeLog('INFO', 'photo_uploaded', { room: code, bytes: req.body.length });
   // x-card: Upload gehört zu einer Foto-Challenge (Remote-Party-Karte) → zählt dort statt als TV-Einblendung
   rooms.get(code)?.onPhoto(photo, { card: String(req.headers['x-card'] || ''), name });
-  res.status(201).json({ ok: true, photo });
+  res.status(201).json({ ok: true, photo, deleteKey: r.entry.key });
+});
+// Foto löschen: der Hochladende (Lösch-Schlüssel aus dem Upload) oder die Spielleitung (Raum-Token/Server-PIN)
+app.delete('/api/photos/:code/:id', (req, res) => {
+  const code = normalizeRoomCode(req.params.code);
+  const id = String(req.params.id || '');
+  if (!photos.list(code).some(p => p.id === id)) return res.status(404).json({ ok: false, error: 'Foto nicht gefunden' });
+  const key = String(req.headers['x-photo-key'] || '');
+  const byUploader = !!key && photos.keyMatches(code, id, key);
+  if (!byUploader) {
+    const auth = checkHostAuth(getClientIp(req), String(req.headers['x-host-token'] || ''), rooms.get(code)?.isHostToken);
+    if (!auth.ok) return res.status(auth.locked ? 429 : 403).json({ ok: false, error: 'Nur eigene Fotos oder als Spielleitung löschbar' });
+  }
+  const p = photos.remove(code, id);
+  if (!p) return res.status(404).json({ ok: false, error: 'Foto nicht gefunden' });
+  writeLog('INFO', 'photo_deleted', { room: code, by: byUploader ? 'uploader' : 'host' });
+  rooms.get(code)?.onPhotoDeleted(publicPhoto(code, p));
+  res.json({ ok: true });
 });
 let zipDownloads = 0;
 app.get('/api/photos/:code/zip', async (req, res) => {
@@ -3555,6 +3572,16 @@ return {
     if (card && cardPhoto(name, photo.url, card)) return; // Foto-Challenge: erst bei der Abstimmung zeigen
     const bonus = crowdPhotoBonus(name);
     io.to(ROOM_CHAN).emit('photo:new', bonus ? { ...photo, bonus } : photo);
+    broadcast();
+  },
+  isHostToken: validRoomToken,
+  // Foto gelöscht: aus einer laufenden Foto-Challenge (Sammelphase) nehmen, TV-Diashow/Zähler aktualisieren
+  onPhotoDeleted: (photo) => {
+    const card = state.card;
+    if (state.phase === 'card' && card && card.act === 'snap' && !card.resolved && card.stage !== 'vote') {
+      card.entries = card.entries.filter(e => e.url !== photo.url);
+    }
+    io.to(ROOM_CHAN).emit('photo:deleted', { id: photo.id, url: photo.url });
     broadcast();
   },
   serialize,
