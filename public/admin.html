@@ -280,8 +280,8 @@ function renderCardPanel() {
     const forWhom = c.pair ? ' für beide' : (c.type === 'group' || c.type === 'photo') ? ' für alle' : '';
     actions = `<div class="sub">📱 Die Spieler stimmen am Handy ab: ${c.voters.length}/${(c.judges || []).length} (mind. 2 Stimmen, Mehrheit entscheidet). Nur wenn nötig selbst entscheiden:</div>
       <div class="cats">${btn(`✅ ${c.type === 'photo' ? 'Gelungen' : 'Geschafft'} (+${c.reward}${forWhom})`, { ok: true }, '#26890c')}${btn(`❌ Nicht geschafft (${fail})`, { ok: false }, '#e21b3c')}</div>`;
-  } else if (c.act === 'give' || c.act === 'take') {
-    actions = `<div class="sub">${c.act === 'give' ? `Wer bekommt die ${c.amount} Punkte?` : `Wer muss ${c.amount} Punkte abgeben?`}</div>
+  } else if (c.act === 'give') {
+    actions = `<div class="sub">Wer bekommt die ${c.amount} Punkte?</div>
       <div class="cats">${others.map(p => btn(`${esc(p.avatar || '😎')} ${esc(p.name)}`, { name: p.name }, '#4b3a9e')).join('')}</div>`;
   } else if (c.act === 'duel') {
     actions = `<div class="sub">Wer hat gewonnen? (+${c.reward})</div><div class="cats">${c.duel.map(n => btn(`🏆 ${esc(n)}`, { name: n }, '#26890c')).join('')}</div>`;

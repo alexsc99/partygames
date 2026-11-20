@@ -675,7 +675,7 @@ describe('PartyGame Server', () => {
         admin.emit('host:cardResolve', { name: card.duel[0] });
         await until(s => s.card && s.card.resolved);
         assert.equal(diff()[card.duel[0]], card.reward);
-      } else if (card.act === 'give' || card.act === 'take') {
+      } else if (card.act === 'give') {
         admin.emit('host:cardResolve', { name: names.find(n => n !== card.target) });
         await until(s => s.card && s.card.resolved);
         assert.equal(Object.values(diff()).reduce((a, b) => a + b, 0), 0, 'point transfers must not create points');

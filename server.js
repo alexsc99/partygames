@@ -1402,14 +1402,13 @@ function resolvePartyCard(arg) {
       addPoints(target, -card.minus);
       outcome = card.minus ? `❌ Nicht geschafft! ${card.target} −${card.minus}` : `❌ Leider nicht – keine Punkte für ${card.target}`;
     }
-  } else if (card.act === 'give' || card.act === 'take') {
+  } else if (card.act === 'give') {
     const other = byName(arg && arg.name);
     if (!other || !target || other === target) return;
-    const [from, to] = card.act === 'give' ? [target, other] : [other, target];
-    const amt = Math.min(card.amount, from.score || 0);
-    addPoints(from, -amt);
-    addPoints(to, amt);
-    outcome = `💸 ${from.name} gibt ${amt} Punkte an ${to.name}`;
+    const amt = Math.min(card.amount, target.score || 0);
+    addPoints(target, -amt);
+    addPoints(other, amt);
+    outcome = `💸 ${target.name} gibt ${amt} Punkte an ${other.name}`;
   } else if (card.act === 'duel') {
     const winner = byName(arg && arg.name);
     if (!winner || !card.duel.includes(winner.name)) return;

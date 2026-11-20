@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.14.0)
+# 🎉 PartyGame (Version 3.14.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -108,7 +108,7 @@ partygame/
 │   ├── song-art/        # Lokale Album-Cover (0.jpg–372.jpg)
 │   ├── imagequiz.json   # Bild-Quiz (201 Fragen: Logos, Sehenswürdigkeiten, Flaggen, Automarken, Länder-Umrisse)
 │   ├── iq-images/       # Lokale Bilder für das Bild-Quiz (neutrale Dateinamen)
-│   ├── partycards.json  # Party-Karten (74 Aufgaben zwischen den Runden, Platzhalter {leader} {last} {a} {b} {player})
+│   ├── partycards.json  # Party-Karten (70 Aufgaben zwischen den Runden, Platzhalter {leader} {last} {a} {b} {player})
 │   ├── used.json        # Automatisch verwaltet: bereits gespielte Indizes
 │   └── custom.json      # Automatisch erzeugt: eigene Fragen aus /admin
 ├── start.sh             # Startet Server + Firefox im TV-Vollbild
@@ -214,7 +214,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.14.0 (Aktueller Stand):** Party-Karten mit „gelungen / nicht gelungen“ (Gruppe, Foto & Pose, Kopfgeld, Underdog) bewerten die Spieler am Handy: alle außer den Betroffenen, mind. 2 Stimmen, Mehrheit entscheidet; Admin-Buttons bleiben als Notfall-Override.
+- **v3.14.1 (Aktueller Stand):** Party-Karten nach Test-Feedback: entfernt „10 Wörter mit Sch“, „Letzter holt sich 300 Punkte“, Socken-Tausch und Handy-Regel; „15 Länder in 30 s“ → reihum je ein Land ohne Zeitlimit; Geburtstags-Reihe bis zu 5 Minuten.
+- **v3.14.0:** Party-Karten mit „gelungen / nicht gelungen“ (Gruppe, Foto & Pose, Kopfgeld, Underdog) bewerten die Spieler am Handy: alle außer den Betroffenen, mind. 2 Stimmen, Mehrheit entscheidet; Admin-Buttons bleiben als Notfall-Override.
 - **v3.13.0:** Neuer Party-Karten-Typ **📸 Foto & Pose** (11 Karten: Paar-Fotos/Posen für zwei ausgeloste Spieler, Gruppenfotos), Skala nicht mehr im Standard-Mix.
 - **v3.12.1:** Fragen-Kategorie „Kennenlernen & Deep Talk“ nicht mehr im Standard und nicht in den Presets Klassik (jetzt Party + Peinlich) und Alkoholfrei (jetzt Party); bei Date bleibt sie drin.
 - **v3.12.0:** Fix: Handys, deren Verbindung nach kurzer Pause (z. B. Bildschirm aus) wiederhergestellt wurde, flogen 4 s später als Spieler raus und konnten bis zum Neuladen nicht mehr antworten/abstimmen. Party-Karten: Handys können nach 5 s per „⏭️ Weiter“-Abstimmung weitermachen. Standard-Mix und Presets ohne Kennenlernen & Wort-Assoziation.

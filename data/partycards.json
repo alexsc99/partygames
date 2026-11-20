@@ -3,7 +3,7 @@
   { "id": "g02", "type": "group", "sec": 60, "text": "Zählt gemeinsam bis 20: Jeder darf jederzeit eine Zahl sagen, aber reden zwei gleichzeitig, geht's von vorne los." },
   { "id": "g03", "type": "group", "sec": 30, "text": "Gruppenfoto in 30 Sekunden – jeder macht das dümmste Gesicht seines Lebens!" },
   { "id": "g04", "type": "group", "sec": 60, "text": "Summt zusammen einen Song – ein Handy muss ihn mit Shazam erkennen." },
-  { "id": "g05", "type": "group", "sec": 30, "text": "Stellt euch in 30 Sekunden in eine Reihe, sortiert nach Geburtstag (Tag & Monat) – ohne zu reden!" },
+  { "id": "g05", "type": "group", "sec": 300, "text": "Stellt euch in eine Reihe, sortiert nach Geburtstag (Tag & Monat) – ohne zu reden! Ihr habt bis zu 5 Minuten." },
   { "id": "g06", "type": "group", "sec": 45, "text": "Sagt auf „3“ alle gleichzeitig ein Wort zum Thema „Urlaub“. Sagen alle dasselbe? Ihr habt 3 Versuche." },
   { "id": "g07", "type": "group", "sec": 30, "text": "La-Ola-Welle! Dreimal reihum, ohne dass sie abreißt." },
   { "id": "g08", "type": "group", "sec": 45, "text": "Erfindet in 45 Sekunden einen Gruppen-Schlachtruf mit Choreo – und führt ihn vor." },
@@ -12,7 +12,7 @@
   { "id": "g11", "type": "group", "sec": 60, "text": "Stille Post mit dem Satz: „Der Hamster hat den Pizzaboten bestochen.“ Kommt er richtig an?" },
   { "id": "g12", "type": "group", "sec": 60, "text": "Reihum macht jeder ein Tiergeräusch – kein Tier doppelt und keiner darf lachen." },
   { "id": "g13", "type": "group", "sec": 15, "text": "15 Sekunden lang komplett still sein. Wer lacht, ruiniert es für alle." },
-  { "id": "g14", "type": "group", "sec": 30, "text": "Nennt gemeinsam in 30 Sekunden 15 Länder in Europa." },
+  { "id": "g14", "type": "group", "text": "Reihum nennt jeder ein Land in Europa – keins doppelt und keiner darf ins Stocken geraten." },
   { "id": "g15", "type": "group", "sec": 20, "text": "Spiegel-Challenge: Alle machen 20 Sekunden lang exakt die Bewegungen des Gastgebers nach – ohne Fehler." },
   { "id": "g16", "type": "group", "sec": 20, "cat": "peinlich", "text": "Alle tanzen 20 Sekunden zu einem Song, den der Gastgeber aussucht – niemand hört auf!" },
 
@@ -21,11 +21,9 @@
   { "id": "l03", "type": "leader", "act": "give", "amount": 200, "text": "{leader} spendet 200 Punkte an jemanden seiner Wahl." },
   { "id": "l04", "type": "leader", "act": "yesno", "pts": 200, "minus": 200, "sec": 15, "text": "{leader}, 10 Kniebeugen in 15 Sekunden, während alle anfeuern. Geschafft? +200, sonst −200." },
   { "id": "l05", "type": "leader", "act": "info", "text": "Die Krone wiegt schwer: {leader} trinkt einen Schluck auf die eigene Großartigkeit.", "af": "Die Krone wiegt schwer: {leader} hält eine 20-Sekunden-Siegesrede – in der dritten Person." },
-  { "id": "l06", "type": "leader", "act": "yesno", "pts": 300, "minus": 300, "sec": 20, "text": "{leader}, nenne in 20 Sekunden 10 Wörter, die mit „Sch“ anfangen. Geschafft? +300, sonst −300." },
   { "id": "l07", "type": "leader", "act": "info", "text": "{leader} muss bis zur nächsten Party-Karte jede Antwort mit „Mein Volk, …“ beginnen." },
 
   { "id": "u01", "type": "underdog", "act": "yesno", "pts": 500, "sec": 45, "text": "{last}, deine Chance: Imitiere jemanden hier im Raum. Die anderen müssen erraten, wer es ist. Richtig? +500!" },
-  { "id": "u02", "type": "underdog", "act": "take", "amount": 300, "text": "{last} sucht sich einen Spieler aus, der 300 Punkte abgeben muss." },
   { "id": "u03", "type": "underdog", "act": "mode", "text": "{last} bestimmt, welches Spiel als Nächstes kommt!" },
   { "id": "u04", "type": "underdog", "act": "yesno", "pts": 400, "sec": 20, "text": "{last}, nenne in 20 Sekunden 8 Dinge, die man im Kühlschrank findet. Geschafft? +400!" },
   { "id": "u05", "type": "underdog", "act": "yesno", "pts": 400, "sec": 45, "text": "{last}, erzähl einen Witz. Lacht mindestens einer? +400!" },
@@ -47,7 +45,6 @@
 
   { "id": "p01", "type": "pass", "text": "Jeder gibt der Person links ein Kompliment – oder einen Schluck aus dem eigenen Glas.", "af": "Jeder macht der Person links ein ehrliches Kompliment." },
   { "id": "p02", "type": "pass", "text": "Jeder gibt seinem rechten Nachbarn einen Spitznamen – der gilt bis zum Spielende!" },
-  { "id": "p03", "type": "pass", "text": "Socken-Tausch! Jeder gibt der Person links eine Socke. Wer sich weigert: 1 Schluck.", "af": "Socken-Tausch! Jeder gibt der Person links eine Socke. Wer sich weigert: 10 Hampelmänner." },
   { "id": "p04", "type": "pass", "text": "Jeder flüstert der Person rechts ein Geheimnis (darf erfunden sein). Die Person verrät nur: wahr oder gelogen?" },
   { "id": "p05", "type": "pass", "text": "High-Five-Kette: Jeder gibt der Person links ein kreatives High-Five – keins darf doppelt sein." },
   { "id": "p06", "type": "pass", "text": "Reise nach links: Alle rutschen einen Platz nach links." },
@@ -62,7 +59,6 @@
   { "id": "d08", "type": "duel", "text": "{a} gegen {b}: Wer zuerst ein Selfie mit allen anderen im Bild macht!" },
 
   { "id": "r01", "type": "rule", "text": "Niemand darf „Ja“ oder „Nein“ sagen. Wer's tut: 1 Schluck.", "af": "Niemand darf „Ja“ oder „Nein“ sagen. Wer's tut: 5 Kniebeugen." },
-  { "id": "r02", "type": "rule", "text": "Wer aufs Handy schaut (außer zum Antworten), trinkt einen Schluck.", "af": "Wer aufs Handy schaut (außer zum Antworten), steht auf und dreht sich einmal im Kreis." },
   { "id": "r03", "type": "rule", "text": "{player} ist Fragenmeister: Wer eine Frage von {player} beantwortet, trinkt.", "af": "{player} ist Fragenmeister: Wer eine Frage von {player} beantwortet, muss aufstehen." },
   { "id": "r04", "type": "rule", "text": "Vor jeder Antwort muss man „Mit Verlaub“ sagen. Vergessen? 1 Schluck.", "af": "Vor jeder Antwort muss man „Mit Verlaub“ sagen. Vergessen? Einmal laut bellen." },
   { "id": "r05", "type": "rule", "text": "Niemand darf auf jemanden zeigen. Erwischt? 1 Schluck.", "af": "Niemand darf auf jemanden zeigen. Erwischt? 5 Hampelmänner." },
