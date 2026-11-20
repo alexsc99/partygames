@@ -1125,6 +1125,15 @@ function renderView() {
         ? `<div class="msg">✅ Stimme abgegeben<br><small>${c.voters.length}/${S.players.length} haben abgestimmt</small></div>`
         : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px">Wer hatte den besten Beitrag? (+${c.reward})</div>
            <div class="grid">${others.map((p, i) => `<button class="c${i % 4}" style="font-size:16px;min-height:9vh" onclick="socket.emit('card:vote', ${esc(JSON.stringify(p.name))})">${esc(p.avatar || '😎')} ${esc(p.name)}</button>`).join('')}</div>`;
+    } else if (c.act === 'yesno') {
+      const judges = c.judges || [];
+      const progress = `${c.voters.length}/${judges.length} haben abgestimmt`;
+      body = !judges.includes(name)
+        ? `<div class="msg"><small>🗳️ Die anderen entscheiden, ob es gelungen ist… (${progress})</small></div>`
+        : voted
+          ? `<div class="msg">✅ Stimme abgegeben<br><small>${progress} · Mehrheit entscheidet</small></div>`
+          : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px">Gelungen? Mehrheit entscheidet (mind. 2 Stimmen)</div>
+             <div class="grid"><button class="c3" style="font-size:18px;min-height:10vh" onclick="socket.emit('card:judge', true)">👍 Gelungen</button><button class="c0" style="font-size:18px;min-height:10vh" onclick="socket.emit('card:judge', false)">👎 Nicht gelungen</button></div>`;
     } else if (c.act === 'info' || c.act === 'rule') {
       body = `<div class="msg"><small>${c.act === 'rule' ? '📜 Gilt für die nächsten 3 Runden' : '✋ Los geht’s!'}</small></div>`;
     } else {

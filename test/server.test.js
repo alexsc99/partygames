@@ -665,7 +665,8 @@ describe('PartyGame Server', () => {
         await until(s => s.card && s.card.resolved);
         assert.equal(diff().Bo, card.reward);
       } else if (card.act === 'yesno') {
-        admin.emit('host:cardResolve', { ok: true });
+        // Die Handys bewerten: alle Nicht-Betroffenen stimmen „gelungen“ → Mehrheit
+        players.forEach((p, i) => { if (card.judges.includes(names[i])) p.emit('card:judge', true); });
         await until(s => s.card && s.card.resolved);
         const d = diff();
         const winners = card.pair || (card.type === 'group' || card.type === 'photo' ? names : [card.target]);

@@ -278,7 +278,8 @@ function renderCardPanel() {
   } else if (c.act === 'yesno') {
     const fail = c.type === 'group' ? (S.alcoholFree ? 'alle 5 Kniebeugen' : 'alle trinken') : c.minus ? `−${c.minus}` : '0 Pkt';
     const forWhom = c.pair ? ' für beide' : (c.type === 'group' || c.type === 'photo') ? ' für alle' : '';
-    actions = `<div class="cats">${btn(`✅ ${c.type === 'photo' ? 'Gelungen' : 'Geschafft'} (+${c.reward}${forWhom})`, { ok: true }, '#26890c')}${btn(`❌ Nicht geschafft (${fail})`, { ok: false }, '#e21b3c')}</div>`;
+    actions = `<div class="sub">📱 Die Spieler stimmen am Handy ab: ${c.voters.length}/${(c.judges || []).length} (mind. 2 Stimmen, Mehrheit entscheidet). Nur wenn nötig selbst entscheiden:</div>
+      <div class="cats">${btn(`✅ ${c.type === 'photo' ? 'Gelungen' : 'Geschafft'} (+${c.reward}${forWhom})`, { ok: true }, '#26890c')}${btn(`❌ Nicht geschafft (${fail})`, { ok: false }, '#e21b3c')}</div>`;
   } else if (c.act === 'give' || c.act === 'take') {
     actions = `<div class="sub">${c.act === 'give' ? `Wer bekommt die ${c.amount} Punkte?` : `Wer muss ${c.amount} Punkte abgeben?`}</div>
       <div class="cats">${others.map(p => btn(`${esc(p.avatar || '😎')} ${esc(p.name)}`, { name: p.name }, '#4b3a9e')).join('')}</div>`;
@@ -525,7 +526,7 @@ function render() {
       </div>
     `)}
     ${grp('cards', '🎪 Party-Karten', esc(PARTY_FREQ[S.partyCards] || 'Aus'), `
-      <div class="sub">Zwischen den Runden kommt ab und zu eine Aufgabe: Gruppen-Challenge, Kopfgeld auf den Ersten, Aufholchance für den Letzten, Duell, Reihum-Runde oder neue Regel. Du wertest hier im Admin aus.</div>
+      <div class="sub">Zwischen den Runden kommt ab und zu eine Aufgabe: Gruppen-Challenge, Kopfgeld auf den Ersten, Aufholchance für den Letzten, Duell, Reihum-Runde, Foto & Pose oder neue Regel. Ob eine Aufgabe gelungen ist, stimmen die Spieler am Handy ab; Duelle und Punkte-Vergaben wertest du hier aus.</div>
       <div class="cats">
         ${Object.entries(PARTY_FREQ).map(([f, lbl]) => `<button class="${(S.partyCards || 'off') === f ? 'active' : ''}" onclick="socket.emit('host:partyCards','${f}')">${lbl}</button>`).join('')}
       </div>

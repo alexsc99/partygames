@@ -773,8 +773,12 @@ function renderView() {
       else if (c.act === 'duel') info = `🏆 Sieger bekommt +${c.reward} · Der Gastgeber entscheidet im Admin`;
       else if (c.act === 'rule') info = '📜 Gilt für die nächsten 3 Runden';
       else if (c.act === 'info') info = '✋ Los geht’s – danach „▶ Weiter“';
-      else if (c.type === 'photo') info = `📸 Gelungen? +${c.reward} ${c.pair ? 'für beide' : 'für alle'} · Der Gastgeber entscheidet im Admin`;
-      else if (c.type === 'group') info = `✅ Geschafft: +${c.reward} für alle · ❌ Nicht geschafft: ${S.alcoholFree ? 'alle machen 5 Kniebeugen' : 'alle trinken'}`;
+      else if (c.act === 'yesno') {
+        const judge = `<br>📱 Gelungen? Abstimmung am Handy – ${c.voters.length}/${(c.judges || []).length} · Mehrheit entscheidet`;
+        if (c.type === 'photo') info = `📸 +${c.reward} ${c.pair ? 'für beide' : 'für alle'}${judge}`;
+        else if (c.type === 'group') info = `✅ +${c.reward} für alle · ❌ ${S.alcoholFree ? 'alle machen 5 Kniebeugen' : 'alle trinken'}${judge}`;
+        else info = `✅ +${c.reward}${c.minus ? ` · ❌ −${c.minus}` : ''}${judge}`;
+      }
       else info = '⏳ Der Gastgeber wertet im Admin aus…';
     }
     const bad = /^❌/u.test(c.outcome || '');

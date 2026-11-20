@@ -1354,7 +1354,28 @@ function maybeStartPartyCard() {
   return true;
 }
 
-// Auswertung über /admin (bzw. automatisch, sobald bei Reihum-Karten alle abgestimmt haben)
+// Ja/Nein-Karten bewerten die Spieler selbst: alle außer den Betroffenen ({leader}/{last}/Foto-Paar);
+// bleiben dafür weniger als 2 übrig, stimmen alle ab. Mindestens 2 Stimmen, Mehrheit entscheidet (Gleichstand = nicht gelungen).
+function cardJudges(card) {
+  const all = pVals().filter(p => !p.isLocal).map(p => p.name);
+  const involved = new Set([card.target, ...(card.pair || [])].filter(Boolean));
+  const others = all.filter(n => !involved.has(n));
+  return others.length >= 2 ? others : all;
+}
+
+function checkCardJudgement() {
+  const card = state.card;
+  const judges = cardJudges(card);
+  const vals = judges.filter(n => n in card.votes).map(n => card.votes[n]);
+  const yes = vals.filter(Boolean).length;
+  const no = vals.length - yes;
+  const decided = vals.length >= Math.min(2, judges.length)
+    && (vals.length === judges.length || yes > judges.length / 2 || no >= judges.length / 2);
+  if (decided) resolvePartyCard({ ok: yes > no });
+  else broadcast();
+}
+
+// Auswertung durch die Handys (Ja/Nein, Reihum) oder über /admin (Duell, Punkte abgeben, Spielwahl; Admin kann alles überstimmen)
 function resolvePartyCard(arg) {
   const card = state.card;
   if (state.phase !== 'card' || !card || card.resolved) return;
@@ -1415,6 +1436,10 @@ function resolvePartyCard(arg) {
     p.lastGain = Math.max(0, (p.score || 0) - prev);
   }
   card.resolved = true;
+  if (card.act === 'yesno' && Object.keys(card.votes).length) {
+    const yes = Object.values(card.votes).filter(Boolean).length;
+    outcome += ` (👍 ${yes} · 👎 ${Object.keys(card.votes).length - yes})`;
+  }
   card.outcome = outcome;
   armAutoNext(CARD_AUTO_NEXT_MS);
 }
@@ -1426,7 +1451,8 @@ function publicCard() {
     id: c.id, type: c.type, title: c.title, act: c.act, text: c.text,
     target: c.target, targetLabel: c.target ? lbl(c.target) : null,
     duel: c.duel, pair: c.pair, reward: c.reward, minus: c.minus, amount: c.amount,
-    voters: c.act === 'vote' ? Object.keys(c.votes) : [],
+    voters: c.act === 'vote' || c.act === 'yesno' ? Object.keys(c.votes) : [],
+    judges: c.act === 'yesno' ? cardJudges(c) : null,
     tally: c.tally, resolved: c.resolved, outcome: c.outcome,
   };
 }
@@ -2452,6 +2478,14 @@ function attachSocket(socket, ip, allowEvent) {
     broadcast();
   });
   socket.on('host:cardResolve', arg => resolvePartyCard(arg));
+  socket.on('card:judge', ok => {
+    const card = state.card;
+    const p = players[socket.id];
+    if (state.phase !== 'card' || !card || card.act !== 'yesno' || card.resolved || !p) return;
+    if (!cardJudges(card).includes(p.name)) return;
+    card.votes[p.name] = !!ok;
+    checkCardJudgement();
+  });
   socket.on('card:vote', targetName => {
     const card = state.card;
     const p = players[socket.id];
