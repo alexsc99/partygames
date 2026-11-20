@@ -719,7 +719,7 @@ describe('PartyGame Server', () => {
       await new Promise(res => player.emit('join', { name: 'Tempo', avatar: '😎' }, res));
       admin.emit('host:wheelEnabled', false);
       assert.equal((await resultFor('normal')).totalMs, 7000);
-      assert.equal((await resultFor('fast')).totalMs, 4900);
+      assert.equal((await resultFor('fast')).totalMs, 6000);
       const relaxed = await resultFor('relaxed');
       assert.equal(relaxed.deadline, 0, 'relaxed result must not auto-advance');
       assert.equal(relaxed.leftMs, 0);

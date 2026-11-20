@@ -596,12 +596,14 @@ let alcoholFree = false;
 let partyCards = 'off'; // 'off' | 'rare' | 'normal' | 'often'
 let timerSpeed = 'normal';
 let mixRounds = MIX_ROUNDS;
-const roundTimeMs = m => Math.max(4000, Math.round((TIME[m] || 20) * (m === 'reaction' ? 1 : (TIMER_MULT[timerSpeed] || 1)) * 1000));
+const MIN_ANSWER_S = { wordassoc: 16 }; // Tipp-Modi brauchen auch bei „Schnell“ genug Zeit
+const roundTimeMs = m => Math.max(4000, (MIN_ANSWER_S[m] || 0) * 1000, Math.round((TIME[m] || 20) * (m === 'reaction' ? 1 : (TIMER_MULT[timerSpeed] || 1)) * 1000));
 // Pause nach Auflösung, Missions- oder Karten-Ergebnis: „Entspannt“ wartet auf „Weiter“ (Admin, TV oder Handy-Abstimmung)
 function armAutoNext(baseMs) {
   clearTimeout(timer);
   const mult = RESULT_MULT[timerSpeed] ?? 1;
-  const ms = baseMs > 0 && mult > 0 ? Math.max(3000, Math.round(baseMs * mult)) : 0;
+  // Kürzer als „Normal“, aber mind. 6 s (bzw. die Normal-Dauer, falls die schon kürzer ist), damit man die Rangliste noch lesen kann
+  const ms = baseMs > 0 && mult > 0 ? Math.max(Math.min(baseMs, 6000), Math.round(baseMs * mult)) : 0;
   state.totalMs = ms;
   state.deadline = ms ? Date.now() + ms : 0;
   broadcast();

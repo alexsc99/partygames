@@ -508,7 +508,7 @@ function render() {
       </div>
     `)}
     ${grp('timer', '⏱️ Timer-Tempo', esc({ fast: 'Schnell', normal: 'Normal', relaxed: 'Entspannt' }[timerSpeed] || timerSpeed), `
-      <div class="sub">${{ fast: 'Antwortzeit −30 %, Auflösung kürzer', normal: 'Standard-Antwortzeit, Auflösung geht nach 7–15 s automatisch weiter', relaxed: 'Antwortzeit +50 %, Auflösung bleibt stehen, bis jemand „Weiter“ tippt – Zeit zum Quatschen' }[timerSpeed] || ''}</div>
+      <div class="sub">${{ fast: 'Antwortzeit −30 %, Auflösung kürzer (mind. 6 s)', normal: 'Standard-Antwortzeit, Auflösung geht nach 7–15 s automatisch weiter', relaxed: 'Antwortzeit +50 %, Auflösung bleibt stehen, bis jemand „Weiter“ tippt – Zeit zum Quatschen' }[timerSpeed] || ''}</div>
       <div class="cats">
         ${[['fast', '⚡ Schnell'], ['normal', '⏱️ Normal'], ['relaxed', '🐢 Entspannt']].map(([sp, lbl]) => `<button class="${timerSpeed === sp ? 'active' : ''}" onclick="socket.emit('host:timerSpeed','${sp}')">${lbl}</button>`).join('')}
       </div>
