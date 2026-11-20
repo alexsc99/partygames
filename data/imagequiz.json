@@ -73,7 +73,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_25167542fd.png",
+    "img": "iq_87527be7d8.png",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "Sprite",
@@ -121,7 +121,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_1f23a7f9a0.png",
+    "img": "iq_474e542d15.svg",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "Snapchat",
@@ -217,7 +217,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_56535cfba1.svg",
+    "img": "iq_27ba4cf6d4.svg",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "Mercedes-Benz",
@@ -241,7 +241,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_4e5040d3e6.png",
+    "img": "iq_199fb69277.png",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "BMW",
@@ -301,7 +301,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_7d900ec9cc.svg",
+    "img": "iq_f769a009d9.svg",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "McDonald's",
@@ -313,19 +313,19 @@
   },
   {
     "theme": "logos",
-    "img": "iq_5885dbdbbb.svg",
+    "img": "iq_406ea5438f.svg",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
-      "Popeyes",
-      "Burger King",
-      "McDonald's",
-      "KFC"
+      "Condor",
+      "Lufthansa",
+      "Eurowings",
+      "Austrian Airlines"
     ],
-    "c": 3
+    "c": 1
   },
   {
     "theme": "logos",
-    "img": "iq_fe1a72ff44.png",
+    "img": "iq_b572c33aa3.svg",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "Monster Energy",
@@ -337,7 +337,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_0d38aeb0e6.png",
+    "img": "iq_c17991025c.png",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "PayPal",
@@ -361,7 +361,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_0cd4d57db5.png",
+    "img": "iq_9e219bf525.png",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "Expedia",
@@ -373,15 +373,15 @@
   },
   {
     "theme": "logos",
-    "img": "iq_77c8ce0b72.svg",
+    "img": "iq_61b6d8a3e1.svg",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
-      "Uber",
-      "FreeNow",
-      "Lyft",
-      "Bolt"
+      "SoundHound",
+      "Spotify",
+      "Shazam",
+      "Deezer"
     ],
-    "c": 0
+    "c": 2
   },
   {
     "theme": "logos",
@@ -397,7 +397,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_3d7e5739e5.png",
+    "img": "iq_cc158155e9.svg",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "4chan",
@@ -553,7 +553,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_75e0574e21.png",
+    "img": "iq_7d0f0a8bfa.png",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "Aldi",
@@ -577,7 +577,7 @@
   },
   {
     "theme": "logos",
-    "img": "iq_0997846a20.png",
+    "img": "iq_4d0dcd77e8.png",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
       "Corel",
@@ -589,15 +589,15 @@
   },
   {
     "theme": "logos",
-    "img": "iq_f50809c22b.png",
+    "img": "iq_20a801af3f.svg",
     "q": "Welche Marke gehört zu diesem Logo?",
     "a": [
-      "ESA",
-      "SpaceX",
-      "Boeing",
-      "NASA"
+      "Babbel",
+      "Duolingo",
+      "Busuu",
+      "Rosetta Stone"
     ],
-    "c": 3
+    "c": 1
   },
   {
     "theme": "landmarks",
@@ -1573,7 +1573,7 @@
   },
   {
     "theme": "cars",
-    "img": "iq_1982fb2df7.png",
+    "img": "iq_199fb69277.png",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
       "Audi",
@@ -1621,7 +1621,7 @@
   },
   {
     "theme": "cars",
-    "img": "iq_bba6b74eff.svg",
+    "img": "iq_27ba4cf6d4.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
       "BMW",
@@ -1693,13 +1693,13 @@
   },
   {
     "theme": "cars",
-    "img": "iq_1f1fbbedb3.svg",
+    "img": "iq_dbed2df8be.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
-      "Dodge",
-      "Ford",
-      "Chevrolet",
-      "Opel"
+      "Land Rover",
+      "Jaguar",
+      "Aston Martin",
+      "Bentley"
     ],
     "c": 1
   },
@@ -1741,7 +1741,7 @@
   },
   {
     "theme": "cars",
-    "img": "iq_59b6dc013e.svg",
+    "img": "iq_e10abaa5e3.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
       "Citroën",
@@ -1765,19 +1765,19 @@
   },
   {
     "theme": "cars",
-    "img": "iq_c69e791911.svg",
+    "img": "iq_2d51ac5039.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
-      "Alfa Romeo",
-      "Lancia",
-      "Fiat",
-      "Seat"
+      "Cadillac",
+      "Dodge",
+      "Chevrolet",
+      "Opel"
     ],
     "c": 2
   },
   {
     "theme": "cars",
-    "img": "iq_f3fa6cec18.svg",
+    "img": "iq_d3786081b1.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
       "Fiat",
@@ -1813,7 +1813,7 @@
   },
   {
     "theme": "cars",
-    "img": "iq_01aae88fd5.svg",
+    "img": "iq_51f9cfa224.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
       "Jaguar",
@@ -1849,7 +1849,7 @@
   },
   {
     "theme": "cars",
-    "img": "iq_e9431ac790.svg",
+    "img": "iq_e0687983a3.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
       "Volvo",
@@ -1873,13 +1873,13 @@
   },
   {
     "theme": "cars",
-    "img": "iq_863a8d6409.svg",
+    "img": "iq_96b784b354.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
-      "Suzuki",
+      "Kia",
       "Hyundai",
       "Mazda",
-      "Kia"
+      "Suzuki"
     ],
     "c": 3
   },
@@ -1897,7 +1897,7 @@
   },
   {
     "theme": "cars",
-    "img": "iq_c09fd6d1a9.svg",
+    "img": "iq_9e6fc2ab33.svg",
     "q": "Welche Automarke gehört zu diesem Logo?",
     "a": [
       "Mitsubishi",
