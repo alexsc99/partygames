@@ -854,6 +854,9 @@ describe('PartyGame Server', () => {
       newOne.ts = now - 1000; // gerade erst hochgeladen
       assert.equal(store.cleanup(now), 1);
       assert.deepEqual(store.list('ABCD').map(p => p.name), ['neu']);
+      // Admins (Gruppe) müssen Fotos per SSH löschen können, obwohl der Dienst als anderer User läuft
+      assert.equal(fs.statSync(path.join(dir, 'ABCD')).mode & 0o7777, 0o2775);
+      assert.equal(fs.statSync(store.file('ABCD', newOne.id)).mode & 0o777, 0o664);
       assert.equal(fs.existsSync(store.file('ABCD', oldOne.id)), false);
       assert.equal(store.cleanup(now + PHOTO_TTL_MS), 1);
       assert.equal(store.exists('ABCD'), false, 'empty room folder is removed');

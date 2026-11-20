@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.16.0)
+# 🎉 PartyGame (Version 3.16.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -220,7 +220,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.16.0 (Aktueller Stand):** **📸 Foto-Wand**: Fotos vom Handy (Kamera oder Galerie) in die Raum-Galerie `/fotos`, Live-Einblendung am TV, Diashow + QR am Spielende, ZIP-Download, Upload auch nach der Party, automatische Löschung nach 7 Tagen; Admin-Gruppe „📸 Fotos“.
+- **v3.16.1 (Aktueller Stand):** Foto-Ordner/-Dateien gruppenbeschreibbar (2775/664), damit Admins der Gruppe `games` Fotos per SSH löschen können.
+- **v3.16.0:** **📸 Foto-Wand**: Fotos vom Handy (Kamera oder Galerie) in die Raum-Galerie `/fotos`, Live-Einblendung am TV, Diashow + QR am Spielende, ZIP-Download, Upload auch nach der Party, automatische Löschung nach 7 Tagen; Admin-Gruppe „📸 Fotos“.
 - **v3.15.0:** Neuer Modus **🤸 Pantomime** (98 Begriffe, auch im Standard-Mix und im Ein-Gerät-Modus), **🥁 Trommelwirbel** vor der Auflösung auf TV und Handys.
 - **v3.14.1:** Party-Karten nach Test-Feedback: entfernt „10 Wörter mit Sch“, „Letzter holt sich 300 Punkte“, Socken-Tausch und Handy-Regel; „15 Länder in 30 s“ → reihum je ein Land ohne Zeitlimit; Geburtstags-Reihe bis zu 5 Minuten.
 - **v3.14.0:** Party-Karten mit „gelungen / nicht gelungen“ (Gruppe, Foto & Pose, Kopfgeld, Underdog) bewerten die Spieler am Handy: alle außer den Betroffenen, mind. 2 Stimmen, Mehrheit entscheidet; Admin-Buttons bleiben als Notfall-Override.

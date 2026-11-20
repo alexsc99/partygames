@@ -28,9 +28,23 @@ function createPhotoStore(dir) {
     return photos;
   }
 
+  // Gruppe darf schreiben/löschen (Dienst läuft als „games“, Admins sind in der Gruppe): Ordner 2775, Dateien 664.
+  // chmod explizit, weil die umask des Dienstes (022) die Rechte beim Anlegen sonst beschneidet.
+  function writeShared(file, data) {
+    fs.writeFileSync(file, data);
+    fs.chmodSync(file, 0o664);
+  }
+  function ensureRoomDir(code) {
+    if (fs.existsSync(roomDir(code))) return;
+    const rootExisted = fs.existsSync(dir);
+    fs.mkdirSync(roomDir(code), { recursive: true });
+    if (!rootExisted) fs.chmodSync(dir, 0o2775);
+    fs.chmodSync(roomDir(code), 0o2775);
+  }
+
   function saveMeta(code, photos) {
     const tmp = `${metaFile(code)}.${process.pid}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify(photos));
+    writeShared(tmp, JSON.stringify(photos));
     fs.renameSync(tmp, metaFile(code));
     cache.set(code, photos);
   }
@@ -43,10 +57,10 @@ function createPhotoStore(dir) {
     if (!Buffer.isBuffer(buf) || !isJpeg(buf)) return { error: 'Nur JPEG-Bilder' };
     const photos = list(code);
     if (photos.length >= PHOTO_MAX_PER_ROOM) return { error: 'Foto-Limit für diesen Raum erreicht' };
-    fs.mkdirSync(roomDir(code), { recursive: true });
+    ensureRoomDir(code);
     const ts = Date.now();
     const id = `${ts}-${crypto.randomBytes(4).toString('hex')}`;
-    fs.writeFileSync(path.join(roomDir(code), `${id}.jpg`), buf);
+    writeShared(path.join(roomDir(code), `${id}.jpg`), buf);
     const entry = { id, name: String(name || '').trim().slice(0, 16), ts };
     saveMeta(code, [...photos, entry]);
     return { entry };
