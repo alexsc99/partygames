@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.23.0)
+# 🎉 PartyGame (Version 3.23.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -234,7 +234,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.23.0 (Aktueller Stand):** Runden-Limit zusätzlich 20/30/50, Party-Mix-Runden 8–50; im Party-Mix wird das (dort wirkungslose) Runden-Limit ausgeblendet. Songs mit leisem Intro oder Stille am Anfang (26 von 373) starten an der ersten lauten Stelle.
+- **v3.23.1 (Aktueller Stand):** Alle 373 Song-Vorschauen per Audio-Fingerabdruck (Chromaprint gegen Deezer) und Shazam geprüft: Es laufen überall die richtigen Songs. Drei Titel an die tatsächlich gespielte Fassung angepasst (Serebro „Мама Люба“ statt „Mama Lover“, Alexander Rybak „Fairytale“ statt „Сказка“ und „Europe's Skies“ statt „Небеса Европы“).
+- **v3.23.0:** Runden-Limit zusätzlich 20/30/50, Party-Mix-Runden 8–50; im Party-Mix wird das (dort wirkungslose) Runden-Limit ausgeblendet. Songs mit leisem Intro oder Stille am Anfang (26 von 373) starten an der ersten lauten Stelle.
 - **v3.22.1:** Pantomime-Begriffe vereinfacht (nur noch gut darstellbare Sachen wie „Auf einen Legostein treten“, „Schluckauf haben“, „Luftkuss zuwerfen“ statt langer Situationen); weniger Foto-Aufgaben bei den Party-Karten (6 Mitmach-Karten ohne Foto, „Foto & Pose“ seltener); instabilen Test (Gleichstand beim Joker-Test) behoben.
 - **v3.22.0:** Mehr Interaktion: neuer Modus 🔥 Heißer Stuhl (auch im Standard-Mix), 💬 Diskussion vor Abstimmungen, 🧍 Aufsteh-Runden bei „Ich hab noch nie“, 👑 Team-Kapitän, 👫 Partner-Runden, ⚔️ Finale-Duell der zwei Besten und 🃏 Joker (Doppelt, Abschreiben, Zeitdieb, Punkteklau) – alles in `/admin` unter „🤝 Interaktion“ abschaltbar.
 - **v3.21.0:** Mitmach-Karten mit Foto-Aufgabe: +5 Punkte fürs erste Foto pro Person (TV-Einblendung „+5 Punkte“, Hinweis am Handy); keine Fuß-Fotos mehr (Turnschuh- und Socken-Karte ersetzt).
