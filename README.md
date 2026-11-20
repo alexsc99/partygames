@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.17.1)
+# 🎉 PartyGame (Version 3.17.2)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -221,7 +221,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.17.1 (Aktueller Stand):** Fix Foto-Challenge: Öffnet ein Handy die Kamera, trennt es kurz die Verbindung – das Foto zählt jetzt trotzdem, und die Karte endet nicht mehr vorzeitig mit „Zu wenige Fotos“. Zu spät gekommene Fotos kommen noch in die laufende Abstimmung. Am Handy sind bei der Abstimmung alle Fotos zu sehen, das eigene ist als „📸 Dein Foto“ markiert.
+- **v3.17.2 (Aktueller Stand):** Abgebrochene Seitenübergänge (schnelle Phasenwechsel) landen nicht mehr als Client-Fehler „Transition was skipped“ im Log.
+- **v3.17.1:** Fix Foto-Challenge: Öffnet ein Handy die Kamera, trennt es kurz die Verbindung – das Foto zählt jetzt trotzdem, und die Karte endet nicht mehr vorzeitig mit „Zu wenige Fotos“. Zu spät gekommene Fotos kommen noch in die laufende Abstimmung. Am Handy sind bei der Abstimmung alle Fotos zu sehen, das eigene ist als „📸 Dein Foto“ markiert.
 - **v3.17.0:** 🌍 Remote-Modus für Party-Karten (Admin → Party-Karten → „Remote (Video-Call)“): ortsgebundene Karten fallen weg, neue Kamera-Aufgaben und 📸 Foto-Challenges mit anonymer Handy-Abstimmung übers beste Foto (+300, jedes Foto +100).
 - **v3.16.3:** Bugfixes vor dem Party-Einsatz: Pantomime/Tabu zeigen am Handy nicht mehr „Zu spät!“; Trommelwirbel verrät die Lösung nicht mehr (Auflösung wird erst danach gezeichnet, auch Vibration/Konfetti), verschwindet bei „Weiter“ und kommt nach Reconnect nicht erneut; Party-Karten: Pause wird beim Kartenstart aufgehoben, Punkte auch für kurz getrennte Spieler, Abstimmungen hängen nicht, wenn jemand geht, Ja/Nein immer mit mind. 2 Stimmen; „Anderer Begriff“ meidet schon gespielte Begriffe; Foto-Wand: per SSH gelöschte Fotos verschwinden sofort, eigenes höheres Upload-Limit mit automatischem Wiederholen, ältere iPhones (iOS 15) können hochladen, ZIP-Download blockiert den Server nicht mehr, Speicher-Obergrenze (5 GB), Diashow ohne doppelte Timer, Galerie überschreibt den Spielernamen nicht.
 - **v3.16.2:** Foto-Wand: eigener Knopf „📷 Foto aufnehmen“ (öffnet direkt die Kamera) neben „🖼️ Aus Galerie“ – auf Handy, im Admin und in der Galerie; leere Galerie zeigt den Hinweis korrekt an.

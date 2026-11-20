@@ -549,7 +549,9 @@
     const first = !lastTransitionKey;
     lastTransitionKey = key;
     if (!changed || first || !document.startViewTransition || reduceMotion.matches || document.hidden) return fn();
-    document.startViewTransition(fn);
+    // Folgt schnell der nächste Phasenwechsel, bricht der Browser die Animation ab („Transition was skipped“) –
+    // gewollt, kein Fehler; ohne catch landet das als unhandledrejection im Client-Fehler-Log.
+    document.startViewTransition(fn).ready.catch(() => {});
   };
 
   // ---- Konfetti: zeitbasiert (gleich schnell auf 60/120 Hz), flatternde Papierschnipsel, DPR-scharf ----
