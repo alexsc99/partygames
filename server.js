@@ -56,8 +56,8 @@ try {
 
 const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'mix'];
 const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'sort', 'songquiz', 'imagequiz'];
-// Standard-Mix (auch für die Presets Klassik/18+/Alkoholfrei): ohne Kennenlernen & Wort-Assoziation – die bleiben einzeln/manuell wählbar
-const DEFAULT_MIX_MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale'];
+// Standard-Mix (auch für die Presets Klassik/18+/Alkoholfrei): ohne Kennenlernen, Wort-Assoziation & Skala – die bleiben manuell zuschaltbar
+const DEFAULT_MIX_MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams'];
 const IQ_THEMES = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
 // ---- Party-Karten: Aufgaben zwischen zwei Runden (Gruppe, Spitzenreiter, Letzter, Duell, Regel …) ----
 const PARTY_CARDS = require('./data/partycards.json');
@@ -70,6 +70,7 @@ const PARTY_CARD_TYPES = {
   pass: { title: '🔄 Weitergeben', act: 'info', w: 1 },
   duel: { title: '⚡ Blitz-Duell', act: 'duel', w: 2 },
   rule: { title: '📜 Neue Regel', act: 'rule', w: 1 },
+  photo: { title: '📸 Foto & Pose', act: 'yesno', w: 2 }, // who: 'group' (alle) oder 'pair' ({a} & {b})
 };
 const CARD_GROUP_PTS = 200;
 const CARD_VOTE_PTS = 300;
@@ -1334,11 +1335,13 @@ function maybeStartPartyCard() {
   state.usedCards.push(c.id);
   state.lastCardIdx = state.idx;
   state.cardShownAt = Date.now();
+  const isPair = c.type === 'photo' && c.who === 'pair';
   const reward = c.type === 'group' ? CARD_GROUP_PTS : act === 'vote' ? CARD_VOTE_PTS : act === 'duel' ? CARD_DUEL_PTS : (c.pts || c.amount || 0);
   state.card = {
     id: c.id, type: c.type, title: PARTY_CARD_TYPES[c.type].title, act, text,
     target: target ? target.name : null,
     duel: act === 'duel' ? [roles.a.name, roles.b.name] : null,
+    pair: isPair ? [roles.a.name, roles.b.name] : null,
     reward, minus: c.minus || 0, amount: c.amount || 0,
     votes: {}, tally: null, resolved: false, outcome: null,
   };
@@ -1361,7 +1364,12 @@ function resolvePartyCard(arg) {
   let outcome;
   if (card.act === 'yesno') {
     const ok = !!(arg && arg.ok);
-    if (card.type === 'group') {
+    if (card.type === 'photo') {
+      // Foto-Karten sind zum Spaß: kein Trinken/Abzug, nur Bonus bei Erfolg
+      const winners = card.pair ? card.pair.map(byName).filter(Boolean) : ps;
+      if (ok) winners.forEach(p => addPoints(p, card.reward));
+      outcome = ok ? `📸 Gelungen! +${card.reward} ${card.pair ? `für ${card.pair.join(' & ')}` : 'für alle'}` : '❌ Nicht ganz – diesmal keine Punkte';
+    } else if (card.type === 'group') {
       if (ok) ps.forEach(p => addPoints(p, card.reward));
       else ps.forEach(p => { p.drinks = (p.drinks || 0) + 1; });
       outcome = ok ? `✅ Geschafft! +${card.reward} für alle`
@@ -1417,7 +1425,7 @@ function publicCard() {
   return {
     id: c.id, type: c.type, title: c.title, act: c.act, text: c.text,
     target: c.target, targetLabel: c.target ? lbl(c.target) : null,
-    duel: c.duel, reward: c.reward, minus: c.minus, amount: c.amount,
+    duel: c.duel, pair: c.pair, reward: c.reward, minus: c.minus, amount: c.amount,
     voters: c.act === 'vote' ? Object.keys(c.votes) : [],
     tally: c.tally, resolved: c.resolved, outcome: c.outcome,
   };

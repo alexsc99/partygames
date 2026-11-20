@@ -67,5 +67,17 @@
   { "id": "r04", "type": "rule", "text": "Vor jeder Antwort muss man „Mit Verlaub“ sagen. Vergessen? 1 Schluck.", "af": "Vor jeder Antwort muss man „Mit Verlaub“ sagen. Vergessen? Einmal laut bellen." },
   { "id": "r05", "type": "rule", "text": "Niemand darf auf jemanden zeigen. Erwischt? 1 Schluck.", "af": "Niemand darf auf jemanden zeigen. Erwischt? 5 Hampelmänner." },
   { "id": "r06", "type": "rule", "text": "Alle sprechen nur noch in der dritten Person über sich selbst." },
-  { "id": "r07", "type": "rule", "text": "{player} ist Daumenkönig: Legt {player} den Daumen auf den Tisch, müssen alle nachziehen – der Letzte trinkt.", "af": "{player} ist Daumenkönig: Legt {player} den Daumen auf den Tisch, müssen alle nachziehen – der Letzte macht 5 Kniebeugen." }
+  { "id": "r07", "type": "rule", "text": "{player} ist Daumenkönig: Legt {player} den Daumen auf den Tisch, müssen alle nachziehen – der Letzte trinkt.", "af": "{player} ist Daumenkönig: Legt {player} den Daumen auf den Tisch, müssen alle nachziehen – der Letzte macht 5 Kniebeugen." },
+
+  { "id": "f01", "type": "photo", "who": "pair", "pts": 250, "sec": 30, "text": "{a} & {b}: Stellt die Titanic-Szene nach („Ich fliege!“) – Foto, sonst ist es nicht passiert!" },
+  { "id": "f02", "type": "photo", "who": "pair", "pts": 250, "sec": 30, "text": "{a} & {b}: Selfie als frisch verliebtes Promi-Paar auf dem roten Teppich." },
+  { "id": "f03", "type": "photo", "who": "pair", "pts": 250, "sec": 45, "text": "{a} & {b}: Stellt ein berühmtes Albumcover nach. Errät die Gruppe, welches? Dann gibt's Punkte!" },
+  { "id": "f04", "type": "photo", "who": "pair", "pts": 250, "sec": 20, "text": "{a} & {b}: Bodybuilder-Pose nebeneinander – 10 Sekunden halten, ohne zu lachen. Foto!" },
+  { "id": "f05", "type": "photo", "who": "pair", "pts": 250, "sec": 30, "text": "{a} & {b}: Foto im Stil eines peinlichen Hochzeitsfotos aus den 90ern." },
+  { "id": "f06", "type": "photo", "who": "pair", "pts": 250, "sec": 30, "text": "{a} macht eine verrückte Pose vor, {b} muss sie spiegelverkehrt nachmachen – Foto von beiden!" },
+  { "id": "f07", "type": "photo", "who": "group", "pts": 200, "sec": 45, "text": "Alle zusammen: Stellt das „Letzte Abendmahl“ nach – Gruppenfoto in 45 Sekunden!" },
+  { "id": "f08", "type": "photo", "who": "group", "pts": 200, "sec": 30, "text": "Boyband-Cover: Alle posieren wie für ein Albumfoto der 2000er. Der Gastgeber knipst!" },
+  { "id": "f09", "type": "photo", "who": "group", "pts": 200, "sec": 20, "text": "Jeder macht die Pose seines Lieblingstiers – Gruppenfoto in 20 Sekunden!" },
+  { "id": "f10", "type": "photo", "who": "group", "pts": 200, "sec": 30, "text": "Familienfoto aus den 80ern: Alle stehen steif nebeneinander und lächeln gezwungen. Klick!" },
+  { "id": "f11", "type": "photo", "who": "group", "pts": 200, "sec": 20, "text": "Spiegelbild: Alle machen exakt die Pose des Gastgebers nach – wer abweicht, ruiniert das Foto!" }
 ]

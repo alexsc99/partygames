@@ -668,8 +668,8 @@ describe('PartyGame Server', () => {
         admin.emit('host:cardResolve', { ok: true });
         await until(s => s.card && s.card.resolved);
         const d = diff();
-        if (card.type === 'group') names.forEach(n => assert.equal(d[n], card.reward));
-        else assert.equal(d[card.target], card.reward);
+        const winners = card.pair || (card.type === 'group' || card.type === 'photo' ? names : [card.target]);
+        winners.forEach(n => assert.equal(d[n], card.reward));
       } else if (card.act === 'duel') {
         admin.emit('host:cardResolve', { name: card.duel[0] });
         await until(s => s.card && s.card.resolved);

@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.12.1)
+# 🎉 PartyGame (Version 3.13.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -44,7 +44,7 @@ Es gibt drei URLs:
 | ⚡ **Wort-Assoziation** | Schnell das erste Wort eintippen, das zum Begriff passt |
 | 🎵 **Erkenne den Song** | Spielt 30s-iTunes-Previews ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe |
 | 🖼️ **Bild-Quiz** | Firmenlogos ohne Schriftzug (50), Sehenswürdigkeiten (40), Flaggen (41), Automarken-Embleme ohne Schriftzug (30) & Länder-Umrisse (40) per 4-Optionen-Quiz erraten |
-| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl, Skala – Kennenlernen & Wort-Assoziation nur manuell zuschaltbar) |
+| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl – Kennenlernen, Wort-Assoziation & Skala nur manuell zuschaltbar) |
 
 ---
 
@@ -62,7 +62,7 @@ Es gibt drei URLs:
 - **Kategorien-Filter:** 5 klare Kategorien — *🎉 Party & Freunde*, *🍻 Peinlich & Eskaliert*, *💬 Kennenlernen & Deep Talk*, *💘 Date* und *🔥 Hot 18+* (in `/admin` frei kombinierbar; Standard: Party & Freunde, Peinlich & Eskaliert, Kennenlernen & Deep Talk).
 - **Song-Sprachen & Russisch-Anteil:** In `/admin` unter *Erkenne den Song* sind `🇬🇧 Englisch` und `🇩🇪 Deutsch` standardmäßig aktiv; der `🇷🇺 Russisch-Anteil` lässt sich per Slider von `0%` bis `100%` regeln (Standard: `0%`). Optional auf *Nur Interpret & Titel* begrenzbar.
 - **🕵️ Geheime Missionen:** Optional in `/admin` aktivierbar — ein zufälliger Spieler erhält auf seinem Handy eine geheime Runden-Aufgabe (+150 Bonus-Punkte bei Erfolg, Auflösung & Bewertung am Rundenende).
-- **🎪 Party-Karten:** Optional in `/admin` (Aus / Selten / Normal / Oft). Zwischen zwei Runden erscheint ab und zu eine Karte auf TV und Handys: 🎉 Gruppen-Challenge (+200 für alle oder alle trinken bzw. Kniebeugen), 👑 Kopfgeld auf den Spitzenreiter, 🆘 Aufholchance für den Letzten, 🎤 Reihum-Runde mit Handy-Abstimmung (+300), ⚡ Blitz-Duell zweier ausgeloster Spieler (+400), 🔄 Weitergeben und 📜 Regelkarten, die 3 Runden lang am TV-Rand stehen. Ausgewertet wird im Admin; nie direkt vor der Finalrunde, nicht im Ein-Gerät-Modus. Karten aus „Peinlich“/„Hot 18+“ nur bei aktiver Kategorie, „Alkoholfrei“ tauscht Trink-Aufgaben aus.
+- **🎪 Party-Karten:** Optional in `/admin` (Aus / Selten / Normal / Oft). Zwischen zwei Runden erscheint ab und zu eine Karte auf TV und Handys: 🎉 Gruppen-Challenge (+200 für alle oder alle trinken bzw. Kniebeugen), 👑 Kopfgeld auf den Spitzenreiter, 🆘 Aufholchance für den Letzten, 🎤 Reihum-Runde mit Handy-Abstimmung (+300), ⚡ Blitz-Duell zweier ausgeloster Spieler (+400), 🔄 Weitergeben, 📸 Foto & Pose (Paar- oder Gruppenfoto, +250 für beide bzw. +200 für alle) und 📜 Regelkarten, die 3 Runden lang am TV-Rand stehen. Ausgewertet wird im Admin; nie direkt vor der Finalrunde, nicht im Ein-Gerät-Modus. Karten aus „Peinlich“/„Hot 18+“ nur bei aktiver Kategorie, „Alkoholfrei“ tauscht Trink-Aufgaben aus.
 - **⏱️ Timer-Tempo:** *Schnell* = Antwortzeit −30 % (Wort-Assoziation mind. 16 s) und kürzere Auflösung (mind. 6 s) · *Normal* = Standard (Auflösung geht nach 7–15 s automatisch weiter) · *Entspannt* = Antwortzeit +50 %, Auflösung und Karten-Ergebnisse bleiben stehen, bis jemand „Weiter“ tippt (Admin, TV oder Handy-Abstimmung).
 - **Lautstärke-Regler & Auto-Timer-Sync:** Eigener Lautstärke-Slider auf TV und Handy; der Song-Timer synchronisiert sich unabhängig von unterschiedlichen Geräte-Uhrzeiten exakt mit dem Audio-Start.
 - **Finalrunde (2× Punkte):** Die letzte Runde eines Spiels zählt automatisch doppelt (in `/admin` ein-/ausschaltbar).
@@ -108,7 +108,7 @@ partygame/
 │   ├── song-art/        # Lokale Album-Cover (0.jpg–372.jpg)
 │   ├── imagequiz.json   # Bild-Quiz (201 Fragen: Logos, Sehenswürdigkeiten, Flaggen, Automarken, Länder-Umrisse)
 │   ├── iq-images/       # Lokale Bilder für das Bild-Quiz (neutrale Dateinamen)
-│   ├── partycards.json  # Party-Karten (63 Aufgaben zwischen den Runden, Platzhalter {leader} {last} {a} {b} {player})
+│   ├── partycards.json  # Party-Karten (74 Aufgaben zwischen den Runden, Platzhalter {leader} {last} {a} {b} {player})
 │   ├── used.json        # Automatisch verwaltet: bereits gespielte Indizes
 │   └── custom.json      # Automatisch erzeugt: eigene Fragen aus /admin
 ├── start.sh             # Startet Server + Firefox im TV-Vollbild
@@ -214,7 +214,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.12.1 (Aktueller Stand):** Fragen-Kategorie „Kennenlernen & Deep Talk“ nicht mehr im Standard und nicht in den Presets Klassik (jetzt Party + Peinlich) und Alkoholfrei (jetzt Party); bei Date bleibt sie drin.
+- **v3.13.0 (Aktueller Stand):** Neuer Party-Karten-Typ **📸 Foto & Pose** (11 Karten: Paar-Fotos/Posen für zwei ausgeloste Spieler, Gruppenfotos), Skala nicht mehr im Standard-Mix.
+- **v3.12.1:** Fragen-Kategorie „Kennenlernen & Deep Talk“ nicht mehr im Standard und nicht in den Presets Klassik (jetzt Party + Peinlich) und Alkoholfrei (jetzt Party); bei Date bleibt sie drin.
 - **v3.12.0:** Fix: Handys, deren Verbindung nach kurzer Pause (z. B. Bildschirm aus) wiederhergestellt wurde, flogen 4 s später als Spieler raus und konnten bis zum Neuladen nicht mehr antworten/abstimmen. Party-Karten: Handys können nach 5 s per „⏭️ Weiter“-Abstimmung weitermachen. Standard-Mix und Presets ohne Kennenlernen & Wort-Assoziation.
 - **v3.11.1:** *Schnell*: Auflösung mind. 6 s, Wort-Assoziation mind. 16 s Antwortzeit.
 - **v3.11.0:** Timer-Tempo wirkt jetzt auch auf die Pausen: *Schnell* verkürzt Auflösung/Karten-Ergebnis um 30 %, *Entspannt* gibt +50 % Antwortzeit (vorher +40 %) und wartet nach der Auflösung auf „Weiter“.

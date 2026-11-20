@@ -274,10 +274,11 @@ function renderCardPanel() {
   const others = S.players.filter(p => p.name !== c.target);
   let actions = '';
   if (c.resolved) {
-    actions = `<div style="font-weight:800;color:${/^❌/u.test(c.outcome || '') ? '#ff6b81' : '#3dd68c'}">${esc(c.outcome)} — geht gleich weiter…</div>`;
+    actions = `<div style="font-weight:800;color:${/^❌/u.test(c.outcome || '') ? '#ff6b81' : '#3dd68c'}">${esc(c.outcome)}${S.leftMs > 0 ? ' — geht gleich weiter…' : ''}</div>`;
   } else if (c.act === 'yesno') {
     const fail = c.type === 'group' ? (S.alcoholFree ? 'alle 5 Kniebeugen' : 'alle trinken') : c.minus ? `−${c.minus}` : '0 Pkt';
-    actions = `<div class="cats">${btn(`✅ Geschafft (+${c.reward}${c.type === 'group' ? ' für alle' : ''})`, { ok: true }, '#26890c')}${btn(`❌ Nicht geschafft (${fail})`, { ok: false }, '#e21b3c')}</div>`;
+    const forWhom = c.pair ? ' für beide' : (c.type === 'group' || c.type === 'photo') ? ' für alle' : '';
+    actions = `<div class="cats">${btn(`✅ ${c.type === 'photo' ? 'Gelungen' : 'Geschafft'} (+${c.reward}${forWhom})`, { ok: true }, '#26890c')}${btn(`❌ Nicht geschafft (${fail})`, { ok: false }, '#e21b3c')}</div>`;
   } else if (c.act === 'give' || c.act === 'take') {
     actions = `<div class="sub">${c.act === 'give' ? `Wer bekommt die ${c.amount} Punkte?` : `Wer muss ${c.amount} Punkte abgeben?`}</div>
       <div class="cats">${others.map(p => btn(`${esc(p.avatar || '😎')} ${esc(p.name)}`, { name: p.name }, '#4b3a9e')).join('')}</div>`;
@@ -292,7 +293,9 @@ function renderCardPanel() {
   } else {
     actions = `<div class="sub">${c.act === 'rule' ? '📜 Gilt für die nächsten 3 Runden.' : 'Keine Wertung nötig.'} Weiter geht’s unten mit „▶ Weiter“.</div>`;
   }
-  const who = c.targetLabel ? `<div style="font-weight:800;color:#ffd33d;margin-top:4px">👉 ${esc(c.targetLabel)}</div>` : c.duel ? `<div style="font-weight:800;color:#ffd33d;margin-top:4px">⚔️ ${c.duel.map(esc).join(' gegen ')}</div>` : '';
+  const who = c.targetLabel ? `<div style="font-weight:800;color:#ffd33d;margin-top:4px">👉 ${esc(c.targetLabel)}</div>`
+    : c.duel ? `<div style="font-weight:800;color:#ffd33d;margin-top:4px">⚔️ ${c.duel.map(esc).join(' gegen ')}</div>`
+    : c.pair ? `<div style="font-weight:800;color:#ffd33d;margin-top:4px">📸 ${c.pair.map(esc).join(' & ')}</div>` : '';
   return `<div class="card" style="border:2px solid #ffd33d;background:rgba(255,211,61,.1)">
       <div class="label" style="color:#ffd33d">🎪 Party-Karte · ${esc(c.title)}</div>${who}
       <div style="font-size:1.05rem;font-weight:700;margin:8px 0 10px">${esc(c.text)}</div>

@@ -1130,7 +1130,7 @@ function renderView() {
     } else {
       body = `<div class="msg"><small>⏳ Der Gastgeber wertet aus…</small></div>`;
     }
-    const meTarget = !c.resolved && (c.target === name || (c.duel && c.duel.includes(name)));
+    const meTarget = !c.resolved && (c.target === name || (c.duel && c.duel.includes(name)) || (c.pair && c.pair.includes(name)));
     app.innerHTML = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>🎪 Party-Karte &nbsp; <b id="psec"></b></div>
       <div style="background:linear-gradient(160deg,#4b3a9e,#2d2266);border:2px solid #ffd33d;border-radius:18px;padding:16px;margin-top:10px;text-align:center">
         <div style="font-size:22px;font-weight:900;color:#ffd33d">${esc(c.title)}</div>
