@@ -43,6 +43,8 @@ const DATA = {
 // Heißer Stuhl nutzt die Entweder-Oder-Paare („Was würde Alex lieber?“) – gleiches Array, eigene „schon gespielt“-Liste
 DATA.hotseat = DATA.wouldyourather;
 DATA.songs.forEach((s, i) => { s._idx = i; });
+// Startversatz je Vorschau (scripts/analyze-song-starts.js): leise Intros/Stille überspringen
+const SONG_STARTS = fs.existsSync(path.join(__dirname, 'data', 'song-starts.json')) ? require('./data/song-starts.json') : {};
 
 const CUSTOM_FILE = path.join(__dirname, 'data', 'custom.json');
 try {
@@ -135,6 +137,8 @@ const MODE_LABELS = {
 };
 const SPIN_DURATION_MS = 4200;
 const MIX_ROUNDS = 12;
+const MIX_ROUND_OPTIONS = [8, 12, 16, 20, 30, 50]; // Party-Mix: eigene Rundenzahl (Runden-Limit gilt dort nicht)
+const ROUND_LIMITS = [0, 5, 10, 15, 20, 30, 50]; // 0 = Alle
 const CATEGORIES = ['party', 'peinlich', 'kennenlernen', 'date', 'hot18'];
 const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, pantomime: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20, hotseat: 25 };
 const MIME_SKIPS = 2; // so oft darf der Darsteller einen Begriff tauschen
@@ -706,7 +710,7 @@ function validRoomToken(val) {
 
 let state = freshState('quiz');
 let activeCategories = ['party', 'peinlich'];
-let roundLimit = 10; // 0 = Alle, sonst 5 / 10 / 15 – Standard 10, sonst dauert z. B. das Quiz 70+ Runden
+let roundLimit = 10; // 0 = Alle, sonst ROUND_LIMITS – Standard 10, sonst dauert z. B. das Quiz 70+ Runden
 let teamMode = false;
 let displayMode = 'tv'; // 'tv' | 'notv' | 'onedevice'
 let songLangs = { en: true, de: true };
@@ -953,7 +957,7 @@ function filteredCount(mode) {
 const totalRounds = () => {
   let n;
   if (state.mode === 'reaction') n = REACTION_ROUNDS;
-  else if (state.mode === 'mix') return mixRounds; // Party-Mix hat eigene Rundenwahl (8/12/16)
+  else if (state.mode === 'mix') return mixRounds; // Party-Mix hat eigene Rundenwahl (MIX_ROUND_OPTIONS)
   else if (state.mode === 'truthlie') n = state.phase === 'lobby' ? Math.max(pVals().length, 3) : Math.max(state.order.length, 1);
   else if (state.order.length && state.phase !== 'lobby') n = state.order.length;
   else n = filteredCount(state.mode);
@@ -1464,7 +1468,10 @@ function buildSongQuestion(song, meta) {
     c = song.type === 'solo' ? 0 : 1;
   }
 
-  return { q, a, c, artist: song.artist, title: song.title, year: song.year, type: song.type, preview: meta.preview, art: meta.art };
+  // Lokale Vorschau mit leisem Anfang: ab der ersten lauten Stelle abspielen (#t= versteht jeder Browser)
+  const start = SONG_STARTS[song._idx];
+  const preview = meta.preview && start > 0 && meta.preview.startsWith('/song-audio/') ? `${meta.preview}#t=${start}` : meta.preview;
+  return { q, a, c, artist: song.artist, title: song.title, year: song.year, type: song.type, preview, art: meta.art };
 }
 
 const byName = n => pVals().find(p => p.name === n);
@@ -2918,7 +2925,7 @@ function attachSocket(socket, ip, allowEvent) {
   });
   socket.on('host:rounds', n => {
     const val = Number(n);
-    if ([0, 5, 10, 15].includes(val)) {
+    if (ROUND_LIMITS.includes(val)) {
       roundLimit = val;
       broadcast();
     }
@@ -3112,7 +3119,7 @@ function attachSocket(socket, ip, allowEvent) {
   });
   socket.on('host:mixRounds', n => {
     const val = Number(n);
-    if ([8, 12, 16].includes(val)) mixRounds = val;
+    if (MIX_ROUND_OPTIONS.includes(val)) mixRounds = val;
     broadcast();
   });
   socket.on('host:preset', preset => {
@@ -3422,7 +3429,7 @@ function applySnapshot(snap) {
   const pickList = (arr, allowed) => (Array.isArray(arr) ? [...new Set(arr.filter(x => allowed.includes(x)))] : []);
   const cats = pickList(s.activeCategories, CATEGORIES);
   if (cats.length) activeCategories = cats;
-  if ([0, 5, 10, 15].includes(s.roundLimit)) roundLimit = s.roundLimit;
+  if (ROUND_LIMITS.includes(s.roundLimit)) roundLimit = s.roundLimit;
   teamMode = !!s.teamMode;
   if (['tv', 'notv', 'onedevice'].includes(s.displayMode)) displayMode = s.displayMode;
   if (s.songLangs && typeof s.songLangs === 'object') songLangs = { en: !!s.songLangs.en, de: !!s.songLangs.de };
@@ -3441,7 +3448,7 @@ function applySnapshot(snap) {
     partnerRounds: v => { partnerRounds = v; }, duelFinale: v => { duelFinale = v; }, jokersOn: v => { jokersOn = v; },
   })) if (typeof s[k] === 'boolean') set(s[k]);
   if (TIMER_MULT[s.timerSpeed]) timerSpeed = s.timerSpeed;
-  if ([8, 12, 16].includes(s.mixRounds)) mixRounds = s.mixRounds;
+  if (MIX_ROUND_OPTIONS.includes(s.mixRounds)) mixRounds = s.mixRounds;
   const mm = pickList(s.mixModes, MIX_MODES_ALL);
   if (mm.length >= 2) mixModes = mm;
   if (typeof s.publicUrl === 'string' && s.publicUrl) publicUrl = s.publicUrl;

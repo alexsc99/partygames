@@ -467,7 +467,7 @@ function render() {
   const isMix = S.mode === 'mix';
   const mixArr = S.mixModes || [];
   const showCats = !['songquiz', 'imagequiz', 'reaction', 'truthlie'].includes(S.mode);
-  const showRounds = S.mode !== 'reaction';
+  const showRounds = S.mode !== 'reaction' && !isMix; // Party-Mix hat seine eigene Rundenwahl
   const showImageQuiz = S.mode === 'imagequiz' || (isMix && mixArr.includes('imagequiz'));
   const showSongQuiz = S.mode === 'songquiz' || (isMix && mixArr.includes('songquiz'));
   const IQ_ALL = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
@@ -528,9 +528,9 @@ function render() {
       <div class="cats">
         ${MIX_OPTS.map(([id, lbl]) => `<button class="${mixArr.includes(id) ? 'active' : ''}" onclick="toggleMixMode('${id}')">${lbl}</button>`).join('')}
       </div>
-      <div class="sub">🔁 Runden</div>
+      <div class="sub">🔁 Runden (im Party-Mix gilt diese Zahl statt des Runden-Limits)</div>
       <div class="cats">
-        ${[8, 12, 16].map(n => `<button class="${(S.mixRounds || 12) === n ? 'active' : ''}" onclick="socket.emit('host:mixRounds',${n})">${n} Runden</button>`).join('')}
+        ${[8, 12, 16, 20, 30, 50].map(n => `<button class="${(S.mixRounds || 12) === n ? 'active' : ''}" onclick="socket.emit('host:mixRounds',${n})">${n} Runden</button>`).join('')}
       </div>
     `) : ''}
     ${showCats ? grp('cats', '🗂️ Fragen-Kategorie', `${allActive ? 'Alle' : activeCats.length + ' von ' + CATS.length} · ${S.total} aktiv`, `
@@ -571,7 +571,7 @@ function render() {
     `) : ''}
     ${showRounds ? grp('rounds', '🔢 Runden-Limit', (S.roundLimit || 0) ? `${S.roundLimit} Runden` : 'Alle', `
       <div class="cats">
-        ${[[0, 'Alle'], [5, '5 Runden'], [10, '10 Runden'], [15, '15 Runden']].map(([n, lbl]) => `<button class="${(S.roundLimit || 0) === n ? 'active' : ''}" onclick="socket.emit('host:rounds',${n})">${lbl}</button>`).join('')}
+        ${[[0, 'Alle'], [5, '5'], [10, '10'], [15, '15'], [20, '20'], [30, '30'], [50, '50']].map(([n, lbl]) => `<button class="${(S.roundLimit || 0) === n ? 'active' : ''}" onclick="socket.emit('host:rounds',${n})">${n ? lbl + ' Runden' : lbl}</button>`).join('')}
       </div>
     `) : ''}
     ${grp('team', '👥 Spielmodus', S.teamMode ? 'Team-Spiel' : 'Einzelspieler', `

@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.22.1)
+# 🎉 PartyGame (Version 3.23.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -44,10 +44,10 @@ Es gibt drei URLs:
 | 📊 **Skala 1–10** | Jeder bewertet auf einer Skala von 1 bis 10 |
 | 🎭 **2 Wahrheiten, 1 Lüge** | Ein Spieler schreibt 2 Wahrheiten & 1 Lüge, die anderen entlarven die Lüge |
 | ⚡ **Wort-Assoziation** | Schnell das erste Wort eintippen, das zum Begriff passt |
-| 🎵 **Erkenne den Song** | Spielt 30s-iTunes-Previews ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe |
+| 🎵 **Erkenne den Song** | Spielt 30s-Vorschauen (Deezer/iTunes) ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe; Vorschauen mit leisem Intro oder Stille starten automatisch an der ersten lauten Stelle (`data/song-starts.json`) |
 | 🖼️ **Bild-Quiz** | Firmenlogos ohne Schriftzug (50), Sehenswürdigkeiten (40), Flaggen (41), Automarken-Embleme ohne Schriftzug (30) & Länder-Umrisse (40) per 4-Optionen-Quiz erraten |
 | 🔥 **Heißer Stuhl** | Eine ausgeloste Person wählt geheim zwischen zwei Optionen („Was würdest du lieber …“), alle anderen tippen, was sie wählt: richtig +50, die Person +10 pro richtigem Rater, falsch = 1 Schluck |
-| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl, Pantomime, Heißer Stuhl – Kennenlernen, Wort-Assoziation & Skala nur manuell zuschaltbar) |
+| 🎲 **Party-Mix** | 12 bunte Runden (wählbar 8–50) aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl, Pantomime, Heißer Stuhl – Kennenlernen, Wort-Assoziation & Skala nur manuell zuschaltbar) |
 
 ---
 
@@ -73,6 +73,7 @@ Es gibt drei URLs:
 - **📸 Foto-Wand:** Bei 📸-Party-Karten, auf dem Endbildschirm der Handys, im Admin und in der Galerie (`/fotos?room=CODE`) lassen sich Fotos direkt mit der Kamera aufnehmen („📷 Foto aufnehmen“) oder aus der Handy-Galerie hochladen (wird vorher auf max. 1600 px verkleinert). Neue Fotos erscheinen kurz auf dem TV (während Fragen klein in der Ecke); am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie. Alle mit dem Raum-Link sehen die Galerie; Fotos liegen in `data/photos/<CODE>/` und werden 7 Tage nach dem Hochladen automatisch gelöscht. Raumcodes mit noch vorhandenen Fotos werden nicht neu vergeben.
 - **Lautstärke-Regler & Auto-Timer-Sync:** Eigener Lautstärke-Slider auf TV und Handy; der Song-Timer synchronisiert sich unabhängig von unterschiedlichen Geräte-Uhrzeiten exakt mit dem Audio-Start.
 - **Finalrunde (2× Punkte):** Die letzte Runde eines Spiels zählt automatisch doppelt (in `/admin` ein-/ausschaltbar).
+- **Rundenzahl:** In `/admin` unter *🔢 Runden-Limit*: Alle, 5, 10, 15, 20, 30 oder 50 Runden. Im Party-Mix gibt es stattdessen eine eigene Rundenwahl (8, 12, 16, 20, 30, 50) – das Runden-Limit wird dort ausgeblendet, weil es nicht gilt.
 - **🤝 Interaktion (in `/admin` → „🤝 Interaktion“, alles standardmäßig an):**
   - **💬 Diskussion vor Abstimmung:** Bei *Wer würde?* und *Entweder-Oder* sind die Handys 15 s gesperrt – erst diskutieren, dann abstimmen.
   - **🧍 Aufsteh-Runden:** *Ich hab noch nie* ohne Handy – wer es schon gemacht hat, steht auf; wer steht, trinkt (alkoholfrei: Kniebeugen).
@@ -121,6 +122,7 @@ partygame/
 │   ├── wordassoc.json   # Wort-Assoziation
 │   ├── songs.json       # Erkenne den Song (227 EN, 30 DE, 116 RU = 373 Songs)
 │   ├── song-audio/      # Lokale Song-Vorschau-MP3s (0.mp3–372.mp3)
+│   ├── song-starts.json # Startversatz je Vorschau in Sekunden (leises Intro überspringen), erzeugt von scripts/analyze-song-starts.js
 │   ├── song-art/        # Lokale Album-Cover (0.jpg–372.jpg)
 │   ├── imagequiz.json   # Bild-Quiz (201 Fragen: Logos, Sehenswürdigkeiten, Flaggen, Automarken, Länder-Umrisse)
 │   ├── iq-images/       # Lokale Bilder für das Bild-Quiz (neutrale Dateinamen)
@@ -219,6 +221,7 @@ Räume speichern ihre URL in `data/rooms.json`; bereits bestehende Räume behalt
   - `partygame-autodeploy.timer` – alle 5 min `scripts/auto-deploy.sh`: neuer Commit auf `origin/main` + GitHub-CI grün + niemand verbunden → `deploy.sh`.
 - **Monitoring:** Server schreibt jede Minute eine `metrics`-Zeile (Räume, Spieler, Sockets, CPU, RAM, Event-Loop-Lag p50/p99/max, Broadcasts, KB/min). Grafana-Dashboard `scripts/grafana/homelab-partygame.json` (Loki, `{app="partygame"}`).
 - **Lasttest:** `URL=http://localhost:3999 ROOMS=8 PLAYERS=12 ROUNDS=5 node scripts/loadtest.js` (devDependency `socket.io-client`).
+- **Song-Startstellen:** `node scripts/analyze-song-starts.js` (braucht ffmpeg) misst die Lautheit jeder Vorschau und schreibt `data/song-starts.json` neu – nach neuen/ersetzten Song-MP3s ausführen.
 
 ### 5. Hinweis für Reverse Proxy (Nginx / Caddy / Cloudflare)
 Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
@@ -231,7 +234,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.22.1 (Aktueller Stand):** Pantomime-Begriffe vereinfacht (nur noch gut darstellbare Sachen wie „Auf einen Legostein treten“, „Schluckauf haben“, „Luftkuss zuwerfen“ statt langer Situationen); weniger Foto-Aufgaben bei den Party-Karten (6 Mitmach-Karten ohne Foto, „Foto & Pose“ seltener); instabilen Test (Gleichstand beim Joker-Test) behoben.
+- **v3.23.0 (Aktueller Stand):** Runden-Limit zusätzlich 20/30/50, Party-Mix-Runden 8–50; im Party-Mix wird das (dort wirkungslose) Runden-Limit ausgeblendet. Songs mit leisem Intro oder Stille am Anfang (26 von 373) starten an der ersten lauten Stelle.
+- **v3.22.1:** Pantomime-Begriffe vereinfacht (nur noch gut darstellbare Sachen wie „Auf einen Legostein treten“, „Schluckauf haben“, „Luftkuss zuwerfen“ statt langer Situationen); weniger Foto-Aufgaben bei den Party-Karten (6 Mitmach-Karten ohne Foto, „Foto & Pose“ seltener); instabilen Test (Gleichstand beim Joker-Test) behoben.
 - **v3.22.0:** Mehr Interaktion: neuer Modus 🔥 Heißer Stuhl (auch im Standard-Mix), 💬 Diskussion vor Abstimmungen, 🧍 Aufsteh-Runden bei „Ich hab noch nie“, 👑 Team-Kapitän, 👫 Partner-Runden, ⚔️ Finale-Duell der zwei Besten und 🃏 Joker (Doppelt, Abschreiben, Zeitdieb, Punkteklau) – alles in `/admin` unter „🤝 Interaktion“ abschaltbar.
 - **v3.21.0:** Mitmach-Karten mit Foto-Aufgabe: +5 Punkte fürs erste Foto pro Person (TV-Einblendung „+5 Punkte“, Hinweis am Handy); keine Fuß-Fotos mehr (Turnschuh- und Socken-Karte ersetzt).
 - **v3.20.0:** 👥 Mitmach-Karten (26 neue Party-Karten nach Merkmal/Lieblingsperson, z. B. „Alle mit Brille: Gruppenfoto mit Getränk“), Foto-Aufgaben mit Kamera-Knopf am Handy; neuer Typ auch für eigene Karten im Admin.
