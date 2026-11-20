@@ -1930,5 +1930,485 @@
       "Suzuki"
     ],
     "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_a3687a4954.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Italien",
+      "Griechenland",
+      "Kroatien",
+      "Spanien"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_91d409ccc4.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Deutschland",
+      "Polen",
+      "Österreich",
+      "Tschechien"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_48444a2bf6.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Spanien",
+      "Frankreich",
+      "Deutschland",
+      "Polen"
+    ],
+    "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_bbe1ceb4b2.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Portugal",
+      "Frankreich",
+      "Spanien",
+      "Italien"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_7125399e1f.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Spanien",
+      "Irland",
+      "Portugal",
+      "Kroatien"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_24a94a2dbe.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Irland",
+      "Island",
+      "Neuseeland",
+      "Großbritannien"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_8dabfc2b3c.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Island",
+      "Irland",
+      "Großbritannien",
+      "Dänemark"
+    ],
+    "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_78ebca2340.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Island",
+      "Irland",
+      "Grönland",
+      "Norwegen"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_ab19befdc2.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Schweden",
+      "Finnland",
+      "Chile",
+      "Norwegen"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_6053e96e28.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Norwegen",
+      "Finnland",
+      "Dänemark",
+      "Schweden"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_95cd8a182a.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Finnland",
+      "Schweden",
+      "Norwegen",
+      "Estland"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_4cd2a5a637.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Dänemark",
+      "Niederlande",
+      "Estland",
+      "Belgien"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_0ad7a479d6.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Kroatien",
+      "Türkei",
+      "Italien",
+      "Griechenland"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_558a70d1d1.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Österreich",
+      "Schweiz",
+      "Tschechien",
+      "Ungarn"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_64b27ace42.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Österreich",
+      "Belgien",
+      "Schweiz",
+      "Luxemburg"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_e518286788.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Deutschland",
+      "Polen",
+      "Tschechien",
+      "Ukraine"
+    ],
+    "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_f4bc141824.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Slowenien",
+      "Griechenland",
+      "Kroatien",
+      "Bosnien und Herzegowina"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_d05a3a346f.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Tschechien",
+      "Slowakei",
+      "Österreich",
+      "Ungarn"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_3f8a5a5e42.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Griechenland",
+      "Iran",
+      "Ägypten",
+      "Türkei"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_1cc842c971.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Kanada",
+      "Mexiko",
+      "Australien",
+      "USA"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_3ac4ed04e8.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Russland",
+      "USA",
+      "Grönland",
+      "Kanada"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_3d60da53e2.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Argentinien",
+      "Mexiko",
+      "Kolumbien",
+      "Peru"
+    ],
+    "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_b7e77bab60.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Jamaika",
+      "Sri Lanka",
+      "Kuba",
+      "Dominikanische Republik"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_44553c1912.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Argentinien",
+      "Kolumbien",
+      "Brasilien",
+      "Peru"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_62d6ad166a.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Chile",
+      "Brasilien",
+      "Peru",
+      "Argentinien"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_e1e4dfb542.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Argentinien",
+      "Norwegen",
+      "Chile",
+      "Peru"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_74384a94e8.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Saudi-Arabien",
+      "Libyen",
+      "Sudan",
+      "Ägypten"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_69ae99935a.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Namibia",
+      "Botswana",
+      "Südafrika",
+      "Simbabwe"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_c127282722.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Sri Lanka",
+      "Madagaskar",
+      "Neuseeland",
+      "Kuba"
+    ],
+    "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_3f26a25003.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Pakistan",
+      "Indien",
+      "Myanmar",
+      "Bangladesch"
+    ],
+    "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_a71c9ef9f1.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Russland",
+      "Mongolei",
+      "China",
+      "Indien"
+    ],
+    "c": 2
+  },
+  {
+    "theme": "countries",
+    "img": "iq_51561c7d28.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Südkorea",
+      "Philippinen",
+      "Neuseeland",
+      "Japan"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_dbee06253f.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Nordkorea",
+      "Japan",
+      "Taiwan",
+      "Südkorea"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_1eb590e18d.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Thailand",
+      "Vietnam",
+      "Laos",
+      "Kambodscha"
+    ],
+    "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_4943c77991.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Thailand",
+      "Vietnam",
+      "Myanmar",
+      "Malaysia"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_09f588790f.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Madagaskar",
+      "Taiwan",
+      "Kuba",
+      "Sri Lanka"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_006d7a6a21.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Ägypten",
+      "Iran",
+      "Jemen",
+      "Saudi-Arabien"
+    ],
+    "c": 3
+  },
+  {
+    "theme": "countries",
+    "img": "iq_229b309887.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Neuseeland",
+      "Australien",
+      "Brasilien",
+      "Indonesien"
+    ],
+    "c": 1
+  },
+  {
+    "theme": "countries",
+    "img": "iq_6a05481f32.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Neuseeland",
+      "Japan",
+      "Großbritannien",
+      "Australien"
+    ],
+    "c": 0
+  },
+  {
+    "theme": "countries",
+    "img": "iq_083859a47d.svg",
+    "q": "Welches Land hat diese Umrisse?",
+    "a": [
+      "Kanada",
+      "Russland",
+      "China",
+      "Kasachstan"
+    ],
+    "c": 1
   }
 ]

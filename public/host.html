@@ -824,7 +824,7 @@ function renderView() {
 
   if (S.mode === 'quiz' || S.mode === 'imagequiz') {
     const r = S.result;
-    const imgHtml = S.q.img ? `<div class="iqWrap"><img class="iqImg ${(S.q.theme === 'logos' || S.q.theme === 'cars') ? 'iqLogo' : ''}" src="${esc(S.q.img)}" alt=""></div>` : '';
+    const imgHtml = S.q.img ? `<div class="iqWrap"><img class="iqImg ${['logos', 'cars', 'countries'].includes(S.q.theme) ? 'iqLogo' : ''}" src="${esc(S.q.img)}" alt=""></div>` : '';
     const ansHtml = indexAnswers(S.q.a, r, res, !!S.q.img);
     app.innerHTML = header + `<div class="q${S.q.img ? ' sm' : ''}">${esc(S.q.q)}</div>${imgHtml}` +
       (res ? `<div class="resSplit side"><div>${ansHtml}</div><div><h2>Rangliste</h2>${lb()}</div></div>` : ansHtml);

@@ -56,6 +56,7 @@ try {
 
 const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'mix'];
 const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'sort', 'songquiz', 'imagequiz'];
+const IQ_THEMES = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
 const MODE_LABELS = {
   quiz: '🎉 Party-Quiz',
   mostlikely: '🍻 Wer würde?',
@@ -566,7 +567,7 @@ let roundLimit = 10; // 0 = Alle, sonst 5 / 10 / 15 – Standard 10, sonst dauer
 let teamMode = false;
 let displayMode = 'tv'; // 'tv' | 'notv' | 'onedevice'
 let songLangs = { en: true, de: true };
-  let imageQuizThemes = ['logos', 'landmarks', 'flags', 'cars'];
+  let imageQuizThemes = [...IQ_THEMES];
 let russianShare = 0;
 let songOnlyArtistTitle = false;
 let finalDouble = true;
@@ -2193,7 +2194,7 @@ function attachSocket(socket, ip, allowEvent) {
     broadcast();
   });
   socket.on('host:imageQuizTheme', ({ theme, on } = {}) => {
-    if (!['logos', 'landmarks', 'flags', 'cars'].includes(theme)) return;
+    if (!IQ_THEMES.includes(theme)) return;
     const set = new Set(imageQuizThemes);
     if (on) set.add(theme);
     else if (set.size > 1) set.delete(theme);
@@ -2205,7 +2206,7 @@ function attachSocket(socket, ip, allowEvent) {
   });
   socket.on('host:imageQuizThemes', arr => {
     if (!Array.isArray(arr)) return;
-    const valid = [...new Set(arr.filter(t => ['logos', 'landmarks', 'flags', 'cars'].includes(t)))];
+    const valid = [...new Set(arr.filter(t => IQ_THEMES.includes(t)))];
     if (!valid.length) return;
     imageQuizThemes = valid;
     if (state.phase === 'lobby' && state.mode === 'imagequiz') {
@@ -2563,7 +2564,7 @@ function applySnapshot(snap) {
   teamMode = !!s.teamMode;
   if (['tv', 'notv', 'onedevice'].includes(s.displayMode)) displayMode = s.displayMode;
   if (s.songLangs && typeof s.songLangs === 'object') songLangs = { en: !!s.songLangs.en, de: !!s.songLangs.de };
-  const themes = pickList(s.imageQuizThemes, ['logos', 'landmarks', 'flags', 'cars']);
+  const themes = pickList(s.imageQuizThemes, IQ_THEMES);
   if (themes.length) imageQuizThemes = themes;
   if (Number.isFinite(s.russianShare)) russianShare = Math.max(0, Math.min(100, Math.round(s.russianShare)));
   songOnlyArtistTitle = !!s.songOnlyArtistTitle;

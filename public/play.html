@@ -904,7 +904,7 @@ function renderOneDevice() {
   const turnHdr = `${top}<div style="font-size:14px;color:#ffd33d;font-weight:700;margin-bottom:6px">Am Zug: ${esc(cur.avatar)} ${pn}</div>`;
   if (S.mode === 'quiz' || S.mode === 'teams' || S.mode === 'songquiz' || S.mode === 'imagequiz') {
     const minH = S.q.a.length > 4 ? '11vh' : '14vh';
-    const iqImg = S.q && S.q.img ? `<div style="text-align:center;margin:8px 0 10px"><img src="${esc(S.q.img)}" style="max-height:24vh;max-width:84vw;border-radius:12px;object-fit:contain;${(S.q.theme === 'logos' || S.q.theme === 'cars') ? 'background:#fff;padding:12px;width:140px;height:140px;' : ''}"></div>` : '';
+    const iqImg = S.q && S.q.img ? `<div style="text-align:center;margin:8px 0 10px"><img src="${esc(S.q.img)}" style="max-height:24vh;max-width:84vw;border-radius:12px;object-fit:contain;${['logos', 'cars', 'countries'].includes(S.q.theme) ? 'background:#fff;padding:12px;width:140px;height:140px;' : ''}"></div>` : '';
     app.innerHTML = `${turnHdr}${S.mode === 'songquiz' ? renderAudioControls(false) : ''}<div class="qtxt">${esc(S.q.q)}</div>${iqImg}<div class="grid">${S.q.a.map((a, i) => `<button class="c${i}" style="font-size:16px;min-height:${minH}" onclick="submitLocal(${i})">${esc(a)}</button>`).join('')}</div>`;
   } else if (S.mode === 'mostlikely' || S.mode === 'imposter') {
     app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div><div class="votes">${S.players.map((p, i) => `<button onclick="submitLocalVote(${i})">${esc(p.name)}</button>`).join('')}</div>`;
@@ -1197,7 +1197,7 @@ function renderView() {
   if (S.phase === 'question') {
     if (S.mode === 'quiz' || S.mode === 'imagequiz') {
       if (S.noTvMode && S.q) {
-        const iqImg = S.q.img ? `<div style="text-align:center;margin:8px 0 10px"><img src="${esc(S.q.img)}" style="max-height:24vh;max-width:84vw;border-radius:12px;object-fit:contain;${(S.q.theme === 'logos' || S.q.theme === 'cars') ? 'background:#fff;padding:12px;width:140px;height:140px;' : ''}"></div>` : '';
+        const iqImg = S.q.img ? `<div style="text-align:center;margin:8px 0 10px"><img src="${esc(S.q.img)}" style="max-height:24vh;max-width:84vw;border-radius:12px;object-fit:contain;${['logos', 'cars', 'countries'].includes(S.q.theme) ? 'background:#fff;padding:12px;width:140px;height:140px;' : ''}"></div>` : '';
         app.innerHTML = `${top}<div class="qtxt">${esc(S.q.q)}</div>${iqImg}<div class="grid">${S.q.a.map((a, i) => `<button class="c${i}" style="font-size:16px;min-height:14vh" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(${i})">${['▲', '◆', '●', '■'][i]} ${esc(a)}${myAnswer === i ? ' ✓' : ''}</button>`).join('')}</div>`;
       } else {
         const tvHint = !S.noTvMode ? '<div class="tvHint">👀 Frage & Antworten stehen auf dem TV</div>' : '';

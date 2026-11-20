@@ -350,8 +350,9 @@ function render() {
   const showRounds = S.mode !== 'reaction';
   const showImageQuiz = S.mode === 'imagequiz' || (isMix && mixArr.includes('imagequiz'));
   const showSongQuiz = S.mode === 'songquiz' || (isMix && mixArr.includes('songquiz'));
-  const iqThemes = S.imageQuizThemes || ['logos', 'landmarks', 'flags', 'cars'];
-  const iqAll = ['logos', 'landmarks', 'flags', 'cars'].every(t => iqThemes.includes(t));
+  const IQ_ALL = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
+  const iqThemes = S.imageQuizThemes || IQ_ALL;
+  const iqAll = IQ_ALL.every(t => iqThemes.includes(t));
   const ruShare = S.effectiveRussianShare ?? S.russianShare ?? 0;
   const displayMode = S.displayMode || (S.noTvMode ? 'notv' : 'tv');
   const timerSpeed = S.timerSpeed || 'normal';
@@ -415,13 +416,14 @@ function render() {
         ${CATS.map(([id, label]) => `<button class="${activeCats.includes(id) ? 'active' : ''} ${id === 'hot18' ? 'hot' : ''}" onclick="toggleCat('${id}')">${label}</button>`).join('')}
       </div>
     `) : ''}
-    ${showImageQuiz ? grp('imagequiz', '🖼️ Bild-Quiz Themen', `${iqAll ? 'Alle' : iqThemes.length + ' von 4'} · ${S.total} aktiv`, `
+    ${showImageQuiz ? grp('imagequiz', '🖼️ Bild-Quiz Themen', `${iqAll ? 'Alle' : iqThemes.length + ' von ' + IQ_ALL.length} · ${S.total} aktiv`, `
       <div class="cats">
-        <button class="${iqAll ? 'active' : ''}" onclick="socket.emit('host:imageQuizThemes',['logos','landmarks','flags','cars'])">🌟 Alle</button>
+        <button class="${iqAll ? 'active' : ''}" onclick="socket.emit('host:imageQuizThemes',['logos','landmarks','flags','cars','countries'])">🌟 Alle</button>
         <button class="${iqThemes.includes('logos') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'logos',on:${!iqThemes.includes('logos')}})">🏢 Firmen-Logos</button>
         <button class="${iqThemes.includes('landmarks') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'landmarks',on:${!iqThemes.includes('landmarks')}})">🗼 Sehenswürdigkeiten</button>
         <button class="${iqThemes.includes('flags') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'flags',on:${!iqThemes.includes('flags')}})">🏁 Flaggen</button>
         <button class="${iqThemes.includes('cars') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'cars',on:${!iqThemes.includes('cars')}})">🚗 Automarken</button>
+        <button class="${iqThemes.includes('countries') ? 'active' : ''}" onclick="socket.emit('host:imageQuizTheme',{theme:'countries',on:${!iqThemes.includes('countries')}})">🗺️ Länder-Umrisse</button>
       </div>
     `) : ''}
     ${showSongQuiz ? grp('songquiz', '🎵 Erkenne den Song', `${songLangSum}${ruShare ? ' · RU ' + ruShare + '%' : ''}${S.songOnlyArtistTitle ? ' · Interpret & Titel' : ''} · ${S.total} aktiv`, `

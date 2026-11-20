@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.8.2)
+# 🎉 PartyGame (Version 3.9.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -43,7 +43,7 @@ Es gibt drei URLs:
 | 🎭 **2 Wahrheiten, 1 Lüge** | Ein Spieler schreibt 2 Wahrheiten & 1 Lüge, die anderen entlarven die Lüge |
 | ⚡ **Wort-Assoziation** | Schnell das erste Wort eintippen, das zum Begriff passt |
 | 🎵 **Erkenne den Song** | Spielt 30s-iTunes-Previews ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe |
-| 🖼️ **Bild-Quiz** | Firmenlogos ohne Schriftzug (50), Sehenswürdigkeiten (40), Flaggen (41) & Automarken-Embleme ohne Schriftzug (30) per 4-Optionen-Quiz erraten |
+| 🖼️ **Bild-Quiz** | Firmenlogos ohne Schriftzug (50), Sehenswürdigkeiten (40), Flaggen (41), Automarken-Embleme ohne Schriftzug (30) & Länder-Umrisse (40) per 4-Optionen-Quiz erraten |
 | 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi |
 
 ---
@@ -104,7 +104,7 @@ partygame/
 │   ├── songs.json       # Erkenne den Song (227 EN, 30 DE, 116 RU = 373 Songs)
 │   ├── song-audio/      # Lokale Song-Vorschau-MP3s (0.mp3–372.mp3)
 │   ├── song-art/        # Lokale Album-Cover (0.jpg–372.jpg)
-│   ├── imagequiz.json   # Bild-Quiz (161 Fragen: Logos, Sehenswürdigkeiten, Flaggen, Automarken)
+│   ├── imagequiz.json   # Bild-Quiz (201 Fragen: Logos, Sehenswürdigkeiten, Flaggen, Automarken, Länder-Umrisse)
 │   ├── iq-images/       # Lokale Bilder für das Bild-Quiz (neutrale Dateinamen)
 │   ├── used.json        # Automatisch verwaltet: bereits gespielte Indizes
 │   └── custom.json      # Automatisch erzeugt: eigene Fragen aus /admin
@@ -211,7 +211,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.8.2 (Aktueller Stand):** Bild-Quiz ohne Namen im Bild: Schriftzüge aus Logos/Emblemen entfernt (u. a. Pepsi, BMW, Porsche, Burger King, Mastercard, Airbnb, Target, Adobe, Peugeot, Volvo, Nissan, Alfa Romeo, Aston Martin); TikTok, Red Bull und Reddit als Symbol-Logo; reine Wortmarken ersetzt (KFC → Lufthansa, Uber → Shazam, NASA → Duolingo, Ford → Jaguar, Fiat → Chevrolet, Kia → Suzuki).
+- **v3.9.0 (Aktueller Stand):** Neues Bild-Quiz-Thema **🗺️ Länder-Umrisse** (40 Länder, "Welches Land hat diese Umrisse?"), in `/admin` unter *Bild-Quiz Themen* einzeln an-/abwählbar und in „Alle“ enthalten.
+- **v3.8.2:** Bild-Quiz ohne Namen im Bild: Schriftzüge aus Logos/Emblemen entfernt (u. a. Pepsi, BMW, Porsche, Burger King, Mastercard, Airbnb, Target, Adobe, Peugeot, Volvo, Nissan, Alfa Romeo, Aston Martin); TikTok, Red Bull und Reddit als Symbol-Logo; reine Wortmarken ersetzt (KFC → Lufthansa, Uber → Shazam, NASA → Duolingo, Ford → Jaguar, Fiat → Chevrolet, Kia → Suzuki).
 - **v3.8.1:** QR-/Spieler-URL in `/admin`: Raumcode (`?room=…`) wird automatisch an eigene URLs angehängt, „Standard“ setzt den Link inkl. Raumcode zurück, „Einladungs-Link kopieren“ (Admin + Handy) nutzt die eingestellte Spieler-URL.
 - **v3.8.0:** Stabilität & flüssiges Spiel. Laufende Spiele überstehen Neustarts/Deploys (Raum-Snapshot + Wiederherstellung, Handys steigen automatisch mit Punkten wieder ein, Timer laufen weiter). WebSocket-Kompression (permessage-deflate) für State-Updates – deutlich weniger Daten im Mobilfunk. Service Worker: Seite lädt auch bei Funkloch/langsamem Netz aus dem Cache (HTML immer zuerst frisch vom Netz), Bilder/Cover gecacht. Leichtere `pub()`-Berechnung pro Update. Metrik-Logzeile + Grafana-Dashboard (Event-Loop-Lag als „Ruckel-Indikator“), tägliches Backup, Auto-Deploy nach grüner CI, Lasttest-Script. Sicherheit: X-Forwarded-For wird fälschungssicher ausgewertet (echte Client-IP von rechts).
 - **v3.7.2:** TV/Tablet: Bei 5–6 Antwortmöglichkeiten (z. B. „Von wem ist dieser Song?“) passt die Auflösung jetzt komplett ins Bild – Frage in 3 Spalten, Auflösung in 2 Spalten mit flacheren Kacheln, Zeilen werden nicht mehr auf die höchste Kachel gestreckt, lange Namen werden sauber umbrochen. Geprüft auf 1024×768, 1180×820, 820×1180, 1366×1024 und 1920×1080.
@@ -242,8 +243,9 @@ Insgesamt **1708 Einträge** in `/opt/partygame/data/`:
 - **Nach Sprache (`lang`):** `en`: 227 · `ru`: 116 · `de`: 30
 - **Nach Typ (`type`):** `gruppe`: 218 · `solo`: 155
 
-### 🖼️ Bilderquiz (`imagequiz.json`: 161 gesamt)
-- `logos`: 50 · `flags`: 41 · `landmarks`: 40 · `cars`: 30
+### 🖼️ Bilderquiz (`imagequiz.json`: 201 gesamt)
+- `logos`: 50 · `flags`: 41 · `landmarks`: 40 · `countries`: 40 · `cars`: 30
+- Länder-Umrisse aus Natural Earth (gemeinfrei, über `world-atlas`), flächentreu um das jeweilige Land projiziert.
 
 ### ❓ Fragen & Spielmodi nach Kategorie (1174 gesamt)
 
