@@ -584,7 +584,7 @@ function validRoomToken(val) {
 }
 
 let state = freshState('quiz');
-let activeCategories = ['party', 'peinlich', 'kennenlernen'];
+let activeCategories = ['party', 'peinlich'];
 let roundLimit = 10; // 0 = Alle, sonst 5 / 10 / 15 – Standard 10, sonst dauert z. B. das Quiz 70+ Runden
 let teamMode = false;
 let displayMode = 'tv'; // 'tv' | 'notv' | 'onedevice'
@@ -2464,7 +2464,7 @@ function attachSocket(socket, ip, allowEvent) {
   });
   socket.on('host:preset', preset => {
     if (preset === 'klassik') {
-      activeCategories = ['party', 'peinlich', 'kennenlernen'];
+      activeCategories = ['party', 'peinlich'];
       alcoholFree = false;
       timerSpeed = 'normal';
       secretMissions = false;
@@ -2489,7 +2489,7 @@ function attachSocket(socket, ip, allowEvent) {
       timerSpeed = 'normal';
       if (state.phase === 'lobby') state = freshState('songquiz');
     } else if (preset === 'alkoholfrei') {
-      activeCategories = ['party', 'kennenlernen'];
+      activeCategories = ['party'];
       alcoholFree = true;
       timerSpeed = 'normal';
       mixModes = [...DEFAULT_MIX_MODES];

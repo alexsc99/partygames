@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.12.0)
+# 🎉 PartyGame (Version 3.12.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -214,7 +214,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.12.0 (Aktueller Stand):** Fix: Handys, deren Verbindung nach kurzer Pause (z. B. Bildschirm aus) wiederhergestellt wurde, flogen 4 s später als Spieler raus und konnten bis zum Neuladen nicht mehr antworten/abstimmen. Party-Karten: Handys können nach 5 s per „⏭️ Weiter“-Abstimmung weitermachen. Standard-Mix und Presets ohne Kennenlernen & Wort-Assoziation.
+- **v3.12.1 (Aktueller Stand):** Fragen-Kategorie „Kennenlernen & Deep Talk“ nicht mehr im Standard und nicht in den Presets Klassik (jetzt Party + Peinlich) und Alkoholfrei (jetzt Party); bei Date bleibt sie drin.
+- **v3.12.0:** Fix: Handys, deren Verbindung nach kurzer Pause (z. B. Bildschirm aus) wiederhergestellt wurde, flogen 4 s später als Spieler raus und konnten bis zum Neuladen nicht mehr antworten/abstimmen. Party-Karten: Handys können nach 5 s per „⏭️ Weiter“-Abstimmung weitermachen. Standard-Mix und Presets ohne Kennenlernen & Wort-Assoziation.
 - **v3.11.1:** *Schnell*: Auflösung mind. 6 s, Wort-Assoziation mind. 16 s Antwortzeit.
 - **v3.11.0:** Timer-Tempo wirkt jetzt auch auf die Pausen: *Schnell* verkürzt Auflösung/Karten-Ergebnis um 30 %, *Entspannt* gibt +50 % Antwortzeit (vorher +40 %) und wartet nach der Auflösung auf „Weiter“.
 - **v3.10.0:** Neue Option **🎪 Party-Karten** (Aufgaben zwischen den Runden: Gruppen-Challenge, Kopfgeld, Underdog, Reihum-Runde mit Handy-Abstimmung, Blitz-Duell, Weitergeben, Regelkarten; Auswertung im Admin), Karten in `data/partycards.json`.
