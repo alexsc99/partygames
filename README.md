@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.23.2)
+# 🎉 PartyGame (Version 3.23.3)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -234,7 +234,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.23.2 (Aktueller Stand):** Alexander Rybak „Сказка“ und „Небеса Европы“ jetzt in der russischen Fassung (45-s-Ausschnitt ab dem Refrain, `keepAudio` in `songs.json` schützt sie vor `sync-song-assets.js`). Song-Vorschauen laufen in der Schleife wieder ab der guten Stelle statt ab dem leisen Intro.
+- **v3.23.3 (Aktueller Stand):** Rechtlich sauber: die zwei Rybak-Songs wieder als offizielle 30-s-Vorschau (englische Fassung „Fairytale“ / „Europe's Skies“) statt YouTube-Ausschnitt.
+- **v3.23.2:** Song-Vorschauen laufen in der Schleife wieder ab der guten Stelle statt ab dem leisen Intro.
 - **v3.23.1:** Alle 373 Song-Vorschauen per Audio-Fingerabdruck (Chromaprint gegen Deezer) und Shazam geprüft: Es laufen überall die richtigen Songs. Serebro-Titel an die gespielte Fassung angepasst („Мама Люба“ statt „Mama Lover“).
 - **v3.23.0:** Runden-Limit zusätzlich 20/30/50, Party-Mix-Runden 8–50; im Party-Mix wird das (dort wirkungslose) Runden-Limit ausgeblendet. Songs mit leisem Intro oder Stille am Anfang (26 von 373) starten an der ersten lauten Stelle.
 - **v3.22.1:** Pantomime-Begriffe vereinfacht (nur noch gut darstellbare Sachen wie „Auf einen Legostein treten“, „Schluckauf haben“, „Luftkuss zuwerfen“ statt langer Situationen); weniger Foto-Aufgaben bei den Party-Karten (6 Mitmach-Karten ohne Foto, „Foto & Pose“ seltener); instabilen Test (Gleichstand beim Joker-Test) behoben.
