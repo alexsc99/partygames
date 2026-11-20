@@ -132,14 +132,17 @@ app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.mzstatic.com https://*.dzcdn.net data:; media-src 'self' https://*.mzstatic.com https://*.itunes.apple.com https://*.dzcdn.net; connect-src 'self' ws: wss:; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.mzstatic.com https://*.dzcdn.net data: blob:; media-src 'self' https://*.mzstatic.com https://*.itunes.apple.com https://*.dzcdn.net; connect-src 'self' ws: wss:; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
   );
   next();
 });
 // Nur API/QR limitieren: Auf Partys teilen sich alle Handys eine öffentliche IP (NAT),
 // statische Dateien und Song-/Bild-Assets dürfen deshalb nicht mitgezählt werden.
 const apiLimiter = createRateLimiter({ windowMs: 60_000, max: 180 });
-app.use(['/api', '/qr.png', '/info'], apiLimiter);
+// Fotos: viele Handys laden am Ende gleichzeitig (hinter einer NAT-IP) dutzende Bilder hoch → eigenes, höheres Limit
+const photoLimiter = createRateLimiter({ windowMs: 60_000, max: 900 });
+app.use('/api/photos', photoLimiter);
+app.use(['/api', '/qr.png', '/info'], (req, res, next) => (req.originalUrl.startsWith('/api/photos') ? next() : apiLimiter(req, res, next)));
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -433,12 +436,22 @@ app.post('/api/photos/:code', express.raw({ type: 'image/jpeg', limit: PHOTO_MAX
   rooms.get(code)?.onPhoto(photo);
   res.status(201).json({ ok: true, photo });
 });
-app.get('/api/photos/:code/zip', (req, res) => {
+let zipDownloads = 0;
+app.get('/api/photos/:code/zip', async (req, res) => {
   const code = normalizeRoomCode(req.params.code);
   if (!photos.list(code).length) return res.status(404).json({ ok: false, error: 'Keine Fotos' });
+  if (zipDownloads >= 3) return res.status(503).json({ ok: false, error: 'Gerade laden viele das ZIP – bitte gleich nochmal versuchen' });
+  zipDownloads++;
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="party-fotos-${code}.zip"`);
-  photos.streamZip(code, res);
+  try {
+    await photos.streamZip(code, res);
+  } catch (err) {
+    writeLog('WARN', 'photo_zip_failed', { room: code, error: err?.message || String(err) });
+    res.destroy();
+  } finally {
+    zipDownloads--;
+  }
 });
 app.get('/photos/:code/:file', (req, res) => {
   const f = photos.file(normalizeRoomCode(req.params.code), path.basename(String(req.params.file)).replace(/\.jpg$/, ''));
@@ -727,6 +740,7 @@ function finalizePlayerDisconnect(socketId, reason, recovered) {
   });
   writeLog('INFO', 'player_disconnected', { name: p.name, socketId, reason, recovered });
   delete players[socketId];
+  recheckOpenCard();
   broadcast();
 }
 let timer = null;
@@ -1343,6 +1357,8 @@ function buildSongQuestion(song, meta) {
 }
 
 const byName = n => pVals().find(p => p.name === n);
+// Auch kurz getrennte Spieler (Handy gesperrt) bekommen ihre Karten-Punkte – sie stehen in disconnectedPlayers
+const anyPlayer = n => byName(n) || (n ? disconnectedPlayers.get(String(n).toLowerCase())?.data : null) || null;
 const addPoints = (p, n) => { if (p) p.score = Math.max(0, (p.score || 0) + n); };
 const rankedPlayers = () => [...pVals()].sort((a, b) => b.score - a.score);
 
@@ -1390,6 +1406,8 @@ function maybeStartPartyCard() {
   const text = (alcoholFree && c.af ? c.af : c.text).replace(/\{(leader|last|a|b|player)\}/g, (_, k) => roles[k].name);
   const target = c.type === 'leader' ? roles.leader : c.type === 'underdog' ? roles.last : null;
   clearTimeout(timer);
+  state.paused = false; // eine Pause aus der Auflösung darf nicht in die Karte mitgenommen werden
+  state.pausedLeft = 0;
   skipVotes.clear();
   state.usedCards.push(c.id);
   state.lastCardIdx = state.idx;
@@ -1428,7 +1446,7 @@ function checkCardJudgement() {
   const vals = judges.filter(n => n in card.votes).map(n => card.votes[n]);
   const yes = vals.filter(Boolean).length;
   const no = vals.length - yes;
-  const decided = vals.length >= Math.min(2, judges.length)
+  const decided = vals.length >= 2
     && (vals.length === judges.length || yes > judges.length / 2 || no >= judges.length / 2);
   if (decided) resolvePartyCard({ ok: yes > no });
   else broadcast();
@@ -1440,13 +1458,13 @@ function resolvePartyCard(arg) {
   if (state.phase !== 'card' || !card || card.resolved) return;
   const ps = pVals();
   const before = new Map(ps.map(p => [p, p.score || 0]));
-  const target = byName(card.target);
+  const target = anyPlayer(card.target);
   let outcome;
   if (card.act === 'yesno') {
     const ok = !!(arg && arg.ok);
     if (card.type === 'photo') {
       // Foto-Karten sind zum Spaß: kein Trinken/Abzug, nur Bonus bei Erfolg
-      const winners = card.pair ? card.pair.map(byName).filter(Boolean) : ps;
+      const winners = card.pair ? card.pair.map(anyPlayer).filter(Boolean) : ps;
       if (ok) winners.forEach(p => addPoints(p, card.reward));
       outcome = ok ? `📸 Gelungen! +${card.reward} ${card.pair ? `für ${card.pair.join(' & ')}` : 'für alle'}` : '❌ Nicht ganz – diesmal keine Punkte';
     } else if (card.type === 'group') {
@@ -1462,23 +1480,23 @@ function resolvePartyCard(arg) {
       outcome = card.minus ? `❌ Nicht geschafft! ${card.target} −${card.minus}` : `❌ Leider nicht – keine Punkte für ${card.target}`;
     }
   } else if (card.act === 'give') {
-    const other = byName(arg && arg.name);
+    const other = anyPlayer(arg && arg.name);
     if (!other || !target || other === target) return;
     const amt = Math.min(card.amount, target.score || 0);
     addPoints(target, -amt);
     addPoints(other, amt);
     outcome = `💸 ${target.name} gibt ${amt} Punkte an ${other.name}`;
   } else if (card.act === 'duel') {
-    const winner = byName(arg && arg.name);
+    const winner = anyPlayer(arg && arg.name);
     if (!winner || !card.duel.includes(winner.name)) return;
     addPoints(winner, card.reward);
     outcome = `🏆 ${winner.name} gewinnt das Duell! +${card.reward}`;
   } else if (card.act === 'vote') {
     const tally = {};
-    for (const n of Object.values(card.votes)) if (byName(n)) tally[n] = (tally[n] || 0) + 1;
+    for (const n of Object.values(card.votes)) if (anyPlayer(n)) tally[n] = (tally[n] || 0) + 1;
     const max = Math.max(0, ...Object.values(tally));
     const winners = max > 0 ? Object.keys(tally).filter(n => tally[n] === max) : [];
-    winners.forEach(n => addPoints(byName(n), card.reward));
+    winners.forEach(n => addPoints(anyPlayer(n), card.reward));
     card.tally = tally;
     outcome = winners.length ? `🏆 ${winners.join(' & ')} ${winners.length > 1 ? 'gewinnen' : 'gewinnt'}! +${card.reward}` : 'Keine Stimmen – keine Punkte';
   } else if (card.act === 'mode') {
@@ -1513,6 +1531,17 @@ function publicCard() {
     judges: c.act === 'yesno' ? cardJudges(c) : null,
     tally: c.tally, resolved: c.resolved, outcome: c.outcome,
   };
+}
+
+// Spieler weg (Timeout/Kick): offene Abstimmungs-Karten nicht hängen lassen, wenn jetzt alle Verbliebenen abgestimmt haben
+function recheckOpenCard() {
+  const card = state.card;
+  if (state.phase !== 'card' || !card || card.resolved) return;
+  if (card.act === 'yesno') return checkCardJudgement();
+  if (card.act === 'vote') {
+    const voters = pVals().filter(x => !x.isLocal);
+    if (Object.keys(card.votes).length && voters.every(x => card.votes[x.name])) resolvePartyCard();
+  }
 }
 
 async function nextRound() {
@@ -2469,11 +2498,18 @@ function attachSocket(socket, ip, allowEvent) {
     const p = players[socket.id];
     if (!p || activeMode() !== 'pantomime' || state.phase !== 'question' || p.name !== state.mimeName) return;
     if (state.mimeSkips >= MIME_SKIPS) return;
-    const others = filteredIndices('pantomime').filter(i => i !== state.mimeIdx);
-    if (!others.length) return;
+    // Bevorzugt Begriffe, die weder gespielt noch für spätere Runden eingeplant sind
+    const upcoming = new Set(state.mode === 'pantomime' ? state.order.slice(state.idx + 1) : (state.mixPools.pantomime || []));
+    const used = usedIndices.pantomime || new Set();
+    const all = filteredIndices('pantomime').filter(i => i !== state.mimeIdx);
+    const fresh = all.filter(i => !used.has(i) && !upcoming.has(i));
+    const pool = fresh.length ? fresh : all.filter(i => !upcoming.has(i)).length ? all.filter(i => !upcoming.has(i)) : all;
+    if (!pool.length) return;
     state.mimeSkips++;
-    state.mimeIdx = others[crypto.randomInt(others.length)];
+    state.mimeIdx = pool[crypto.randomInt(pool.length)];
     state.mimeWord = getPool('pantomime')[state.mimeIdx].w;
+    (usedIndices.pantomime || (usedIndices.pantomime = new Set())).add(state.mimeIdx);
+    saveUsedIndices();
     broadcast();
   });
 
@@ -2845,6 +2881,7 @@ function attachSocket(socket, ip, allowEvent) {
         io.sockets.sockets.get(id)?.disconnect(true);
       }
     }
+    recheckOpenCard();
     broadcast();
   });
 

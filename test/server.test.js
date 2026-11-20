@@ -864,4 +864,24 @@ describe('PartyGame Server', () => {
       fs.rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('photo store notices photos deleted by hand (SSH) and does not resurrect them on the next upload', async () => {
+    const os = require('node:os');
+    const { createPhotoStore } = require('../src/photos');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pg-photos-'));
+    try {
+      const store = createPhotoStore(dir);
+      const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
+      const { entry: a } = store.add('WXYZ', jpeg, 'a');
+      const { entry: b } = store.add('WXYZ', jpeg, 'b');
+      await new Promise(r => setTimeout(r, 20)); // Ordner-mtime muss sich messbar ändern
+      fs.rmSync(store.file('WXYZ', a.id));
+      assert.deepEqual(store.list('WXYZ').map(p => p.id), [b.id]);
+      store.add('WXYZ', jpeg, 'c');
+      const meta = JSON.parse(fs.readFileSync(path.join(dir, 'WXYZ', 'meta.json'), 'utf8'));
+      assert.deepEqual(meta.map(p => p.name), ['b', 'c']);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

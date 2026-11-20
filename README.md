@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.16.2)
+# 🎉 PartyGame (Version 3.16.3)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -220,7 +220,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.16.2 (Aktueller Stand):** Foto-Wand: eigener Knopf „📷 Foto aufnehmen“ (öffnet direkt die Kamera) neben „🖼️ Aus Galerie“ – auf Handy, im Admin und in der Galerie; leere Galerie zeigt den Hinweis korrekt an.
+- **v3.16.3 (Aktueller Stand):** Bugfixes vor dem Party-Einsatz: Pantomime/Tabu zeigen am Handy nicht mehr „Zu spät!“; Trommelwirbel verrät die Lösung nicht mehr (Auflösung wird erst danach gezeichnet, auch Vibration/Konfetti), verschwindet bei „Weiter“ und kommt nach Reconnect nicht erneut; Party-Karten: Pause wird beim Kartenstart aufgehoben, Punkte auch für kurz getrennte Spieler, Abstimmungen hängen nicht, wenn jemand geht, Ja/Nein immer mit mind. 2 Stimmen; „Anderer Begriff“ meidet schon gespielte Begriffe; Foto-Wand: per SSH gelöschte Fotos verschwinden sofort, eigenes höheres Upload-Limit mit automatischem Wiederholen, ältere iPhones (iOS 15) können hochladen, ZIP-Download blockiert den Server nicht mehr, Speicher-Obergrenze (5 GB), Diashow ohne doppelte Timer, Galerie überschreibt den Spielernamen nicht.
+- **v3.16.2:** Foto-Wand: eigener Knopf „📷 Foto aufnehmen“ (öffnet direkt die Kamera) neben „🖼️ Aus Galerie“ – auf Handy, im Admin und in der Galerie; leere Galerie zeigt den Hinweis korrekt an.
 - **v3.16.1:** Foto-Ordner/-Dateien gruppenbeschreibbar (2775/664), damit Admins der Gruppe `games` Fotos per SSH löschen können.
 - **v3.16.0:** **📸 Foto-Wand**: Fotos vom Handy (Kamera oder Galerie) in die Raum-Galerie `/fotos`, Live-Einblendung am TV, Diashow + QR am Spielende, ZIP-Download, Upload auch nach der Party, automatische Löschung nach 7 Tagen; Admin-Gruppe „📸 Fotos“.
 - **v3.15.0:** Neuer Modus **🤸 Pantomime** (98 Begriffe, auch im Standard-Mix und im Ein-Gerät-Modus), **🥁 Trommelwirbel** vor der Auflösung auf TV und Handys.

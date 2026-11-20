@@ -7,25 +7,45 @@ const path = require('path');
 const PHOTO_TTL_MS = 7 * 24 * 3600_000;
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 const PHOTO_MAX_PER_ROOM = 400;
+const PHOTO_MAX_TOTAL_BYTES = (Number(process.env.PARTYGAME_PHOTO_MAX_MB) || 5000) * 1024 * 1024; // Schutz vor vollgeschriebener Platte
 const CODE_RE = /^[A-Z0-9]{4,6}$/;
 const ID_RE = /^\d{13}-[a-f0-9]{8}$/;
 
 function createPhotoStore(dir) {
-  const cache = new Map(); // code -> [{ id, name, ts }]
+  // code -> { mtimeMs, photos }. Gültig, solange sich der Raum-Ordner nicht ändert – löscht ein Admin per SSH
+  // ein Foto, ändert sich die mtime des Ordners und die Liste wird neu (ohne fehlende Dateien) eingelesen.
+  const cache = new Map();
+  let totalBytes = null; // belegter Platz aller Fotos, lazy berechnet
 
   const roomDir = code => path.join(dir, code);
   const metaFile = code => path.join(roomDir(code), 'meta.json');
+  const dirMtime = code => { try { return fs.statSync(roomDir(code)).mtimeMs; } catch { return -1; } };
 
   function list(code) {
     if (!CODE_RE.test(code)) return [];
-    if (cache.has(code)) return cache.get(code);
+    const mtimeMs = dirMtime(code);
+    if (mtimeMs < 0) { cache.delete(code); return []; }
+    const hit = cache.get(code);
+    if (hit && hit.mtimeMs === mtimeMs) return hit.photos;
     let photos = [];
     try {
       const raw = JSON.parse(fs.readFileSync(metaFile(code), 'utf8'));
-      if (Array.isArray(raw)) photos = raw.filter(p => p && ID_RE.test(p.id));
+      if (Array.isArray(raw)) photos = raw.filter(p => p && ID_RE.test(p.id) && fs.existsSync(path.join(roomDir(code), `${p.id}.jpg`)));
     } catch { /* noch keine Fotos */ }
-    cache.set(code, photos);
+    cache.set(code, { mtimeMs, photos });
     return photos;
+  }
+
+  function computeTotal() {
+    let sum = 0;
+    let codes = [];
+    try { codes = fs.readdirSync(dir).filter(c => CODE_RE.test(c)); } catch { return 0; }
+    for (const code of codes) {
+      for (const f of fs.readdirSync(roomDir(code))) {
+        if (f.endsWith('.jpg')) { try { sum += fs.statSync(path.join(roomDir(code), f)).size; } catch { /* gerade gelöscht */ } }
+      }
+    }
+    return sum;
   }
 
   // Gruppe darf schreiben/löschen (Dienst läuft als „games“, Admins sind in der Gruppe): Ordner 2775, Dateien 664.
@@ -46,7 +66,7 @@ function createPhotoStore(dir) {
     const tmp = `${metaFile(code)}.${process.pid}.tmp`;
     writeShared(tmp, JSON.stringify(photos));
     fs.renameSync(tmp, metaFile(code));
-    cache.set(code, photos);
+    cache.set(code, { mtimeMs: dirMtime(code), photos });
   }
 
   const exists = code => CODE_RE.test(code) && fs.existsSync(roomDir(code));
@@ -57,10 +77,13 @@ function createPhotoStore(dir) {
     if (!Buffer.isBuffer(buf) || !isJpeg(buf)) return { error: 'Nur JPEG-Bilder' };
     const photos = list(code);
     if (photos.length >= PHOTO_MAX_PER_ROOM) return { error: 'Foto-Limit für diesen Raum erreicht' };
+    if (totalBytes === null) totalBytes = computeTotal();
+    if (totalBytes + buf.length > PHOTO_MAX_TOTAL_BYTES) return { error: 'Foto-Speicher ist voll' };
     ensureRoomDir(code);
     const ts = Date.now();
     const id = `${ts}-${crypto.randomBytes(4).toString('hex')}`;
     writeShared(path.join(roomDir(code), `${id}.jpg`), buf);
+    totalBytes += buf.length;
     const entry = { id, name: String(name || '').trim().slice(0, 16), ts };
     saveMeta(code, [...photos, entry]);
     return { entry };
@@ -88,18 +111,24 @@ function createPhotoStore(dir) {
         cache.delete(code);
       }
     }
+    totalBytes = null; // nach dem Aufräumen beim nächsten Upload neu zählen (erfasst auch manuell gelöschte Fotos)
     return removed;
   }
 
-  // ZIP ohne Kompression (JPEGs sind schon komprimiert), Datei für Datei gestreamt
-  function streamZip(code, out) {
+  // ZIP ohne Kompression (JPEGs sind schon komprimiert), Datei für Datei asynchron gestreamt (mit Backpressure),
+  // damit ein großer Download weder den Server blockiert noch das ganze Archiv im RAM hält.
+  async function streamZip(code, out) {
     const photos = list(code);
     const central = [];
     let offset = 0;
-    const write = b => { out.write(b); offset += b.length; };
-    photos.forEach((p, i) => {
+    const write = async b => {
+      offset += b.length;
+      if (!out.write(b)) await new Promise(res => { out.once('drain', res); out.once('close', res); });
+    };
+    for (const [i, p] of photos.entries()) {
+      if (out.destroyed) return;
       let data;
-      try { data = fs.readFileSync(path.join(roomDir(code), `${p.id}.jpg`)); } catch { return; }
+      try { data = await fs.promises.readFile(path.join(roomDir(code), `${p.id}.jpg`)); } catch { continue; }
       const d = new Date(p.ts);
       const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
       const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
@@ -111,16 +140,16 @@ function createPhotoStore(dir) {
       local.writeUInt32LE(crc, 14); local.writeUInt32LE(data.length, 18); local.writeUInt32LE(data.length, 22);
       local.writeUInt16LE(fname.length, 26); local.writeUInt16LE(0, 28);
       const at = offset;
-      write(local); write(fname); write(data);
+      await write(local); await write(fname); await write(data);
       const cen = Buffer.alloc(46);
       cen.writeUInt32LE(0x02014b50, 0); cen.writeUInt16LE(20, 4); cen.writeUInt16LE(20, 6); cen.writeUInt16LE(0x0800, 8);
       cen.writeUInt16LE(0, 10); cen.writeUInt16LE(time, 12); cen.writeUInt16LE(date, 14);
       cen.writeUInt32LE(crc, 16); cen.writeUInt32LE(data.length, 20); cen.writeUInt32LE(data.length, 24);
       cen.writeUInt16LE(fname.length, 28); cen.writeUInt32LE(at, 42);
       central.push(Buffer.concat([cen, fname]));
-    });
+    }
     const cdStart = offset;
-    for (const c of central) write(c);
+    for (const c of central) await write(c);
     const end = Buffer.alloc(22);
     end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(central.length, 8); end.writeUInt16LE(central.length, 10);
     end.writeUInt32LE(offset - cdStart, 12); end.writeUInt32LE(cdStart, 16);

@@ -45,8 +45,9 @@
 // esc() is provided by /js/ux-helpers.js
 const ROOM_CODE = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 const nameInp = document.getElementById('name');
-nameInp.value = localStorage.getItem('qn') || '';
-nameInp.oninput = () => localStorage.setItem('qn', nameInp.value.trim());
+// Eigener Schlüssel: „qn“ gehört dem Spiel (Auto-Rejoin) und darf hier nicht überschrieben werden
+nameInp.value = localStorage.getItem('pg_photo_name') || localStorage.getItem('qn') || '';
+nameInp.oninput = () => localStorage.setItem('pg_photo_name', nameInp.value.trim());
 document.getElementById('code').textContent = ROOM_CODE || '–';
 document.getElementById('zip').href = '/api/photos/' + encodeURIComponent(ROOM_CODE) + '/zip';
 let photos = [];

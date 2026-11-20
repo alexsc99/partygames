@@ -494,28 +494,34 @@ socket.on('photo:new', p => {
   sfx('pop');
   clearTimeout(photoPopTimer);
   photoPopTimer = setTimeout(() => el.classList.remove('on'), busy ? 4000 : 6000);
+  if (endSlideTimer) endSlideList.push(p);
 });
-let endSlideTimer = 0;
-function stopEndSlides() { clearInterval(endSlideTimer); endSlideTimer = 0; }
+// Diashow läuft weiter, auch wenn neue Fotos kommen (photo:new hängt sie an) – kein Neustart, keine doppelten Timer
+let endSlideTimer = 0, endSlideGen = 0, endSlideList = [], endSlideIdx = 0;
+function stopEndSlides() { clearInterval(endSlideTimer); endSlideTimer = 0; endSlideGen++; }
 async function startEndSlides() {
-  stopEndSlides();
-  if (!S || !S.photoCount) return;
+  if (endSlideTimer || !S || !S.photoCount) return;
+  const gen = ++endSlideGen;
   let list = [];
   try { list = (await (await fetch('/api/photos/' + encodeURIComponent(ROOM_CODE))).json()).photos || []; } catch { return; }
-  if (!list.length) return;
-  let i = 0;
+  if (gen !== endSlideGen || endSlideTimer || !list.length) return;
+  endSlideList = list;
+  endSlideIdx = 0;
   const show = () => {
     const img = document.getElementById('endSlide');
-    if (!img) return stopEndSlides();
+    if (!img || !endSlideList.length) return;
     img.style.opacity = '0';
-    setTimeout(() => { img.src = list[i % list.length].url; img.style.opacity = '1'; i++; }, 350);
+    setTimeout(() => { img.src = endSlideList[endSlideIdx++ % endSlideList.length].url; img.style.opacity = '1'; }, 350);
   };
   show();
   endSlideTimer = setInterval(show, 4000);
 }
+let resultSfxT = 0;
 socket.on('state', s => {
   const prevS = S;
   S = s;
+  const suspended = pgSuspense(prevS, s);
+  if (s.phase !== 'result') clearTimeout(resultSfxT); // „Weiter“ während des Wirbels: kein verspäteter Ergebnis-Ton
   if (s.nextImg && s.nextImg !== lastPreloadImg) { lastPreloadImg = s.nextImg; preloadImgUrl(s.nextImg); }
   const artToPreload = (s.q && s.q.artPreload) || s.nextArt;
   if (artToPreload && artToPreload !== lastPreloadArt) { lastPreloadArt = artToPreload; preloadImgUrl(artToPreload); }
@@ -530,9 +536,10 @@ socket.on('state', s => {
     if (s.phase === 'go') sfx('go');
     else if (s.phase === 'question' && s.mode !== 'songquiz') sfx('question');
     else if (s.phase === 'result') {
-      const wait = pgSuspense(prevS, s) ? PG_SUSPENSE_MS : 0;
+      const wait = suspended ? PG_SUSPENSE_MS : 0;
       if (wait) sfx('drumroll');
-      setTimeout(() => {
+      clearTimeout(resultSfxT);
+      resultSfxT = setTimeout(() => {
         sfx('result');
         if (s.mode === 'imposter' && s.result && s.result.caught) pgConfetti(70);
       }, wait);
@@ -879,7 +886,9 @@ function renderView() {
   }
 
   if (S.phase === 'end') {
-    const endSig = `end:${S.mode}:${S.players.length}:${S.photoCount}`;
+    const countEl = document.getElementById('endPhotoCount');
+    if (countEl) countEl.textContent = S.photoCount ? ` (${S.photoCount})` : '';
+    const endSig = `end:${S.mode}:${S.players.length}:${S.photoCount > 0}`;
     if (lastRenderSig === endSig) return;
     lastRenderSig = endSig;
     const awardsHtml = S.awards && S.awards.length
@@ -887,12 +896,14 @@ function renderView() {
       : '';
     const photosHtml = `<div class="card endPhotos">
         ${S.photoCount ? '<img id="endSlide" alt="">' : '<div class="endNoPhoto">📸</div>'}
-        <div style="text-align:center"><div style="font-size:clamp(18px,3.4vmin,40px);font-weight:900;color:#ffd33d">📸 Fotos des Abends${S.photoCount ? ` (${S.photoCount})` : ''}</div>
+        <div style="text-align:center"><div style="font-size:clamp(18px,3.4vmin,40px);font-weight:900;color:#ffd33d">📸 Fotos des Abends<span id="endPhotoCount">${S.photoCount ? ` (${S.photoCount})` : ''}</span></div>
           <img class="endQr" src="/qr.png?room=${encodeURIComponent(ROOM_CODE)}&for=fotos" alt="QR zur Galerie">
           <div style="opacity:.85;font-size:clamp(13px,2.2vmin,26px)">Scannen: ansehen, herunterladen & hochladen · 7 Tage</div></div>
       </div>`;
     app.innerHTML = `<h1>🏆 Endergebnis – ${title}</h1>${renderPodium()}${photosHtml}${awardsHtml}${lb()}`;
     startEndSlides();
+    const slide = document.getElementById('endSlide');
+    if (slide && endSlideList.length && endSlideTimer) slide.src = endSlideList[Math.max(0, endSlideIdx - 1) % endSlideList.length].url;
     return;
   }
 

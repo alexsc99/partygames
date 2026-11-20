@@ -1070,7 +1070,7 @@ function renderView() {
   const audioSig = (S.noTvMode && (S.phase === 'lobby' || S.mode === 'songquiz'))
     ? `${playAudioOn}:${playAudioBlocked}:${playAudioError}:${Math.round(playVol * 100)}:${S.q && S.q.preview ? 1 : 0}`
     : '';
-  const needPlayers = S.phase === 'lobby' || S.phase === 'result' || S.phase === 'end' || S.mode === 'mostlikely' || S.mode === 'imposter';
+  const needPlayers = S.phase === 'lobby' || S.phase === 'result' || S.phase === 'end' || S.mode === 'mostlikely' || S.mode === 'imposter' || (S.mode === 'pantomime' && S.phase === 'question');
   const playersSig = needPlayers ? (S.players || []).map(p => `${p.name}:${p.avatar || ''}:${p.team || ''}:${p.score}`).join(',') : '';
   const guessMask = ((S.mode === 'draw' || S.mode === 'taboo') && S.phase === 'question' && S.q && S.q.mask) ? S.q.mask : '';
   const phoneBaseSig = [
@@ -1389,6 +1389,13 @@ function renderView() {
     msg = r.caught ? '✅ Imposter enttarnt!' : '😈 Imposter entkommen!';
   } else if (S.mode === 'draw') {
     msg = `Wort: „${esc(r.word)}“`;
+  } else if (S.mode === 'pantomime' || S.mode === 'taboo') {
+    // Keine Handy-Antwort in diesen Modi → nicht „Zu spät!“ anzeigen
+    const actor = S.mode === 'pantomime' ? r.actor : r.explainer;
+    const guessed = r.guessedBy || [];
+    msg = guessed.includes(name) ? '✅ Erraten!'
+      : actor === name ? (guessed.length ? '🎭 Gut gemacht!' : '😅 Niemand hat’s erraten')
+      : `Begriff: „${esc(r.word || '')}“`;
   } else if (S.mode === 'icebreaker') {
     msg = myAnswer ? `💬 „${esc(myAnswer)}“` : '⏰ Keine Antwort!';
   } else if (S.mode === 'teams') {

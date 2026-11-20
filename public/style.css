@@ -37,7 +37,7 @@ button:active:not(:disabled) { transform: scale(.96); }
   100% { opacity: 1; transform: scale(1); }
 }
 /* Trommelwirbel-Overlay vor der Auflösung (pgSuspense) */
-.suspense { position: fixed; inset: 0; z-index: 9000; display: none; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 45%, #3b2a8a, #160e38 70%); transition: opacity .28s ease; }
+.suspense { position: fixed; inset: 0; z-index: 9000; display: none; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 45%, #3b2a8a, #160e38 70%); transition: opacity .28s ease; view-transition-name: pg-suspense; }
 .suspense.on { display: flex; animation: suspenseIn .12s ease-out both; }
 @keyframes suspenseIn { from { opacity: 0; } }
 .suspense.out { opacity: 0; }

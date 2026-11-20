@@ -340,9 +340,21 @@
   // ---- Trommelwirbel vor der Auflösung: kurzes Overlay, damit TV und Handys nicht sofort verraten, was richtig ist ----
   const SUSPENSE_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'truthlie', 'imposter', 'mostlikely', 'wouldyourather'];
   window.PG_SUSPENSE_MS = 1250;
-  // Nur beim echten Übergang Frage → Auflösung derselben Runde (nicht nach Reconnect mitten in die Auflösung)
+  let suspenseUntil = 0, suspenseDeferT = 0, lastConnectAt = 0;
+  function hideSuspense() {
+    const el = document.getElementById('pgSuspense');
+    suspenseUntil = 0;
+    if (!el || !el.classList.contains('on')) return;
+    clearTimeout(el._t);
+    el.classList.add('out');
+    el._t = setTimeout(() => el.classList.remove('on', 'out'), 300);
+  }
+  // Nur beim echten Übergang Frage → Auflösung derselben Runde. Nicht beim ersten State nach einem (Re-)Connect –
+  // dann läuft die Auflösung schon. Jeder andere Phasenwechsel (z. B. „Weiter“ während des Wirbels) beendet das Overlay.
   window.pgSuspense = function (prev, s) {
-    if (!prev || !s || s.phase !== 'result' || prev.phase === 'result' || prev.idx !== s.idx || !SUSPENSE_MODES.includes(s.mode)) return false;
+    if (!s || s.phase !== 'result' || (prev && prev.idx !== s.idx)) { hideSuspense(); return false; }
+    if (!prev || prev.phase === 'result' || !SUSPENSE_MODES.includes(s.mode)) return false;
+    if (performance.now() - lastConnectAt < 1500) return false;
     let el = document.getElementById('pgSuspense');
     if (!el) {
       el = document.createElement('div');
@@ -354,22 +366,35 @@
     clearTimeout(el._t);
     el.classList.remove('out');
     el.classList.add('on');
-    el._t = setTimeout(() => {
-      el.classList.add('out');
-      el._t = setTimeout(() => el.classList.remove('on', 'out'), 300);
-    }, window.PG_SUSPENSE_MS);
+    suspenseUntil = performance.now() + window.PG_SUSPENSE_MS;
+    el._t = setTimeout(hideSuspense, window.PG_SUSPENSE_MS);
     return true;
   };
+  // Solange der Wirbel läuft, wird die Auflösung nicht gezeichnet (sonst laufen Animationen, Vibration und
+  // Konfetti unsichtbar darunter ab bzw. die View-Transition blitzt über dem Overlay auf) – danach einmal nachholen.
+  function deferWhileSuspense(fn) {
+    const left = suspenseUntil - performance.now();
+    if (left <= 0) return false;
+    clearTimeout(suspenseDeferT);
+    suspenseDeferT = setTimeout(fn, left + 20);
+    return true;
+  }
 
   // ---- Foto-Wand: Bild verkleinern (max. 1600 px, JPEG) und in die Raum-Galerie hochladen ----
   // Mobilfunk-tauglich (~200–400 KB statt 3–8 MB); iOS liefert HEIC als JPEG an <input type=file>.
   async function shrinkToJpeg(file, max = 1600, quality = 0.82) {
-    const bmp = window.createImageBitmap ? await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => null) : null;
+    // imageOrientation gibt es erst ab Safari 16 / Chrome 112 → sonst ohne Option, zuletzt über <img>
+    let bmp = null;
+    if (window.createImageBitmap) {
+      bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => null)
+        || await createImageBitmap(file).catch(() => null);
+    }
     const src = bmp || await new Promise((res, rej) => {
       const im = new Image();
-      im.onload = () => res(im);
-      im.onerror = rej;
-      im.src = URL.createObjectURL(file);
+      const url = URL.createObjectURL(file);
+      im.onload = () => { URL.revokeObjectURL(url); res(im); };
+      im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('decode')); };
+      im.src = url;
     });
     const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight;
     const s = Math.min(1, max / Math.max(w, h));
@@ -385,18 +410,31 @@
     let ok = 0, error = '';
     for (const [i, f] of list.entries()) {
       if (onProgress) onProgress(i + 1, list.length);
+      let body;
       try {
-        const body = await shrinkToJpeg(f);
-        const r = await fetch('/api/photos/' + encodeURIComponent(room), {
-          method: 'POST',
-          headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(name || '') },
-          body,
-        });
-        if (r.ok) ok++;
-        else error = (await r.json().catch(() => ({}))).error || 'Upload fehlgeschlagen';
+        body = await shrinkToJpeg(f);
       } catch {
-        error = 'Bild konnte nicht gelesen oder hochgeladen werden';
+        error = 'Bild konnte nicht gelesen werden';
+        continue;
       }
+      // Bis zu 3 Versuche: bei vollem Limit (429) bzw. kurzem Funkloch kurz warten und erneut senden
+      let fileError = '';
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          const r = await fetch('/api/photos/' + encodeURIComponent(room), {
+            method: 'POST',
+            headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(name || '') },
+            body,
+          });
+          if (r.ok) { ok++; fileError = ''; break; }
+          fileError = (await r.json().catch(() => ({}))).error || (r.status === 429 ? 'Zu viele Uploads gleichzeitig' : 'Upload fehlgeschlagen');
+          if (r.status !== 429 && r.status < 500) break;
+        } catch {
+          fileError = 'Upload fehlgeschlagen – Verbindung prüfen';
+        }
+        if (attempt < 3) await new Promise(res => setTimeout(res, 3000 * attempt));
+      }
+      if (fileError) error = fileError;
     }
     return { ok, total: list.length, error };
   };
@@ -478,6 +516,7 @@
     });
     errSocket = socket;
     socket.on('connect', flushErrors);
+    socket.on('connect', () => { lastConnectAt = performance.now(); });
     let hiddenAt = 0;
     const revive = () => {
       if (!socket.connected) { socket.connect(); return; }
@@ -496,6 +535,7 @@
   let lastTransitionKey = '';
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
   window.pgTransition = function (key, fn) {
+    if (deferWhileSuspense(() => window.pgTransition(key, fn))) return;
     const changed = key !== lastTransitionKey;
     const first = !lastTransitionKey;
     lastTransitionKey = key;
