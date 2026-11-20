@@ -160,6 +160,17 @@ PORT=3000 \
 npm start
 ```
 
+#### Standard-Domain / Link des QR-Codes ändern
+Der Link, den der QR-Code und der Button „Einladungs-Link kopieren“ verwenden, wird pro Raum so bestimmt (der Raumcode `?room=XXXX` wird automatisch angehängt, wenn er in der URL fehlt):
+1. **Nur für den laufenden Raum:** `/admin` → Karte **🔗 QR-Code / Spieler-URL** → URL eintragen → **Speichern** (**Standard** setzt auf die Standard-Domain zurück).
+2. **Standard-Domain für alle neuen Räume (Umgebungsvariable):** `PUBLIC_URL` setzen, z. B. in der systemd-Unit `Environment=PUBLIC_URL=https://deine-domain.de` (`install.sh` schreibt sie dort hinein) oder beim Start per `PUBLIC_URL=… npm start`; danach Dienst neu starten.
+3. **Fest im Code:** Fallback-Wert (ohne `PUBLIC_URL`) in `server.js`, Konstante `DEFAULT_URL_PLAY` (`process.env.PUBLIC_URL || 'https://party.goldens.cloud'`).
+4. **Weitere Stellen, wenn man die Domain komplett tauschen will:**
+   - `src/security.js`: Standardliste erlaubter Origins (`ALLOWED_ORIGINS`-Fallback); alternativ einfach die Umgebungsvariable `ALLOWED_ORIGINS` setzen.
+   - `public/admin.html`: nur der Platzhalter-Text (`placeholder="https://party.goldens.cloud/"`) im Eingabefeld `qrInput`.
+
+Räume speichern ihre URL in `data/rooms.json`; bereits bestehende Räume behalten daher die alte URL, bis sie in `/admin` geändert oder neu angelegt werden.
+
 ### 4. Server starten & stoppen
 - Direkt im Vordergrund:
   ```bash
