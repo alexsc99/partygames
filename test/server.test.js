@@ -730,4 +730,27 @@ describe('PartyGame Server', () => {
       rooms.delete(code);
     }
   });
+
+  it('keeps a player whose connection is recovered (phone back from background) instead of dropping them after the grace period', async () => {
+    const { io: ioc } = require('socket.io-client');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const admin = connect();
+    const phone = connect();
+    let S = null;
+    admin.on('state', s => { S = s; });
+    try {
+      await new Promise(res => phone.emit('join', { name: 'Handy', avatar: '😎' }, res));
+      const recovered = new Promise(res => phone.once('connect', () => res(phone.recovered)));
+      phone.io.engine.close(); // wie pgConnect nach >15 s im Hintergrund
+      assert.equal(await recovered, true, 'expected socket.io connection state recovery');
+      await new Promise(r => setTimeout(r, 4500)); // > RECONNECT_GRACE_MS
+      assert.ok(S.players.some(p => p.name === 'Handy'), 'player must still be in the room');
+    } finally {
+      admin.close();
+      phone.close();
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
 });

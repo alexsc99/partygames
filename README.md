@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.11.1)
+# 🎉 PartyGame (Version 3.12.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -44,7 +44,7 @@ Es gibt drei URLs:
 | ⚡ **Wort-Assoziation** | Schnell das erste Wort eintippen, das zum Begriff passt |
 | 🎵 **Erkenne den Song** | Spielt 30s-iTunes-Previews ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe |
 | 🖼️ **Bild-Quiz** | Firmenlogos ohne Schriftzug (50), Sehenswürdigkeiten (40), Flaggen (41), Automarken-Embleme ohne Schriftzug (30) & Länder-Umrisse (40) per 4-Optionen-Quiz erraten |
-| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi |
+| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl, Skala – Kennenlernen & Wort-Assoziation nur manuell zuschaltbar) |
 
 ---
 
@@ -214,7 +214,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.11.1 (Aktueller Stand):** *Schnell*: Auflösung mind. 6 s, Wort-Assoziation mind. 16 s Antwortzeit.
+- **v3.12.0 (Aktueller Stand):** Fix: Handys, deren Verbindung nach kurzer Pause (z. B. Bildschirm aus) wiederhergestellt wurde, flogen 4 s später als Spieler raus und konnten bis zum Neuladen nicht mehr antworten/abstimmen. Party-Karten: Handys können nach 5 s per „⏭️ Weiter“-Abstimmung weitermachen. Standard-Mix und Presets ohne Kennenlernen & Wort-Assoziation.
+- **v3.11.1:** *Schnell*: Auflösung mind. 6 s, Wort-Assoziation mind. 16 s Antwortzeit.
 - **v3.11.0:** Timer-Tempo wirkt jetzt auch auf die Pausen: *Schnell* verkürzt Auflösung/Karten-Ergebnis um 30 %, *Entspannt* gibt +50 % Antwortzeit (vorher +40 %) und wartet nach der Auflösung auf „Weiter“.
 - **v3.10.0:** Neue Option **🎪 Party-Karten** (Aufgaben zwischen den Runden: Gruppen-Challenge, Kopfgeld, Underdog, Reihum-Runde mit Handy-Abstimmung, Blitz-Duell, Weitergeben, Regelkarten; Auswertung im Admin), Karten in `data/partycards.json`.
 - **v3.9.2:** „Link kopieren“ (Admin, Handy, TV) funktioniert auch über `http://<IP>`: gemeinsamer Helfer `pgCopyText` mit Fallback, wenn die Clipboard-API fehlt; „✅ kopiert“ erscheint nur noch, wenn wirklich kopiert wurde.

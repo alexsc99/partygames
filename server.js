@@ -56,6 +56,8 @@ try {
 
 const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'mix'];
 const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'sort', 'songquiz', 'imagequiz'];
+// Standard-Mix (auch für die Presets Klassik/18+/Alkoholfrei): ohne Kennenlernen & Wort-Assoziation – die bleiben einzeln/manuell wählbar
+const DEFAULT_MIX_MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale'];
 const IQ_THEMES = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
 // ---- Party-Karten: Aufgaben zwischen zwei Runden (Gruppe, Spitzenreiter, Letzter, Duell, Regel …) ----
 const PARTY_CARDS = require('./data/partycards.json');
@@ -74,6 +76,7 @@ const CARD_VOTE_PTS = 300;
 const CARD_DUEL_PTS = 400;
 const CARD_RULE_ROUNDS = 3;
 const CARD_AUTO_NEXT_MS = 6000;
+const CARD_SKIP_DELAY_MS = 5000; // ab dann dürfen die Handys per „Weiter“-Abstimmung die Karte beenden
 const MODE_LABELS = {
   quiz: '🎉 Party-Quiz',
   mostlikely: '🍻 Wer würde?',
@@ -625,7 +628,7 @@ const SECRET_MISSIONS = [
   'Benutze das Wort „eigentlich“ mindestens zweimal in dieser Runde.',
   'Erwähne beiläufig ein Tier, das überhaupt nicht zum Thema passt.',
 ];
-let mixModes = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc'];
+let mixModes = [...DEFAULT_MIX_MODES];
 let roundSeq = 0;
 let spinSeq = 0;
 let pendingSpinNext = null;
@@ -688,7 +691,7 @@ function freshState(mode) {
     storytellerName: null, tlStatements: [], tlLieIdx: -1,
     songQ: null,
     mission: null,
-    card: null, rule: null, lastCardIdx: -1, usedCards: [],
+    card: null, rule: null, lastCardIdx: -1, usedCards: [], cardShownAt: 0,
   };
 }
 
@@ -969,11 +972,12 @@ function pub() {
     nextAudio,
     nextArt,
     result: state.phase === 'result' ? state.result : null,
-    skipVote: ['question', 'go', 'write', 'discuss', 'result'].includes(state.phase) && displayMode !== 'onedevice' ? (() => {
+    skipVote: ['question', 'go', 'write', 'discuss', 'result', 'card'].includes(state.phase) && displayMode !== 'onedevice' ? (() => {
       const count = ps.length;
       const needed = Math.max(1, Math.ceil(count * 0.65));
       const voters = Array.from(skipVotes).filter(n => ps.some(pl => pl.name.toLowerCase() === n));
-      return { count: voters.length, needed, total: count, voters };
+      const readyInMs = state.phase === 'card' ? Math.max(0, state.cardShownAt + CARD_SKIP_DELAY_MS - Date.now()) : 0;
+      return { count: voters.length, needed, total: count, voters, readyInMs };
     })() : null,
     missionReveal: (state.phase === 'result' && state.mission)
       ? { playerName: state.mission.playerName, text: state.mission.text, resolved: state.mission.resolved, success: state.mission.success }
@@ -1329,6 +1333,7 @@ function maybeStartPartyCard() {
   skipVotes.clear();
   state.usedCards.push(c.id);
   state.lastCardIdx = state.idx;
+  state.cardShownAt = Date.now();
   const reward = c.type === 'group' ? CARD_GROUP_PTS : act === 'vote' ? CARD_VOTE_PTS : act === 'duel' ? CARD_DUEL_PTS : (c.pts || c.amount || 0);
   state.card = {
     id: c.id, type: c.type, title: PARTY_CARD_TYPES[c.type].title, act, text,
@@ -1945,6 +1950,14 @@ function submitPlayerAnswer(p, val) {
 
 function attachSocket(socket, ip, allowEvent) {
   roomSockets.add(socket.id);
+  // Wiederhergestellte Verbindung (gleiche Socket-ID, z. B. Handy kurz im Hintergrund): das ausstehende
+  // „Spieler weg“ abbrechen – sonst fliegt der Spieler 4 s später raus, obwohl das Handy verbunden ist,
+  // und Antworten/Abstimmungen werden bis zum nächsten Neuverbinden ignoriert.
+  const pendingGrace = pendingDisconnects.get(socket.id);
+  if (pendingGrace) {
+    clearTimeout(pendingGrace);
+    pendingDisconnects.delete(socket.id);
+  }
   socket.join(ROOM_CHAN);
   lastActivity = Date.now();
 
@@ -2033,7 +2046,8 @@ function attachSocket(socket, ip, allowEvent) {
 
   socket.on('player:skipVote', () => {
     if (!allowEvent('skipVote', 4_000, 10)) return;
-    if (!['question', 'go', 'write', 'discuss', 'result'].includes(state.phase) || displayMode === 'onedevice') return;
+    if (!['question', 'go', 'write', 'discuss', 'result', 'card'].includes(state.phase) || displayMode === 'onedevice') return;
+    if (state.phase === 'card' && Date.now() - state.cardShownAt < CARD_SKIP_DELAY_MS) return;
     const p = players[socket.id];
     if (!p) return;
     const key = p.name.toLowerCase();
@@ -2045,7 +2059,7 @@ function attachSocket(socket, ip, allowEvent) {
     if (activeCount >= needed) {
       writeLog('INFO', 'skip_vote_triggered', { phase: state.phase, activeCount, needed, total: ps.length });
       if (state.phase === 'discuss') startImposterVote();
-      else if (state.phase === 'write' || state.phase === 'result') nextRound();
+      else if (state.phase === 'write' || state.phase === 'result' || state.phase === 'card') nextRound();
       else showResult();
     } else {
       broadcast();
@@ -2454,6 +2468,7 @@ function attachSocket(socket, ip, allowEvent) {
       alcoholFree = false;
       timerSpeed = 'normal';
       secretMissions = false;
+      mixModes = [...DEFAULT_MIX_MODES];
       if (state.phase === 'lobby') state = freshState('mix');
     } else if (preset === 'date') {
       activeCategories = ['date', 'kennenlernen'];
@@ -2466,6 +2481,7 @@ function attachSocket(socket, ip, allowEvent) {
       alcoholFree = false;
       timerSpeed = 'normal';
       secretMissions = true;
+      mixModes = [...DEFAULT_MIX_MODES];
       if (state.phase === 'lobby') state = freshState('mix');
     } else if (preset === 'musik') {
       songLangs = { en: true, de: true };
@@ -2476,6 +2492,7 @@ function attachSocket(socket, ip, allowEvent) {
       activeCategories = ['party', 'kennenlernen'];
       alcoholFree = true;
       timerSpeed = 'normal';
+      mixModes = [...DEFAULT_MIX_MODES];
       if (state.phase === 'lobby') state = freshState('mix');
     }
     broadcast();

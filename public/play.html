@@ -178,6 +178,7 @@ async function createRoomFromHome(target) {
   } catch {}
 }
 let S = null, P = null, joined = false, myAnswer = null, ansState = '', sortPicks = [], lastRoundKey = '', name = localStorage.getItem('qn') || '', avatar = localStorage.getItem('qa') || '😎', reconnectToken = localStorage.getItem('qt') || '';
+let skipReadyTimer = 0;
 const JOINED_KEY = 'pg_joined_' + ROOM_CODE;
 let unconfirmed = null; // { rk, v } – Antwort ohne Bestätigung, wird nach Rejoin erneut gesendet
 let localRevealed = false, localSecret = null, localImposterDone = [], localNameDraft = '', localActiveName = '';
@@ -978,12 +979,20 @@ function renderNow() {
     `<button type="button" class="linkBtn" onclick="editAnswer()">✏️ Antwort ändern</button>`,
     ['#skipVoteBox', '.emojiBar']
   );
-  const showSkip = Boolean(joined && S && S.displayMode !== 'onedevice' && S.skipVote);
+  // Party-Karte: „Weiter“ erst nach 5 s (Server sendet die Restzeit), dann einmal neu zeichnen
+  const sv0 = S && S.skipVote;
+  if (sv0 && sv0.readyAt === undefined) sv0.readyAt = performance.now() + (sv0.readyInMs || 0);
+  const skipWaitMs = sv0 ? Math.max(0, sv0.readyAt - performance.now()) : 0;
+  if (skipWaitMs > 0) {
+    clearTimeout(skipReadyTimer);
+    skipReadyTimer = setTimeout(render, skipWaitMs + 50);
+  }
+  const showSkip = Boolean(joined && S && S.displayMode !== 'onedevice' && S.skipVote && skipWaitMs === 0);
   let skipHtml = '';
   if (showSkip) {
     const sv = S.skipVote;
     const iVoted = Array.isArray(sv.voters) && sv.voters.includes(name.toLowerCase());
-    const label = iVoted ? '✅ Weiter-Stimme aktiv' : (S.phase === 'result' ? '⏭️ Sofort weiter' : '⏭️ Runde überspringen');
+    const label = iVoted ? '✅ Weiter-Stimme aktiv' : S.phase === 'card' ? '⏭️ Weiter' : (S.phase === 'result' ? '⏭️ Sofort weiter' : '⏭️ Runde überspringen');
     skipHtml = `<button type="button" class="ghostBtn${iVoted ? ' on' : ''}" onclick="socket.emit('player:skipVote')">${label} (${sv.count}/${sv.needed})</button>`;
   }
   syncBox('skipVoteBox', showSkip, '10px', skipHtml, ['.emojiBar']);
