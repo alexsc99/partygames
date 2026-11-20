@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-const PHOTO_TTL_MS = 7 * 24 * 3600_000;
+const PHOTO_TTL_MS = 3 * 24 * 3600_000;
 const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 const PHOTO_MAX_PER_ROOM = 400;
 const PHOTO_MAX_TOTAL_BYTES = (Number(process.env.PARTYGAME_PHOTO_MAX_MB) || 5000) * 1024 * 1024; // Schutz vor vollgeschriebener Platte

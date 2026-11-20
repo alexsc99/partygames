@@ -415,13 +415,13 @@
     if (bmp) bmp.close();
     return new Promise(res => c.toBlob(res, 'image/jpeg', quality));
   }
-  // Lösch-Schlüssel eigener Uploads (id → key); Einträge älter als 8 Tage fallen weg (Fotos leben 7 Tage)
+  // Lösch-Schlüssel eigener Uploads (id → key); Einträge älter als 4 Tage fallen weg (Fotos leben 3 Tage)
   function photoKeys() {
     try { return JSON.parse(localStorage.getItem('pg_photo_keys') || '{}') || {}; } catch { return {}; }
   }
   function savePhotoKey(id, key) {
     const keys = photoKeys();
-    const cutoff = Date.now() - 8 * 86_400_000;
+    const cutoff = Date.now() - 4 * 86_400_000;
     for (const k of Object.keys(keys)) if (Number(k.split('-')[0]) < cutoff) delete keys[k];
     keys[id] = key;
     try { localStorage.setItem('pg_photo_keys', JSON.stringify(keys)); } catch { /* Speicher voll: dann eben nicht löschbar */ }

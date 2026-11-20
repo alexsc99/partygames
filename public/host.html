@@ -1049,7 +1049,7 @@ function renderView() {
         ${S.photoCount ? '<div class="endSlideBox"><img id="endSlide" alt=""><div id="endSlideCap" class="endSlideCap"></div></div>' : '<div class="endNoPhoto">📸</div>'}
         <div style="text-align:center"><div style="font-size:clamp(18px,3.4vmin,40px);font-weight:900;color:#ffd33d">📸 Fotos des Abends<span id="endPhotoCount">${S.photoCount ? ` (${S.photoCount})` : ''}</span></div>
           <img class="endQr" src="/qr.png?room=${encodeURIComponent(ROOM_CODE)}&for=fotos" alt="QR zur Galerie">
-          <div style="opacity:.85;font-size:clamp(13px,2.2vmin,26px)">Scannen: ansehen, herunterladen & hochladen · 7 Tage</div></div>
+          <div style="opacity:.85;font-size:clamp(13px,2.2vmin,26px)">Scannen: ansehen, herunterladen & hochladen · 3 Tage</div></div>
       </div>`;
     app.innerHTML = `<h1>🏆 Endergebnis – ${title}</h1>${renderPodium()}${photosHtml}${awardsHtml}${lb()}`;
     startEndSlides();

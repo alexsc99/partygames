@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.24.0)
+# 🎉 PartyGame (Version 3.24.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -15,7 +15,7 @@ Es gibt drei URLs:
 | **Spieler** | `/` oder `/play` | Beitritt per Name & Avatar, Fragen beantworten, Zeichnen, Raten |
 | **TV / Host** | `/host` | Große Leinwand-Ansicht mit QR-Code, Timer, Auflösung, Konfetti & Soundeffekten |
 | **Admin** | `/admin` | Fernbedienung für Spielwahl, Kategorien, Runden, Modi, QR-URL & eigene Fragen |
-| **Fotos** | `/fotos?room=CODE` | Foto-Galerie des Raums: ansehen, hochladen (Kamera oder Handy-Galerie), einzeln oder als ZIP herunterladen – jedes Foto 7 Tage |
+| **Fotos** | `/fotos?room=CODE` | Foto-Galerie des Raums: ansehen, hochladen (Kamera oder Handy-Galerie), einzeln oder als ZIP herunterladen, eigene Fotos löschen – jedes Foto 3 Tage |
 
 ### Die 3 Anzeige-Modi (in `/admin` umschaltbar)
 1. **📺 Mit TV (`/host`):** Fragen und Ergebnisse laufen groß auf dem TV; alle antworten auf ihren Handys.
@@ -70,7 +70,7 @@ Es gibt drei URLs:
 - **🌍 Remote-Party-Karten:** Für Runden, in denen alle an verschiedenen Orten sitzen (z. B. Discord-Call): im Admin unter Party-Karten „🌍 Remote (Video-Call)“ wählen. Dann entfallen Karten mit Sitznachbarn, Platztausch, Gruppenfoto im selben Raum oder gleichzeitigem Reden; dazu kommen Kamera-Aufgaben, **📸 Foto-Challenges** (16 Themen, z. B. „Zeig, was du gerade trinkst“, Superhelden-Pose, Gegenstand als Hut) und **📸 Foto-Duelle** (ab 4 Spielern: zwei Ausgeloste fotografieren dasselbe Thema, die anderen stimmen ab, Sieger +40). Jeder lädt am Handy ein Foto hoch (Frontkamera oder Galerie; der TV zeigt nur, wer schon hat), sobald alle da sind oder die Zeit abläuft, stimmen alle anonym über das beste Foto ab (das eigene ist markiert und zählt nicht). Die Abstimmung hat kein Zeitlimit; „Weiter“/„Auswerten“ (Admin, TV, Handys) geht erst ab 2 Stimmen. Bestes Foto +30, jedes eingereichte Foto +10; kommt nur ein Foto, wird es trotzdem gezeigt (+10). Danach zeigt der TV alle Fotos mit Namen und Stimmen; die Fotos landen auch in der Foto-Wand. Tipp: TV-Seite (`/host`) im Call per Bildschirmfreigabe teilen.
 - **⏱️ Timer-Tempo:** *Schnell* = Antwortzeit −30 % (Wort-Assoziation mind. 16 s) und kürzere Auflösung (mind. 6 s) · *Normal* = Standard (Auflösung geht nach 7–15 s automatisch weiter) · *Entspannt* = Antwortzeit +50 %, Auflösung und Karten-Ergebnisse bleiben stehen, bis jemand „Weiter“ tippt (Admin, TV oder Handy-Abstimmung).
 - **🥁 Trommelwirbel:** Vor Auflösungen mit richtiger Antwort (Quiz, Bild-Quiz, Song, Schätzen, Sortieren, Wahrheit/Lüge, Imposter, Wer würde, Entweder-Oder) zeigen TV und Handys 1,25 s ein Trommel-Overlay, der TV spielt einen Wirbel mit Becken; die Auflösungszeit verlängert sich entsprechend.
-- **📸 Foto-Wand:** Bei 📸-Party-Karten, auf dem Endbildschirm der Handys, im Admin und in der Galerie (`/fotos?room=CODE`) lassen sich Fotos direkt mit der Kamera aufnehmen („📷 Foto aufnehmen“) oder aus der Handy-Galerie hochladen (wird vorher auf max. 1600 px verkleinert). Neue Fotos erscheinen kurz auf dem TV (während Fragen klein in der Ecke); am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie. Alle mit dem Raum-Link sehen die Galerie; Fotos liegen in `data/photos/<CODE>/` und werden 7 Tage nach dem Hochladen automatisch gelöscht. Raumcodes mit noch vorhandenen Fotos werden nicht neu vergeben.
+- **📸 Foto-Wand:** Bei 📸-Party-Karten, auf dem Endbildschirm der Handys, im Admin und in der Galerie (`/fotos?room=CODE`) lassen sich Fotos direkt mit der Kamera aufnehmen („📷 Foto aufnehmen“) oder aus der Handy-Galerie hochladen (wird vorher auf max. 1600 px verkleinert). Neue Fotos erscheinen kurz auf dem TV (während Fragen klein in der Ecke); am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie. Alle mit dem Raum-Link sehen die Galerie; Fotos liegen in `data/photos/<CODE>/` und werden 3 Tage nach dem Hochladen automatisch gelöscht. Raumcodes mit noch vorhandenen Fotos werden nicht neu vergeben.
 - **Lautstärke-Regler & Auto-Timer-Sync:** Eigener Lautstärke-Slider auf TV und Handy; der Song-Timer synchronisiert sich unabhängig von unterschiedlichen Geräte-Uhrzeiten exakt mit dem Audio-Start.
 - **Finalrunde (2× Punkte):** Die letzte Runde eines Spiels zählt automatisch doppelt (in `/admin` ein-/ausschaltbar).
 - **Rundenzahl:** In `/admin` unter *🔢 Runden-Limit*: Alle, 5, 10, 15, 20, 30 oder 50 Runden. Im Party-Mix gibt es stattdessen eine eigene Rundenwahl (8, 12, 16, 20, 30, 50) – das Runden-Limit wird dort ausgeblendet, weil es nicht gilt.
@@ -129,7 +129,7 @@ partygame/
 │   ├── partycards.json  # Party-Karten (127 Aufgaben zwischen den Runden, Platzhalter {leader} {last} {a} {b} {player}; "local"/"remote" = nur vor Ort bzw. nur Remote, "photo" = Foto-Knöpfe am Handy)
 │   ├── used.json        # Automatisch verwaltet: bereits gespielte Indizes
 │   ├── custom.json      # Automatisch erzeugt: eigene Fragen aus /admin
-│   └── photos/          # Automatisch: Foto-Wand je Raumcode (nicht im Git/Backup, Löschung nach 7 Tagen)
+│   └── photos/          # Automatisch: Foto-Wand je Raumcode (nicht im Git/Backup, Löschung nach 3 Tagen)
 ├── start.sh             # Startet Server + Firefox im TV-Vollbild
 ├── start-server.sh      # Startet nur den Node.js-Server im Hintergrund
 ├── open-tv.sh           # Öffnet nur Firefox auf /host
@@ -234,7 +234,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.24.0 (Aktueller Stand):** Fotos löschen in der Galerie `/fotos`: eigene Uploads (Lösch-Schlüssel bleibt im Browser, mit dem hochgeladen wurde) und als Spielleitung alle Fotos des Raums – 🗑️ in der Großansicht. Gelöschte Fotos verschwinden auch aus TV-Einblendung, Diashow und laufender Foto-Challenge.
+- **v3.24.1 (Aktueller Stand):** Fotos werden schon nach 3 Tagen automatisch gelöscht (vorher 7).
+- **v3.24.0:** Fotos löschen in der Galerie `/fotos`: eigene Uploads (Lösch-Schlüssel bleibt im Browser, mit dem hochgeladen wurde) und als Spielleitung alle Fotos des Raums – 🗑️ in der Großansicht. Gelöschte Fotos verschwinden auch aus TV-Einblendung, Diashow und laufender Foto-Challenge.
 - **v3.23.3:** Rechtlich sauber: die zwei Rybak-Songs wieder als offizielle 30-s-Vorschau (englische Fassung „Fairytale“ / „Europe's Skies“) statt YouTube-Ausschnitt.
 - **v3.23.2:** Song-Vorschauen laufen in der Schleife wieder ab der guten Stelle statt ab dem leisen Intro.
 - **v3.23.1:** Alle 373 Song-Vorschauen per Audio-Fingerabdruck (Chromaprint gegen Deezer) und Shazam geprüft: Es laufen überall die richtigen Songs. Serebro-Titel an die gespielte Fassung angepasst („Мама Люба“ statt „Mama Lover“).

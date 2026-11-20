@@ -1408,7 +1408,7 @@ function renderView() {
       : '';
     const photoBox = `<div class="resBox" style="text-align:center"><div class="resTitle">📸 Fotos des Abends${S.photoCount ? ` (${S.photoCount})` : ''}</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px">${pgPhotoButtons('pickPhotos(true)', 'pickPhotos(false)')}<a class="photoBtn" style="background:#26890c;text-decoration:none" href="/fotos?room=${encodeURIComponent(ROOM_CODE)}" target="_blank">🖼️ Galerie öffnen</a></div>
-      <div style="font-size:12px;opacity:.75;margin-top:6px">Für alle im Raum · 7 Tage verfügbar</div></div>`;
+      <div style="font-size:12px;opacity:.75;margin-top:6px">Für alle im Raum · 3 Tage verfügbar</div></div>`;
     app.innerHTML = `<div class="msg" style="margin-top:2vh">Spiel vorbei! Platz ${rank} 🎉<br><small>${me ? me.score : 0} Punkte</small></div>${renderPhonePodium()}${photoBox}${awardsHtml}${renderLb('🏆 Endstand')}${renderEmojiBar()}`;
     const endVib = `end:${S.mode}`;
     if (lastVibKey !== endVib) {

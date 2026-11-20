@@ -1411,7 +1411,7 @@ describe('PartyGame Server', () => {
     }
   });
 
-  it('photo store deletes photos older than 7 days and keeps newer ones', () => {
+  it('photo store deletes photos older than 3 days and keeps newer ones', () => {
     const os = require('node:os');
     const { createPhotoStore, PHOTO_TTL_MS } = require('../src/photos');
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pg-photos-'));

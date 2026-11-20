@@ -614,7 +614,7 @@ function render() {
       <div class="sub">💬 „Wer würde?“/„Entweder-Oder“: erst 15 s diskutieren, dann abstimmen · 🧍 „Ich hab noch nie“: aufstehen statt tippen · 👑 Team-Modus: pro Runde antwortet ein Kapitän fürs Team · 👫 ab 4 Spielern antworten manchmal zwei zusammen auf einem Handy · ⚔️ nach der letzten Runde 3 Quizfragen nur für die zwei Besten (2× Punkte) · 🃏 Rundensieger bekommen Joker (Doppelt, Abschreiben, Zeitdieb, Punkteklau).</div>
     `)}
     ${grp('photos', '📸 Fotos', `${S.photoCount || 0} ${S.photoCount === 1 ? 'Foto' : 'Fotos'}`, `
-      <div class="sub">Alle im Raum können über den Galerie-Link Fotos ansehen, herunterladen und hochladen. Jedes Foto wird 7 Tage nach dem Hochladen gelöscht. Am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie.</div>
+      <div class="sub">Alle im Raum können über den Galerie-Link Fotos ansehen, herunterladen und hochladen. Jedes Foto wird 3 Tage nach dem Hochladen gelöscht. Am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie.</div>
       <div class="cats">
         <a href="/fotos?room=${encodeURIComponent(ROOM_CODE)}" target="_blank" style="text-decoration:none"><button type="button" class="active">🖼️ Galerie öffnen</button></a>
         <button type="button" onclick="copyGalleryLink()">📋 Galerie-Link kopieren</button>
