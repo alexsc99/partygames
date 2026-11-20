@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.9.0)
+# 🎉 PartyGame (Version 3.9.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -211,7 +211,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.9.0 (Aktueller Stand):** Neues Bild-Quiz-Thema **🗺️ Länder-Umrisse** (40 Länder, "Welches Land hat diese Umrisse?"), in `/admin` unter *Bild-Quiz Themen* einzeln an-/abwählbar und in „Alle“ enthalten.
+- **v3.9.1 (Aktueller Stand):** Versionsnummer wird unten in `/admin` angezeigt (Platzhalter `__APP_VERSION__` wird beim Start aus `package.json` gefüllt).
+- **v3.9.0:** Neues Bild-Quiz-Thema **🗺️ Länder-Umrisse** (40 Länder, "Welches Land hat diese Umrisse?"), in `/admin` unter *Bild-Quiz Themen* einzeln an-/abwählbar und in „Alle“ enthalten.
 - **v3.8.2:** Bild-Quiz ohne Namen im Bild: Schriftzüge aus Logos/Emblemen entfernt (u. a. Pepsi, BMW, Porsche, Burger King, Mastercard, Airbnb, Target, Adobe, Peugeot, Volvo, Nissan, Alfa Romeo, Aston Martin); TikTok, Red Bull und Reddit als Symbol-Logo; reine Wortmarken ersetzt (KFC → Lufthansa, Uber → Shazam, NASA → Duolingo, Ford → Jaguar, Fiat → Chevrolet, Kia → Suzuki).
 - **v3.8.1:** QR-/Spieler-URL in `/admin`: Raumcode (`?room=…`) wird automatisch an eigene URLs angehängt, „Standard“ setzt den Link inkl. Raumcode zurück, „Einladungs-Link kopieren“ (Admin + Handy) nutzt die eingestellte Spieler-URL.
 - **v3.8.0:** Stabilität & flüssiges Spiel. Laufende Spiele überstehen Neustarts/Deploys (Raum-Snapshot + Wiederherstellung, Handys steigen automatisch mit Punkten wieder ein, Timer laufen weiter). WebSocket-Kompression (permessage-deflate) für State-Updates – deutlich weniger Daten im Mobilfunk. Service Worker: Seite lädt auch bei Funkloch/langsamem Netz aus dem Cache (HTML immer zuerst frisch vom Netz), Bilder/Cover gecacht. Leichtere `pub()`-Berechnung pro Update. Metrik-Logzeile + Grafana-Dashboard (Event-Loop-Lag als „Ruckel-Indikator“), tägliches Backup, Auto-Deploy nach grüner CI, Lasttest-Script. Sicherheit: X-Forwarded-For wird fälschungssicher ausgewertet (echte Client-IP von rechts).

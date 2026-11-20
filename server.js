@@ -148,6 +148,7 @@ const PAGES = {};
 for (const file of ['play.html', 'host.html', 'admin.html', 'rooms.html']) {
   let html = fs.readFileSync(path.join(PUBLIC_DIR, file), 'utf8');
   for (const [url, hash] of Object.entries(assetHashes)) html = html.split(`"${url}"`).join(`"${url}?v=${hash}"`);
+  html = html.split('__APP_VERSION__').join(APP_VERSION);
   PAGES[file] = html;
 }
 const sendRevalidated = file => (req, res) => {
