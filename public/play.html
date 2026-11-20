@@ -157,7 +157,7 @@ async function joinByRoomInput() {
   }
 }
 function copyInviteLink() {
-  const link = location.origin + '/?room=' + encodeURIComponent(ROOM_CODE);
+  const link = (S && S.publicUrl) || (location.origin + '/?room=' + encodeURIComponent(ROOM_CODE));
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(link).then(() => {
       document.querySelectorAll('.copyInviteBtn').forEach(b => {

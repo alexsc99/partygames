@@ -2367,17 +2367,19 @@ function attachSocket(socket, ip, allowEvent) {
   socket.on('host:publicUrl', (rawUrl, ack) => {
     if (!allowEvent('pubUrl', 10_000, 10)) return ack && ack({ ok: false, error: 'Zu viele Anfragen' });
     const trimmed = String(rawUrl || '').trim().slice(0, 200);
+    // Ohne eigenen Raumcode im Link würde der QR-Code nicht in diesen Raum führen → immer ?room=… ergänzen.
+    const withRoom = u => { if (!u.searchParams.has('room')) u.searchParams.set('room', code); return u.toString(); };
     if (!trimmed) {
-      publicUrl = DEFAULT_URL_PLAY;
-      io.to(ROOM_CHAN).emit('info', { url: publicUrl });
+      publicUrl = withRoom(new URL(DEFAULT_URL_PLAY));
+      io.to(ROOM_CHAN).emit('info', { url: publicUrl, room: code });
       broadcast();
       return ack && ack({ ok: true, url: publicUrl });
     }
     try {
       const u = new URL(trimmed);
       if (u.protocol !== 'http:' && u.protocol !== 'https:') return ack && ack({ ok: false, error: 'Nur http:// oder https://' });
-      publicUrl = u.toString();
-      io.to(ROOM_CHAN).emit('info', { url: publicUrl });
+      publicUrl = withRoom(u);
+      io.to(ROOM_CHAN).emit('info', { url: publicUrl, room: code });
       broadcast();
       ack && ack({ ok: true, url: publicUrl });
     } catch {

@@ -165,7 +165,7 @@ if (ROOM_CODE) {
 }
 let S = null; let qrInited = false; let lastAdminSig = '';
 function copyRoomLink() {
-  const link = location.origin + '/?room=' + encodeURIComponent(ROOM_CODE);
+  const link = (S && S.publicUrl) || (location.origin + '/?room=' + encodeURIComponent(ROOM_CODE));
   navigator.clipboard?.writeText(link).catch(() => {});
   const btn = document.getElementById('copyLinkBtn');
   if (btn) { btn.textContent = '✅ Link kopiert!'; setTimeout(() => { btn.textContent = '📋 Einladungs-Link kopieren'; }, 2000); }
