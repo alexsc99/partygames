@@ -999,6 +999,243 @@ describe('PartyGame Server', () => {
     }
   });
 
+  // ---- Mehr Interaktion: Raum mit Spielern aufsetzen, Modus wählen, starten ----
+  async function playRoom(names, mode, setup = () => {}) {
+    const { io: ioc } = require('socket.io-client');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const r = { code, admin: connect(), players: names.map(connect), S: null, priv: names.map(() => null), played: [] };
+    r.admin.on('state', s => { r.S = s; });
+    r.admin.on('joker:played', j => r.played.push(j));
+    r.players.forEach((p, i) => p.on('private', v => { r.priv[i] = v; }));
+    r.until = async (pred, ms = 3000) => {
+      const end = Date.now() + ms;
+      while (Date.now() < end) { if (r.S && pred(r.S)) return r.S; await new Promise(res => setTimeout(res, 15)); }
+      throw new Error(`timeout, phase=${r.S && r.S.phase} mode=${r.S && r.S.mode} idx=${r.S && r.S.idx}`);
+    };
+    r.answer = (i, val) => new Promise(res => r.players[i].emit('answer', val, a => res(a && a.ok)));
+    r.score = n => r.S.players.find(p => p.name === n).score;
+    r.cleanup = () => {
+      r.admin.close();
+      r.players.forEach(p => p.close());
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    };
+    try {
+      await Promise.all(r.players.map((p, i) => new Promise(res => p.emit('join', { name: names[i], avatar: '😎' }, res))));
+      r.admin.emit('host:wheelEnabled', false);
+      r.admin.emit('host:mode', mode);
+      await r.until(s => s.mode === mode && s.players.length === names.length && s.wheelEnabled === false);
+      await setup(r);
+      r.admin.emit('host:start');
+      await r.until(s => s.phase === 'question');
+    } catch (e) {
+      r.cleanup();
+      throw e;
+    }
+    return r;
+  }
+  const QUIZ = require('../data/questions.json');
+  const correctIdx = S => QUIZ.find(x => x.q === S.q.q && JSON.stringify(x.a) === JSON.stringify(S.q.a)).c;
+
+  it('hot seat: everyone guesses what the person in the hot seat picks; right guesses +50, hot seat +10 each', async () => {
+    const r = await playRoom(['Ada', 'Bo', 'Cy'], 'hotseat');
+    try {
+      const hot = r.S.q.hot;
+      assert.ok(['Ada', 'Bo', 'Cy'].includes(hot));
+      const idx = n => ['Ada', 'Bo', 'Cy'].indexOf(n);
+      const [g1, g2] = ['Ada', 'Bo', 'Cy'].filter(n => n !== hot);
+      assert.equal(await r.answer(idx(hot), 0), true);
+      assert.equal(await r.answer(idx(g1), 0), true);
+      assert.equal(await r.answer(idx(g2), 1), true);
+      await r.until(s => s.phase === 'result');
+      assert.equal(r.S.result.hot, hot);
+      assert.equal(r.S.result.pick, 0);
+      assert.deepEqual(r.S.result.correct, [g1]);
+      assert.equal(r.score(g1), 50);
+      assert.equal(r.score(g2), 0);
+      assert.equal(r.score(hot), 10);
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  it('discussion first: "Entweder-Oder" rejects votes while the 15 s discussion runs', async () => {
+    const r = await playRoom(['Ada', 'Bo'], 'wouldyourather');
+    try {
+      assert.ok(r.S.discussLeftMs > 10000 && r.S.discussLeftMs <= 15000, `discussLeftMs=${r.S.discussLeftMs}`);
+      assert.ok(r.S.leftMs > r.S.discussLeftMs, 'voting time comes on top of the discussion');
+      assert.equal(await r.answer(0, 0), false);
+      r.admin.emit('host:discussVotes', false);
+      await r.until(s => s.discussVotes === false);
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  it('stand-up round: "Ich hab noch nie" takes no phone answers and resolves as a stand-up result', async () => {
+    const r = await playRoom(['Ada', 'Bo'], 'neverhavei');
+    try {
+      assert.equal(r.S.q.standup, true);
+      assert.ok(r.S.leftMs <= 10000);
+      assert.equal(await r.answer(0, true), false);
+      r.admin.emit('host:next');
+      await r.until(s => s.phase === 'result');
+      assert.equal(r.S.result.standup, true);
+      assert.ok(r.S.players.every(p => p.drinks === 0 && p.score === 0));
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  it('team captain: only the captain answers and the whole team gets the points', async () => {
+    const r = await playRoom(['Ada', 'Bo', 'Cy', 'Dee'], 'quiz', async room => {
+      room.admin.emit('host:teamMode', true);
+      ['red', 'red', 'blue', 'blue'].forEach((t, i) => room.players[i].emit('player:team', t));
+      await room.until(s => s.teamMode && s.players.every(p => p.team));
+    });
+    try {
+      const groups = r.S.answerGroups;
+      assert.equal(groups.length, 2);
+      assert.ok(groups.every(g => g.kind === 'captain'));
+      assert.deepEqual(groups.map(g => g.lead).sort(), ['Ada', 'Cy']); // Runde 1: alphabetisch Erste/r
+      const c = correctIdx(r.S);
+      assert.equal(await r.answer(1, c), false, 'Bo is not the captain');
+      assert.equal(await r.answer(0, c), true);
+      assert.equal(await r.answer(2, (c + 1) % r.S.q.a.length), true);
+      await r.until(s => s.phase === 'result');
+      assert.ok(r.score('Ada') > 0);
+      assert.equal(r.score('Bo'), r.score('Ada'));
+      assert.equal(r.score('Cy'), 0);
+      assert.equal(r.score('Dee'), 0);
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  it('final duel: after the last round the two best answer 3 extra questions, everyone else watches', async () => {
+    const r = await playRoom(['Ada', 'Bo', 'Cy'], 'quiz', async room => {
+      room.admin.emit('host:rounds', 5);
+      room.admin.emit('host:jokers', false);
+      await room.until(s => s.roundLimit === 5 && s.jokersOn === false);
+    });
+    try {
+      for (let round = 0; round < 5; round++) {
+        await r.until(s => s.phase === 'question' && s.idx === round);
+        const c = correctIdx(r.S);
+        await r.answer(0, c); // Ada immer richtig
+        await r.answer(1, round < 3 ? c : (c + 1) % r.S.q.a.length);
+        await r.answer(2, (c + 1) % r.S.q.a.length); // Cy immer falsch
+        await r.until(s => s.phase === 'result');
+        r.admin.emit('host:next');
+      }
+      for (let n = 1; n <= 3; n++) {
+        await r.until(s => s.phase === 'question' && s.duel && s.duel.n === n);
+        assert.deepEqual(r.S.duel.names, ['Ada', 'Bo']);
+        assert.equal(r.S.mode, 'quiz');
+        assert.equal(r.S.isFinalRound, true);
+        assert.equal(await r.answer(2, 0), false, 'spectators cannot answer');
+        await r.answer(0, correctIdx(r.S));
+        await r.answer(1, correctIdx(r.S));
+        await r.until(s => s.phase === 'result');
+        r.admin.emit('host:next');
+      }
+      await r.until(s => s.phase === 'end');
+      assert.equal(r.S.duel, null);
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  it('jokers: the round winner gets one, "double" doubles her next round, players without a joker are refused', async () => {
+    const nodeCrypto = require('node:crypto');
+    const realRandomInt = nodeCrypto.randomInt;
+    const r = await playRoom(['Ada', 'Bo'], 'quiz');
+    try {
+      const c = correctIdx(r.S);
+      nodeCrypto.randomInt = (...a) => (a.length === 1 && a[0] === 4 ? 0 : realRandomInt(...a)); // Joker-Typ 0 = double
+      await r.answer(0, c);
+      await r.answer(1, (c + 1) % r.S.q.a.length);
+      await r.until(s => s.phase === 'result');
+      nodeCrypto.randomInt = realRandomInt;
+      assert.deepEqual(r.S.jokerNews, [{ name: 'Ada', type: 'double' }]);
+      assert.equal(r.S.players.find(p => p.name === 'Ada').jokers, 1);
+      await new Promise(res => setTimeout(res, 30));
+      assert.deepEqual(r.priv[0].jokers, ['double']);
+      const used = await new Promise(res => r.players[0].emit('joker:use', { type: 'double' }, res));
+      assert.equal(used.ok, true);
+      assert.equal(r.played[0].type, 'double');
+      r.admin.emit('host:next');
+      await r.until(s => s.phase === 'question' && s.idx === 1);
+      assert.deepEqual(r.S.roundJokers.map(j => j.type), ['double']);
+      const late = await new Promise(res => r.players[1].emit('joker:use', { type: 'double' }, res));
+      assert.equal(late.ok, false);
+      const before = r.score('Ada');
+      await r.answer(0, correctIdx(r.S));
+      await r.answer(1, (correctIdx(r.S) + 1) % r.S.q.a.length);
+      await r.until(s => s.phase === 'result');
+      const gain = r.score('Ada') - before;
+      assert.ok(gain >= 100 && gain % 2 === 0, `doubled gain expected, got ${gain}`);
+    } finally {
+      nodeCrypto.randomInt = realRandomInt;
+      r.cleanup();
+    }
+  });
+
+  it('partner round: only the first of each pair answers, the partner gets the same points', async () => {
+    const realRandom = Math.random;
+    let r;
+    try {
+      r = await playRoom(['Ada', 'Bo', 'Cy', 'Dee'], 'quiz', () => { Math.random = () => 0; }); // < PARTNER_CHANCE
+      Math.random = realRandom;
+      const groups = r.S.answerGroups;
+      assert.equal(groups.length, 2);
+      assert.ok(groups.every(g => g.kind === 'partner' && g.members.length === 2));
+      const names = ['Ada', 'Bo', 'Cy', 'Dee'];
+      const [g1, g2] = groups;
+      const partner = g1.members.find(n => n !== g1.lead);
+      const c = correctIdx(r.S);
+      assert.equal(await r.answer(names.indexOf(partner), c), false);
+      assert.equal(await r.answer(names.indexOf(g1.lead), c), true);
+      assert.equal(await r.answer(names.indexOf(g2.lead), (c + 1) % r.S.q.a.length), true);
+      await r.until(s => s.phase === 'result');
+      assert.ok(r.score(g1.lead) > 0);
+      assert.equal(r.score(partner), r.score(g1.lead));
+      g2.members.forEach(n => assert.equal(r.score(n), 0));
+    } finally {
+      Math.random = realRandom;
+      r && r.cleanup();
+    }
+  });
+
+  it('joker "Punkteklau" moves 15 points from the target to the player immediately', async () => {
+    const nodeCrypto = require('node:crypto');
+    const realRandomInt = nodeCrypto.randomInt;
+    const r = await playRoom(['Ada', 'Bo'], 'quiz');
+    try {
+      const c = correctIdx(r.S);
+      nodeCrypto.randomInt = (...a) => (a.length === 1 && a[0] === 4 ? 3 : realRandomInt(...a)); // Joker-Typ 3 = steal
+      await r.answer(0, c); // Ada schneller → Rundensiegerin
+      await new Promise(res => setTimeout(res, 300));
+      await r.answer(1, c);
+      await r.until(s => s.phase === 'result');
+      nodeCrypto.randomInt = realRandomInt;
+      assert.deepEqual(r.S.jokerNews, [{ name: 'Ada', type: 'steal' }]);
+      const ada = r.score('Ada'), bo = r.score('Bo');
+      assert.ok(bo >= 15);
+      const noTarget = await new Promise(res => r.players[0].emit('joker:use', { type: 'steal' }, res));
+      assert.equal(noTarget.ok, false);
+      const ok = await new Promise(res => r.players[0].emit('joker:use', { type: 'steal', target: 'Bo' }, res));
+      assert.equal(ok.ok, true);
+      await r.until(s => s.players.find(p => p.name === 'Ada').score === ada + 15);
+      assert.equal(r.score('Bo'), bo - 15);
+      assert.equal(r.played[0].detail, '15 Punkte');
+    } finally {
+      nodeCrypto.randomInt = realRandomInt;
+      r.cleanup();
+    }
+  });
+
   it('timer tempo scales the result pause: "relaxed" waits for Weiter, "fast" is shorter', async () => {
     const { io: ioc } = require('socket.io-client');
     const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();

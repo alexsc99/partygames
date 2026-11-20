@@ -76,6 +76,17 @@
  .pChip { background: #ffffff14; border: 1px solid transparent; padding: 5px 10px; border-radius: 999px; font-size: 14px; white-space: nowrap; }
  .pChip.me { border-color: #ffd33d; background: rgba(255,211,61,.16); font-weight: 800; }
  .tvHint { font-size: 14px; opacity: .85; margin-top: 12px; padding: 6px 12px; border-radius: 999px; background: #ffffff10; display: inline-block; }
+ /* Interaktions-Features: Hinweis-Banner, Aufsteh-Runde, Joker-Hand */
+ .iBan { background: rgba(124,77,255,.22); border: 1px solid #7c4dff; border-radius: 12px; padding: 8px 12px; margin: 6px 0; font-size: 15px; font-weight: 800; animation: popIn .25s ease-out both; }
+ .iBan.warn { background: rgba(226,27,60,.25); border-color: #e21b3c; }
+ .iBan.gold { background: rgba(255,211,61,.14); border-color: #ffd33d; color: #ffd33d; }
+ .standupBox { font-size: 30px; font-weight: 900; margin-top: 5vh; line-height: 1.25; animation: popIn .3s ease-out both; }
+ .jokerBox { text-align: center; }
+ .jokerBtns { display: flex; flex-direction: column; gap: 8px; }
+ .jokerBtn { background: linear-gradient(160deg,#4b3a9e,#2d2266); border: 2px solid #ffd33d; border-radius: 14px; padding: 10px 12px; color: #fff; text-align: left; display: flex; flex-direction: column; gap: 2px; }
+ .jokerBtn b { font-size: 17px; }
+ .jokerBtn small { font-size: 13px; opacity: .85; font-weight: 600; }
+ .jokerBtn:disabled { opacity: .5; }
 </style></head>
 <body>
 <div id="connBanner">🔄 Verbindung unterbrochen — verbinde neu…</div>
@@ -111,7 +122,7 @@ const NAMES = {
   taboo: '🗣️ Erklär-Spiel (Tabu)', pantomime: '🤸 Pantomime', sort: '🔢 Sortier-Duell',
   icebreaker: '🫶 Kennenlernen', teams: '🏆 Team-Wahl',
   scale: '📊 Skala 1–10', truthlie: '🎭 2 Wahrheiten, 1 Lüge',
-  wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song', imagequiz: '🖼️ Bild-Quiz', mix: '🎲 Party-Mix',
+  wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song', imagequiz: '🖼️ Bild-Quiz', hotseat: '🔥 Heißer Stuhl', mix: '🎲 Party-Mix',
 };
 const RULES = {
   quiz: 'Die Frage erscheint, du tippst so schnell wie möglich die richtige Antwort. Je schneller, desto mehr Punkte!',
@@ -132,6 +143,7 @@ const RULES = {
   wordassoc: 'Ein Wort erscheint – tipp sofort das erste Wort ein, das dir dazu einfällt. Jede Antwort bringt Punkte!',
   songquiz: 'Ein Song wird angespielt – erkenne ihn und tipp die richtige Antwort. Je schneller, desto mehr Punkte!',
   imagequiz: 'Ein Bild wird gezeigt – tipp schnell die richtige Antwort. Je schneller, desto mehr Punkte!',
+  hotseat: 'Einer sitzt auf dem heißen Stuhl und wählt geheim zwischen zwei Optionen – alle anderen tippen, was er nimmt. Richtig getippt: +50 Punkte, der heiße Stuhl bekommt +10 pro Treffer!',
   mix: 'Ein bunter Mix aus vielen Spielen – jede Runde wartet ein neues Minispiel auf dich.',
 };
 const AVATARS = ['😎', '🦊', '🐼', '🐸', '🦁', '🦄', '🐙', '🐱', '🚀', '🌟', '🍕', '🔥', '🪅', '🤡', '🤪', '🥳', '👽', '👻', '💩', '🐵', '🦖', '🦩', '🦝', '🦆', '🦥', '🦫', '🍺', '🌮', '🪩', '🤖', '🧙', '🥷', '🧛', '🍌', '🧀', '🌵'];
@@ -192,6 +204,94 @@ const JOINED_KEY = 'pg_joined_' + ROOM_CODE;
 let unconfirmed = null; // { rk, v } – Antwort ohne Bestätigung, wird nach Rejoin erneut gesendet
 let localRevealed = false, localSecret = null, localImposterDone = [], localNameDraft = '', localActiveName = '';
 let pWheelStop = () => {}, pActiveSpinId = -1;
+// Interaktions-Features: Diskussion, Zeitdieb-Joker, Kapitän/Partner, Finale-Duell, Joker-Hand
+let discussEnd = 0, thiefCutAt = 0, interactionTimer = 0, jokerPick = null, jokerBusy = false;
+const JOKER_TARGETED = ['copy', 'timethief', 'steal'];
+const JOKER_INFO = {
+  double: 'Deine Punkte der nächsten Runde zählen doppelt',
+  copy: 'Nächste Antwort-Runde: die Antwort eines Mitspielers gilt als deine',
+  timethief: 'Nächste Antwort-Runde: ein Mitspieler hat nur die halbe Zeit',
+  steal: 'Klau sofort 15 Punkte von einem Mitspieler',
+};
+const myGroup = () => (S && S.answerGroups ? S.answerGroups.find(g => (g.members || []).includes(name)) : null) || null;
+const jokerLabel = t => (S && S.jokerLabels && S.jokerLabels[t]) || '🃏 Joker';
+const roundLabel = () => (S && S.duel ? `⚔️ Finale-Duell · Frage ${S.duel.n}/${S.duel.total}` : `Runde ${S.idx + 1}/${S.total}`);
+// Warum darf ich gerade nicht antworten? ('' = darf antworten)
+function phoneAnswerLock() {
+  if (!S || S.phase !== 'question') return '';
+  const now = performance.now();
+  if (discussEnd > now) return 'discuss';
+  if (S.q && S.q.standup) return 'standup';
+  if (S.duel && !(S.duel.names || []).includes(name)) return 'duel';
+  const g = myGroup();
+  if (g && g.lead !== name) return 'group';
+  if (thiefCutAt && now >= thiefCutAt) return 'thief';
+  return '';
+}
+// Hinweise während der Frage: Diskussion, Duell, Kapitän/Partner, Joker dieser Runde
+function renderRoundBanners() {
+  if (!S || S.phase !== 'question') return '';
+  const now = performance.now();
+  const out = [];
+  if (discussEnd > now) out.push(`<div class="iBan gold">💬 Diskutiert! Abstimmung in <b id="discussSec">${Math.ceil((discussEnd - now) / 1000)}s</b></div>`);
+  if (S.duel && (S.duel.names || []).includes(name)) out.push('<div class="iBan warn">⚔️ Finale-Duell – du bist dran!</div>');
+  const g = myGroup();
+  if (g) {
+    const others = (g.members || []).filter(n => n !== name).map(esc).join(' & ');
+    out.push(`<div class="iBan">${g.lead === name
+      ? (g.kind === 'captain' ? '👑 Du bist Kapitän – deine Antwort zählt fürs ganze Team' : `👫 Partner-Runde: Du antwortest für dich und ${others}`)
+      : (g.kind === 'captain' ? `👑 ${esc(g.lead)} antwortet fürs Team – sagt eure Meinung!` : `👫 ${esc(g.lead)} antwortet für euch – besprecht euch!`)}</div>`);
+  }
+  for (const j of S.roundJokers || []) {
+    if (j.type === 'timethief' && j.target === name) {
+      out.push(`<div class="iBan warn">⏳ Zeitdieb von ${esc(j.by)}: ${thiefCutAt > now ? `nur noch <b id="thiefSec">${Math.ceil((thiefCutAt - now) / 1000)}s</b>!`
+        : thiefCutAt ? 'deine Zeit ist um!' : 'du hast nur die halbe Zeit!'}</div>`);
+    } else if (j.type === 'copy' && j.by === name) {
+      out.push(`<div class="iBan">📋 Du schreibst bei ${esc(j.target)} ab</div>`);
+    } else if (j.type === 'double' && j.by === name) {
+      out.push('<div class="iBan gold">✖️2 Deine Punkte zählen diese Runde doppelt</div>');
+    }
+  }
+  return out.join('');
+}
+// Joker-Hand (zwischen den Runden): ein Knopf pro Joker, bei Ziel-Jokern Spielerauswahl
+function renderJokerArea() {
+  if (!S || !S.jokersOn || S.duel || !['result', 'card', 'spin'].includes(S.phase) || !P || !Array.isArray(P.jokers) || !P.jokers.length) return '';
+  if (jokerPick && !P.jokers.includes(jokerPick)) jokerPick = null;
+  if (jokerPick) {
+    const others = (S.players || []).filter(p => p.name !== name);
+    return `<div class="resBox jokerBox"><div class="resTitle">${esc(jokerLabel(jokerPick))} – gegen wen?</div>
+      <div class="votes" style="margin-top:4px">${others.map(p => `<button type="button" ${jokerBusy ? 'disabled' : ''} onclick="useJoker('${esc(jokerPick)}', ${esc(JSON.stringify(p.name))})"><span style="font-size:22px;vertical-align:middle;margin-right:8px">${esc(p.avatar || '😎')}</span>${esc(p.name)}</button>`).join('')}</div>
+      <button type="button" class="linkBtn" style="margin-top:6px" onclick="pickJoker(null)">✕ Abbrechen</button></div>`;
+  }
+  const queued = new Set((S.jokerQueue || []).filter(j => j.by === name).map(j => j.type));
+  const counts = {};
+  P.jokers.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+  const btns = Object.entries(counts).map(([t, n]) => `<button type="button" class="jokerBtn" ${jokerBusy || queued.has(t) ? 'disabled' : ''} onclick="pickJoker('${esc(t)}')"><b>${esc(jokerLabel(t))}${n > 1 ? ` ×${n}` : ''}</b><small>${queued.has(t) ? '✅ Gespielt – wirkt in der nächsten Runde' : esc(JOKER_INFO[t] || '')}</small></button>`).join('');
+  return `<div class="resBox jokerBox"><div class="resTitle">🃏 Deine Joker</div><div class="jokerBtns">${btns}</div></div>`;
+}
+function pickJoker(type) {
+  if (type && !JOKER_INFO[type]) return;
+  if (type && !JOKER_TARGETED.includes(type)) {
+    if (confirm(`${jokerLabel(type)} jetzt einsetzen?`)) useJoker(type, null);
+    return;
+  }
+  jokerPick = type;
+  render();
+}
+function useJoker(type, target) {
+  if (jokerBusy) return;
+  jokerBusy = true;
+  pgVibrate(20);
+  socket.timeout(8000).emit('joker:use', { type, target }, (err, r) => {
+    jokerBusy = false;
+    if (err) pgToast('⚠️ Keine Antwort vom Server – bitte nochmal versuchen', 3000);
+    else if (r && r.ok) jokerPick = null;
+    else pgToast(`❌ ${(r && r.error) || 'Joker konnte nicht eingesetzt werden'}`, 3000);
+    render();
+  });
+  render();
+}
 
 function startPhoneWheelAnim(spin) {
   const cvs = document.getElementById('phoneWheelCanvas');
@@ -428,7 +528,8 @@ socket.on('state', s => {
   if (rk !== lastRoundKey) {
     myAnswer = null;
     ansState = '';
-    P = null;
+    // Joker-Hand behalten: der Server sendet unveränderte private Daten nicht erneut
+    P = P && Array.isArray(P.jokers) ? { jokers: P.jokers } : null;
     sortPicks = [];
     localRevealed = false;
     localSecret = null;
@@ -448,11 +549,28 @@ socket.on('state', s => {
   const leftMs = typeof s.leftMs === 'number' ? s.leftMs : (s.deadline ? Math.max(0, s.deadline - Date.now()) : 0);
   clientDeadline = leftMs > 0 ? performance.now() + leftMs : 0;
   clientTotalMs = s.totalMs > 0 ? s.totalMs : (s.phase === 'result' ? 5000 : (s.time || 15) * 1000);
+  // Diskussions-Ende und Zeitdieb-Schnitt: lokal mitzählen und dann einmal neu zeichnen
+  const nowP = performance.now();
+  discussEnd = s.phase === 'question' && s.discussLeftMs > 0 ? nowP + s.discussLeftMs : 0;
+  const thief = s.phase === 'question' && (s.roundJokers || []).find(j => j.type === 'timethief' && j.target === name && typeof j.cutLeftMs === 'number');
+  thiefCutAt = thief ? nowP + thief.cutLeftMs : 0;
+  if (!['result', 'card', 'spin'].includes(s.phase) || s.duel) jokerPick = null;
+  clearTimeout(interactionTimer);
+  const nextAt = Math.min(...[discussEnd, thiefCutAt].filter(t => t > nowP));
+  if (Number.isFinite(nextAt)) interactionTimer = setTimeout(render, nextAt - nowP + 50);
   syncPlayAudio(s);
   if (s.noTvMode && playAudioOn) pgPreloadNextAudio(s, playSongAudio);
   render();
 });
 socket.on('private', p => { P = p; render(); });
+// Joker eingesetzt: kurze Meldung für alle, das Ziel bekommt zusätzlich eine Vibration
+socket.on('joker:played', j => {
+  if (!j || !joined) return;
+  const mine = j.by === name;
+  const tgt = j.target ? ` → ${j.target === name ? 'dich' : j.target}` : '';
+  pgToast(`🃏 ${mine ? 'Du spielst' : `${j.by} spielt`} ${j.label || jokerLabel(j.type)}${tgt}${j.detail ? ` (${j.detail})` : ''}`, 3500);
+  if (j.target === name) pgVibrate([60, 40, 60]);
+});
 // Verbindung weg: erst automatisch neu verbinden; dauert es länger, kann man tippen (Neu verbinden, später Seite neu laden –
 // der Auto-Rejoin bringt einen mit Punktestand zurück)
 const connBanner = document.getElementById('connBanner');
@@ -949,6 +1067,8 @@ function renderOneDevice() {
     app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div><div class="votes">${S.players.map((p, i) => `<button onclick="submitLocalVote(${i})">${esc(p.name)}</button>`).join('')}</div>`;
   } else if (S.mode === 'wouldyourather') {
     app.innerHTML = `${turnHdr}<div class="wyr"><button class="c0" onclick="submitLocal(0)">${esc(S.q.a)}</button><button class="c1" onclick="submitLocal(1)">${esc(S.q.b)}</button></div>`;
+  } else if (S.mode === 'hotseat') {
+    app.innerHTML = `${turnHdr}<div class="qtxt">${cur.name === S.q.hot ? '🔥 Du sitzt auf dem heißen Stuhl! Was würdest DU lieber?' : `Was würde ${esc(S.q.hot)} lieber?`}</div><div class="wyr"><button class="c0" onclick="submitLocal(0)">${esc(S.q.a)}</button><button class="c1" onclick="submitLocal(1)">${esc(S.q.b)}</button></div>`;
   } else if (S.mode === 'estimate') {
     app.innerHTML = `${turnHdr}<div class="qtxt">${esc(S.q.q)}</div><input id="est" type="number" inputmode="decimal" placeholder="Deine Zahl"><button class="go" onclick="submitLocalEst()">Absenden</button>`;
   } else if (S.mode === 'neverhavei') {
@@ -1014,7 +1134,7 @@ function renderNow() {
   }[ansState];
   const showAns = Boolean(joined && S && S.phase === 'question' && S.displayMode !== 'onedevice' && ansMsg && (myAnswer !== null || ansState === 'rejected'));
   syncBox('ansStateBox', showAns, '14px', `<div class="ansState ${ansState}" role="status">${ansMsg}</div>`, ['#editAnsBox', '#skipVoteBox', '.emojiBar']);
-  const showEdit = Boolean(joined && S && S.displayMode !== 'onedevice' && S.phase === 'question' && myAnswer !== null && S.mode !== 'reaction');
+  const showEdit = Boolean(joined && S && S.displayMode !== 'onedevice' && S.phase === 'question' && myAnswer !== null && S.mode !== 'reaction' && !phoneAnswerLock());
   syncBox(
     'editAnsBox',
     showEdit,
@@ -1099,6 +1219,16 @@ function renderView() {
   const needPlayers = S.phase === 'lobby' || S.phase === 'result' || S.phase === 'end' || S.mode === 'mostlikely' || S.mode === 'imposter' || (S.mode === 'pantomime' && S.phase === 'question');
   const playersSig = needPlayers ? (S.players || []).map(p => `${p.name}:${p.avatar || ''}:${p.team || ''}:${p.score}`).join(',') : '';
   const guessMask = ((S.mode === 'draw' || S.mode === 'taboo') && S.phase === 'question' && S.q && S.q.mask) ? S.q.mask : '';
+  const nowSig = performance.now();
+  const interSig = [
+    discussEnd > nowSig ? 'disc' : '',
+    thiefCutAt ? (nowSig >= thiefCutAt ? 'cut' : 'thief') : '',
+    S.answerGroups ? JSON.stringify(S.answerGroups) : '',
+    S.duel ? `${(S.duel.names || []).join('/')}:${S.duel.n}/${S.duel.total}` : '',
+    (S.roundJokers || []).map(j => `${j.type}:${j.by}:${j.target || ''}`).join(','),
+    (S.jokerNews || []).map(j => `${j.name}:${j.type}`).join(','),
+    S.jokersOn ? `${jokerPick || ''}:${jokerBusy ? 1 : 0}:${(S.jokerQueue || []).map(j => `${j.type}:${j.by}`).join(',')}${jokerPick ? `:${(S.players || []).map(p => p.name).join(',')}` : ''}` : '',
+  ].join('~');
   const phoneBaseSig = [
     S.mode, S.idx, S.phase, S.paused, S.displayMode, S.teamMode, S.isFinalRound,
     isDrawer ? 1 : 0,
@@ -1113,6 +1243,7 @@ function renderView() {
     S.rule || '',
     S.phase === 'end' ? S.photoCount : '',
     playersSig,
+    interSig,
   ].join('|');
   const phoneSig = `${phoneBaseSig}|${guessMask}`;
   if (phoneSig === lastPhoneSig) return;
@@ -1129,15 +1260,15 @@ function renderView() {
   lastPhoneSig = phoneSig;
   if (isDrawer) {
     document.getElementById('padWord').textContent = `🎨 Male: ${P.word}`;
-    app.innerHTML = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b></div>${renderMissionBanner()}`;
+    app.innerHTML = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>${roundLabel()} &nbsp; <b id="psec"></b></div>${renderMissionBanner()}${renderRoundBanners()}`;
     return;
   }
 
   const me = S.players.find(p => p.name === name);
-  const top = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>Runde ${S.idx + 1}/${S.total} &nbsp; <b id="psec"></b>${me ? pStreakTag(me) : ''}</div>` +
+  const top = `<div class="bar"><div id="pbar" style="width:100%"></div></div><div>${roundLabel()} &nbsp; <b id="psec"></b>${me ? pStreakTag(me) : ''}</div>` +
     (S.isFinalRound ? `<div style="background:#e21b3c;color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px;display:inline-block;margin:4px 0">🔥 FINALRUNDE · 2× PUNKTE</div>` : '') +
     (S.rule && S.phase !== 'card' ? `<div style="background:rgba(255,211,61,0.14);border:1px solid #ffd33d;color:#ffd33d;font-size:13px;font-weight:700;padding:6px 10px;border-radius:10px;margin:6px 0">📜 Regel: ${esc(S.rule)}</div>` : '') +
-    renderMissionBanner();
+    renderMissionBanner() + renderRoundBanners();
 
   if (S.phase !== 'spin') {
     pActiveSpinId = -1;
@@ -1146,13 +1277,18 @@ function renderView() {
   if (S.phase === 'spin' && S.spin) {
     padWrap.style.display = 'none';
     viewWrap.style.display = 'none';
-    if (pActiveSpinId === S.spin.id && document.getElementById('phoneWheelCanvas')) return;
+    if (pActiveSpinId === S.spin.id && document.getElementById('phoneWheelCanvas')) {
+      const ja = document.getElementById('jokerArea');
+      if (ja) ja.innerHTML = renderJokerArea();
+      return;
+    }
     pActiveSpinId = S.spin.id;
     app.innerHTML = `
       ${S.spin.subtitle ? `<div style="font-size:13px;opacity:.8;margin-top:6px">${esc(S.spin.subtitle)}</div>` : ''}
       <div class="qtxt" style="font-size:22px;color:#ffd33d;margin:6px 0 10px">${esc(S.spin.title || '🎡 Drehrad')}</div>
       <div style="display:flex;justify-content:center"><canvas id="phoneWheelCanvas" width="380" height="380" style="width:min(78vw,320px);height:min(78vw,320px)"></canvas></div>
-      <div id="phoneWheelWinner" style="min-height:50px;margin-top:12px"></div>`;
+      <div id="phoneWheelWinner" style="min-height:50px;margin-top:12px"></div>
+      <div id="jokerArea">${renderJokerArea()}</div>`;
     startPhoneWheelAnim(S.spin);
     return;
   }
@@ -1222,6 +1358,7 @@ function renderView() {
         ${meTarget ? '<div style="display:inline-block;background:#ffd33d;color:#1b1340;font-weight:900;border-radius:999px;padding:4px 12px;margin-top:8px">👉 Du bist dran!</div>' : ''}
         <div style="font-size:18px;font-weight:700;margin-top:10px;line-height:1.3">${esc(c.text)}</div>
       </div>${c.photo ? `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">${pgPhotoButtons('pickPhotos(true)', 'pickPhotos(false)')}</div>` : ''}${c.photoBonus ? `<div class="msg" style="margin-top:8px;font-size:16px">${c.photoBonus.got.includes(name) ? `✅ +${c.photoBonus.pts} Punkte fürs Foto` : `📸 Foto hochladen = +${c.photoBonus.pts} Punkte`}</div>` : ''}${body}`;
+    app.insertAdjacentHTML('beforeend', `<div id="jokerArea">${renderJokerArea()}</div>`);
     if (meTarget && lastVibKey !== `card:${S.idx}`) { lastVibKey = `card:${S.idx}`; pgVibrate([40, 60, 40]); }
     return;
   }
@@ -1318,6 +1455,16 @@ function renderView() {
   }
 
   if (S.phase === 'question') {
+    // Finale-Duell: Zuschauer feuern nur an
+    if (S.duel && !(S.duel.names || []).includes(name)) {
+      app.innerHTML = `${top}<div class="msg">🍿 Finale-Duell: ${(S.duel.names || []).map(esc).join(' gegen ')} – anfeuern!</div>${S.noTvMode && S.q && S.q.q ? `<div class="qtxt">${esc(S.q.q)}</div>` : ''}${renderEmojiBar()}`;
+      return;
+    }
+    // Aufsteh-Runde: kein Tippen, nur aufstehen
+    if (S.mode === 'neverhavei' && S.q && S.q.standup) {
+      app.innerHTML = `${top}<div class="standupBox">🧍 Steh auf, wenn du das schon mal gemacht hast!</div><div class="wordBox" style="font-size:24px">${esc(S.q.q)}</div>${renderEmojiBar()}`;
+      return;
+    }
     if (S.mode === 'quiz' || S.mode === 'imagequiz') {
       if (S.noTvMode && S.q) {
         const iqImg = S.q.img ? `<div style="text-align:center;margin:8px 0 10px"><img src="${esc(S.q.img)}" style="max-height:24vh;max-width:84vw;border-radius:12px;object-fit:contain;${['logos', 'cars', 'countries'].includes(S.q.theme) ? 'background:#fff;padding:12px;width:140px;height:140px;' : ''}"></div>` : '';
@@ -1330,6 +1477,12 @@ function renderView() {
       app.innerHTML = `${top}<div class="qtxt">${esc(S.q.q)}</div><div class="votes">${S.players.map((p, i) => `<button class="${myAnswer === p.name ? 'picked' : ''}" ${myAnswer !== null ? 'disabled' : ''} onclick="vote(${i})"><span style="font-size:24px;vertical-align:middle;margin-right:8px">${esc(p.avatar || '😎')}</span>${esc(p.name)}${myAnswer === p.name ? ' ✓' : ''}</button>`).join('')}</div>`;
     } else if (S.mode === 'wouldyourather') {
       app.innerHTML = `${top}<div class="wyr">
+        <button class="c0" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(0)">${esc(S.q.a)}${myAnswer === 0 ? ' ✓' : ''}</button>
+        <button class="c1" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(1)">${esc(S.q.b)}${myAnswer === 1 ? ' ✓' : ''}</button>
+      </div>`;
+    } else if (S.mode === 'hotseat' && S.q) {
+      const iHot = S.q.hot === name;
+      app.innerHTML = `${top}<div class="qtxt">${iHot ? '🔥 Du sitzt auf dem heißen Stuhl! Was würdest DU lieber?' : `Was würde ${esc(S.q.hot)} lieber?`}</div><div class="wyr">
         <button class="c0" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(0)">${esc(S.q.a)}${myAnswer === 0 ? ' ✓' : ''}</button>
         <button class="c1" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(1)">${esc(S.q.b)}${myAnswer === 1 ? ' ✓' : ''}</button>
       </div>`;
@@ -1426,6 +1579,10 @@ function renderView() {
       </div>`;
       app.innerHTML = `${top}${renderAudioControls(false)}${vinylHtml}<div class="qtxt">${esc(S.q.q)}</div><div class="${cls}">${S.q.a.map((a, i) => `<button class="c${i}" style="font-size:18px${minH}" ${myAnswer !== null ? 'disabled' : ''} onclick="ans(${i})">${esc(a)}${myAnswer === i ? ' ✓' : ''}</button>`).join('')}</div>${myAnswer !== null ? renderEmojiBar() : ''}`;
     }
+    // Gesperrt (Diskussion, Kapitän/Partner, Zeitdieb): Frage bleibt sichtbar, Eingaben aus
+    if (phoneAnswerLock()) {
+      app.querySelectorAll(':scope > .grid button, :scope > .wyr button, :scope > .votes button, :scope > button.go, :scope > input, :scope > button[onclick^="pickSort"]').forEach(el => { el.disabled = true; });
+    }
     if (S.mode !== 'songquiz' && myAnswer !== null) {
       app.insertAdjacentHTML('beforeend', renderEmojiBar());
     }
@@ -1436,8 +1593,13 @@ function renderView() {
   const r = S.result || {};
   const mustDrink = (r.drinkers || r.winners || r.yes || []).includes(name);
   let msg = '';
-  if (S.mode === 'quiz' || S.mode === 'imagequiz' || S.mode === 'songquiz') {
-    msg = myAnswer === null ? '⏰ Zu spät!' : myAnswer === r.correct ? '✅ Richtig!' : '❌ Falsch';
+  if (S.duel && !(S.duel.names || []).includes(name)) {
+    msg = `🍿 Finale-Duell: ${(S.duel.names || []).map(esc).join(' gegen ')}`;
+  } else if (S.mode === 'quiz' || S.mode === 'imagequiz' || S.mode === 'songquiz') {
+    // Kapitän/Partner-Runde oder Abschreiben-Joker: zählt die Antwort, die mir der Server zugerechnet hat
+    const pIdx = (r.pickers || []).findIndex(l => (l || []).some(x => x && x.name === name));
+    const eff = pIdx >= 0 ? pIdx : myAnswer;
+    msg = eff === null ? '⏰ Zu spät!' : eff === r.correct ? '✅ Richtig!' : '❌ Falsch';
   } else if (S.mode === 'reaction') {
     const e = (r.entries || []).find(x => x.name === name);
     msg = !e || e.ms === null ? '⏰ Zu spät!' : e.ms === -1 ? '❌ Frühstart!' : `⚡ ${e.ms} ms`;
@@ -1466,12 +1628,22 @@ function renderView() {
       : (myAnswer === r.lieIdx ? '✅ Lüge entlarvt!' : '❌ Reingefallen!');
   } else if (S.mode === 'wordassoc') {
     msg = myAnswer ? `⚡ „${esc(myAnswer)}“` : '⏰ Zu langsam!';
+  } else if (S.mode === 'hotseat') {
+    const iHot = r.hot === name, hits = (r.correct || []).length, mult = S.isFinalRound ? 2 : 1;
+    msg = r.pick !== 0 && r.pick !== 1
+      ? (iHot ? '🤷 Du hast nicht gewählt – keine Punkte' : `🤷 ${esc(r.hot || '')} hat nicht gewählt – keine Punkte`)
+      : iHot ? (hits ? `🔥 ${hits} ${hits === 1 ? 'hat' : 'haben'} dich durchschaut! (+${10 * hits * mult})` : '🔥 Niemand hat dich durchschaut!')
+      : (r.correct || []).includes(name) ? `✅ Richtig getippt! (+${50 * mult})`
+      : myAnswer === null ? '⏰ Zu spät!' : `❌ Falsch getippt${S.alcoholFree ? '' : ' – 1 Schluck!'}`;
   } else if (S.mode === 'neverhavei') {
-    msg = myAnswer === true ? '🙌 Hab ich schon' : myAnswer === false ? '😇 Noch nie' : '⏰ Keine Antwort!';
+    msg = r.standup ? `🧍 Alle, die stehen: ${S.alcoholFree ? '5 Kniebeugen!' : '1 Schluck!'}`
+      : myAnswer === true ? '🙌 Hab ich schon' : myAnswer === false ? '😇 Noch nie' : '⏰ Keine Antwort!';
   } else {
-    msg = myAnswer !== null ? '✅ Antwort gezählt!' : '⏰ Zu spät!';
+    const g = myGroup();
+    msg = myAnswer !== null ? '✅ Antwort gezählt!'
+      : g && g.lead !== name ? `✅ ${esc(g.lead)} hat für ${g.kind === 'captain' ? 'dein Team' : 'euch'} geantwortet` : '⏰ Zu spät!';
   }
-  const isGood = msg.startsWith('✅') || msg.startsWith('⚡') || msg.startsWith('🎭');
+  const isGood = msg.startsWith('✅') || msg.startsWith('⚡') || msg.startsWith('🎭') || msg.startsWith('🔥');
   const isBad = msg.startsWith('❌') || msg.startsWith('⏰') || msg.startsWith('😈');
   const details = renderPhoneResult();
   const gainTag = me && me.lastGain > 0 ? ` <span class="gainBadge" style="font-size:14px">+${me.lastGain}</span>` : '';
@@ -1482,7 +1654,8 @@ function renderView() {
     else if (isBad) pgVibrate(90);
   }
   const nextBannerHtml = S.mode === 'songquiz' ? '<div style="text-align:center"><div class="nextBanner" style="font-size:15px;padding:10px 16px;margin:10px auto">⏭️ Es geht weiter…</div></div>' : '';
-  app.innerHTML = `${top}<div class="msg ${isGood ? 'good' : isBad ? 'bad' : ''}" style="margin-top:2vh">${msg}<br><small>${me ? me.score : 0} Pkt${gainTag}</small></div>${nextBannerHtml}${renderEmojiBar()}${details}`;
+  const jokerNewsHtml = (S.jokerNews || []).filter(j => j.name === name).map(j => `<div class="iBan gold" style="margin-top:10px;font-size:17px">🃏 Neuer Joker: ${esc(jokerLabel(j.type))}!</div>`).join('');
+  app.innerHTML = `${top}<div class="msg ${isGood ? 'good' : isBad ? 'bad' : ''}" style="margin-top:2vh">${msg}<br><small>${me ? me.score : 0} Pkt${gainTag}</small></div>${jokerNewsHtml}<div id="jokerArea">${renderJokerArea()}</div>${nextBannerHtml}${renderEmojiBar()}${details}`;
 }
 
 function renderLb(title = '🏆 Rangliste') {
@@ -1530,9 +1703,17 @@ function renderPhoneResult() {
       <div class="resAns c0 ${r.loser === 'A' ? 'dim' : ''}"><span>${esc(S.q.a)}</span><span>${aL}</span></div>
       <div class="resAns c1 ${r.loser === 'B' ? 'dim' : ''}"><span>${esc(S.q.b)}</span><span>${bL}</span></div>
     </div>`;
+  } else if (m === 'hotseat' && S.q) {
+    const pick = r.pick === 0 || r.pick === 1 ? r.pick : null;
+    const chip = x => `<span class="resChip">${esc(x.avatar || '😎')} ${esc(x.name)}</span>`;
+    const row = (i, txt, list) => `<div class="resAns c${i} ${pick === i ? 'win' : pick === null ? '' : 'dim'}"><span>${pick === i ? '🔥 ' : ''}${esc(txt)}</span><span>${list.length}</span></div>${list.length ? `<div class="resChips" style="margin:0 0 8px">${list.map(chip).join('')}</div>` : ''}`;
+    const title = pick === null ? `🔥 ${esc(r.hot || '')} hat nicht gewählt` : `🔥 ${esc(r.hot || '')} würde lieber: ${esc(pick === 0 ? S.q.a : S.q.b)}`;
+    body = `<div class="resBox"><div class="resTitle">${title}</div>${row(0, S.q.a, r.aNames || [])}${row(1, S.q.b, r.bNames || [])}</div>${renderLb()}`;
   } else if (m === 'estimate') {
     const rows = (r.entries || []).map((e, i) => `<div class="resRow"><span>${i === 0 && e.val !== null ? '🥇 ' : ''}${esc(e.name)}</span><b>${e.val !== null ? `${e.val} ${esc(r.unit || '')}` : '—'}</b></div>`).join('');
     body = `<div class="resBox"><div class="resTitle">${r.best ? `🥇 Am nächsten: ${esc(r.best)}` : 'Schätzungen'}</div>${rows}</div>${renderLb()}`;
+  } else if (m === 'neverhavei' && r.standup) {
+    body = `<div class="resBox" style="text-align:center"><div class="resTitle">🧍 Aufsteh-Runde</div><div style="font-size:18px;font-weight:700">${esc((S.q && S.q.q) || '')}</div></div>`;
   } else if (m === 'neverhavei') {
     const yes = (r.yes || []).map(n => `<span class="resChip">${esc(n)}</span>`).join('') || '<span class="resChip">—</span>';
     const no = (r.no || []).map(n => `<span class="resChip">${esc(n)}</span>`).join('') || '<span class="resChip">—</span>';
@@ -1580,6 +1761,11 @@ function renderPhoneResult() {
 function updatePhoneTimerUI() {
   const b = document.getElementById('pbar'), s = document.getElementById('psec');
   if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return;
+  const nowT = performance.now();
+  const ds = document.getElementById('discussSec');
+  if (ds) pgSetText(ds, `${Math.max(0, Math.ceil((discussEnd - nowT) / 1000))}s`);
+  const ts = document.getElementById('thiefSec');
+  if (ts) pgSetText(ts, `${Math.max(0, Math.ceil((thiefCutAt - nowT) / 1000))}s`);
   if (!clientDeadline) {
     pgSetBar(b, 1);
     if (s) {
@@ -1593,7 +1779,7 @@ function updatePhoneTimerUI() {
   pgSetBar(b, left / dur);
   const sLeft = Math.ceil(left / 1000);
   // Letzte 3 Sekunden: kurzer Haptik-Tick, solange noch nicht geantwortet (Android; iOS ignoriert vibrate)
-  if (S.phase === 'question' && myAnswer === null && joined && sLeft >= 1 && sLeft <= 3 && sLeft !== phoneTickSec) {
+  if (S.phase === 'question' && myAnswer === null && joined && sLeft >= 1 && sLeft <= 3 && sLeft !== phoneTickSec && !phoneAnswerLock()) {
     phoneTickSec = sLeft;
     pgVibrate(15);
   }

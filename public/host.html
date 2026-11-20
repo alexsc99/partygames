@@ -178,6 +178,30 @@
   .answers, .answers.many, .cols { grid-template-columns: 1fr; }
   #app.game:not(.res) > .answers, #app.game:not(.res) > .answers.compact { max-height: none; }
  }
+ /* Interaktionen: Diskussion, Kapitän/Partner, Finale-Duell, Aufsteh-Runde, Joker */
+ .discussBanner { background: linear-gradient(135deg, #7c4dff, #4b3a9e); border: 3px solid #ffd33d; border-radius: 18px; padding: clamp(10px, 2vh, 26px) 2vw; text-align: center; font-size: clamp(20px, 4.6vmin, 58px); font-weight: 900; margin: 0 0 2vh; animation: popIn .35s ease-out both; }
+ .discussBanner b { color: #ffd33d; font-variant-numeric: tabular-nums; }
+ .discussBanner small { display: block; font-size: .45em; font-weight: 600; opacity: .85; margin-top: .6vh; }
+ .grpBanner { margin-top: .8vh; background: rgba(255,211,61,.14); border: 2px solid #ffd33d; border-radius: 12px; padding: .6vh 1.2vw; font-size: clamp(14px, 2.4vmin, 30px); font-weight: 800; color: #ffd33d; animation: fadeSlideUp .3s ease-out both; }
+ .grpBanner span { color: #fff; white-space: nowrap; }
+ .grpBanner small { font-weight: 600; opacity: .8; color: #fff; }
+ .grpBanner.duel { background: rgba(226,27,60,.2); border-color: #e21b3c; color: #fff; text-align: center; }
+ .duelTag { background: #e21b3c; padding: .3vh 1vw; border-radius: 8px; font-weight: 900; }
+ .jkChips { display: flex; flex-wrap: wrap; gap: .6vh .6vw; margin-top: .8vh; }
+ .jkChips span { background: #2d2266; border: 2px solid #b388ff; border-radius: 99px; padding: .3vh 1vw; font-size: clamp(13px, 2.1vmin, 26px); font-weight: 800; animation: popIn .3s ease-out both; }
+ .jkChips span.over { border-color: #e21b3c; opacity: .8; }
+ .jkBadge { margin-left: .4em; font-size: .8em; opacity: .9; white-space: nowrap; }
+ .jkNews { display: flex; flex-wrap: wrap; justify-content: center; gap: 1vh 1.2vw; margin-top: 2vh; }
+ .jkNews span { background: rgba(179,136,255,.18); border: 2px solid #b388ff; border-radius: 14px; padding: .8vh 1.4vw; font-size: clamp(15px, 2.8vmin, 34px); font-weight: 700; animation: popIn .35s ease-out both; }
+ .jkNews b { color: #ffd33d; }
+ .standupQ { text-align: center; font-size: clamp(26px, 7vmin, 92px); font-weight: 900; color: #ffd33d; margin: 2vh 0 1vh; text-shadow: 0 4px 18px rgba(0,0,0,.45); animation: popIn .4s cubic-bezier(.2,1.4,.4,1) both; }
+ .hotWho { text-align: center; }
+ .hotSub { text-align: center; margin-bottom: 1.5vh; }
+ .photoPop.jokerPop { z-index: 8600; text-align: center; padding: 0 4vw; }
+ .photoPop.jokerPop .jpIcon { margin: 0; font-size: clamp(60px, 16vmin, 200px); line-height: 1.1; color: #fff; animation: popIn .45s cubic-bezier(.2,1.4,.4,1) both; }
+ .photoPop.jokerPop .jpTxt { font-size: clamp(24px, 5.6vmin, 72px); color: #fff; max-width: 90vw; line-height: 1.25; }
+ .photoPop.jokerPop .jpTxt b { color: #ffd33d; }
+ .photoPop.jokerPop .jpSub { font-size: clamp(16px, 3.2vmin, 40px); font-weight: 700; }
 </style></head>
 <body>
 <div id="app"></div>
@@ -244,7 +268,7 @@ const TITLES = {
   icebreaker: '🫶 Kennenlernen', teams: '🏆 Team-Wahl',
   scale: '📊 Skala 1–10', truthlie: '🎭 2 Wahrheiten, 1 Lüge',
   wordassoc: '⚡ Wort-Assoziation', songquiz: '🎵 Erkenne den Song',
-  imagequiz: '🖼️ Bild-Quiz', mix: '🎲 Party-Mix',
+  imagequiz: '🖼️ Bild-Quiz', hotseat: '🔥 Heißer Stuhl', mix: '🎲 Party-Mix',
 };
 // Kurzregeln für die Lobby („So geht's“)
 const RULES = {
@@ -266,6 +290,7 @@ const RULES = {
   wordassoc: 'Ein Wort erscheint auf dem TV – tippe sofort das erste Wort ein, das dir dazu einfällt.',
   songquiz: 'Ein Song läuft über den TV – erkenne ihn und tippe am Handy die richtige Antwort. Schnell sein lohnt sich!',
   imagequiz: 'Ein Bild erscheint auf dem TV – tippe am Handy die richtige Antwort. Je schneller, desto mehr Punkte.',
+  hotseat: 'Eine Person sitzt auf dem heißen Stuhl und wählt geheim zwischen zwei Optionen. Alle anderen tippen, was sie wohl lieber würde – richtig geraten gibt Punkte.',
   mix: 'Jede Runde wird ein anderes Spiel ausgelost – vor jeder Runde siehst du kurz, was als Nächstes kommt.',
 };
 const MODES = Object.keys(TITLES);
@@ -291,6 +316,7 @@ if (ROOM_CODE) {
 }
 let S = null, url = '', lastPreloadImg = '', feed = [], muted = false, lastSfxKey = '', lastTickSec = -1, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000;
 let lastCardOutcome = '';
+let discussUntil = 0, jokerCutAt = {}; // lokale Countdowns (Diskussion, Zeitdieb) – aus den relativen Server-Zeiten
 const songAudio = document.getElementById('songAudio');
 songAudio.loop = true;
 let audioBlocked = false, audioError = false, audioElUnlocked = false;
@@ -415,6 +441,7 @@ function sfx(kind) {
     playNoise(.9, .12, len, 'highpass', 3500);
   }
   else if (kind === 'end') { playTone(523, .1, 'triangle', .08); playTone(659, .1, 'triangle', .08, .09); playTone(784, .18, 'triangle', .08, .18); }
+  else if (kind === 'joker') { playTone(392, .08, 'square', .05); playTone(523, .08, 'square', .05, .08); playTone(784, .22, 'triangle', .1, .16); }
 }
 function playNoise(dur, vol, delay, filterType, freq) {
   if (muted) return;
@@ -500,6 +527,31 @@ socket.on('photo:new', p => {
   photoPopTimer = setTimeout(() => el.classList.remove('on'), busy ? 4000 : 6000);
   if (endSlideTimer) endSlideList.push({ ...p, cap: p.name ? `📸 ${p.name}` : '' });
 });
+// ---- Joker: Einsatz groß auf dem TV einblenden ----
+let jokerPopTimer = 0;
+socket.on('joker:played', j => {
+  if (!j || !j.by) return;
+  let el = document.getElementById('jokerPop');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'jokerPop';
+    el.className = 'photoPop jokerPop';
+    document.body.appendChild(el);
+  }
+  const who = n => `${esc(hostAvatarOf(n))} <b>${esc(n)}</b>`;
+  const label = esc(j.label || jokerLabel(j.type));
+  const txt = j.target ? `${who(j.by)} setzt ${label} gegen ${who(j.target)} ein!` : `${who(j.by)} setzt ${label} ein!`;
+  const sub = j.type === 'steal' ? `💰 ${esc(j.detail || 'Punkte')} geklaut!`
+    : j.type === 'double' ? '✖️2 Die eigenen Punkte zählen nächste Runde doppelt'
+    : j.type === 'copy' ? `📋 Schreibt in der nächsten Antwort-Runde bei ${esc(j.target)} ab`
+    : j.type === 'timethief' ? `⏳ ${esc(j.target)} hat nächste Runde nur die halbe Zeit`
+    : esc(j.detail || '');
+  el.innerHTML = `<div class="jpIcon">🃏</div><div class="jpTxt">${txt}</div>${sub ? `<div class="jpSub">${sub}</div>` : ''}`;
+  el.classList.add('on');
+  sfx('joker');
+  clearTimeout(jokerPopTimer);
+  jokerPopTimer = setTimeout(() => el.classList.remove('on'), 4500);
+});
 // Diashow läuft weiter, auch wenn neue Fotos kommen (photo:new hängt sie an) – kein Neustart, keine doppelten Timer.
 // Abend-Rückblick: zuerst die Siegerfotos der Foto-Challenges (mit Aufgabe), dann alle anderen.
 let endSlideTimer = 0, endSlideGen = 0, endSlideList = [], endSlideIdx = 0;
@@ -543,6 +595,11 @@ socket.on('state', s => {
   const leftMs = typeof s.leftMs === 'number' ? s.leftMs : (s.deadline ? Math.max(0, s.deadline - Date.now()) : 0);
   clientDeadline = leftMs > 0 ? performance.now() + leftMs : 0;
   clientTotalMs = s.totalMs > 0 ? s.totalMs : (s.phase === 'result' ? 5000 : (s.time || 15) * 1000);
+  discussUntil = s.discussLeftMs > 0 ? performance.now() + s.discussLeftMs : 0;
+  jokerCutAt = {};
+  for (const j of s.roundJokers || []) {
+    if (j.type === 'timethief' && typeof j.cutLeftMs === 'number') jokerCutAt[j.target] = performance.now() + j.cutLeftMs;
+  }
   const sk = `${s.mode}:${s.idx}:${s.phase}`;
   if (sk !== lastSfxKey) {
     lastSfxKey = sk;
@@ -632,7 +689,7 @@ const lb = () => {
   return `<div class="lb">${S.players.map((p, i) => {
     const gainHtml = isRes && p.lastGain > 0 ? `<span class="gainBadge">+${p.lastGain}</span>` : '';
     const from = isRes && typeof p.prevScore === 'number' ? p.prevScore : p.score;
-    return `<div style="animation-delay:${i * 55}ms"><span>${i + 1}. ${p.avatar ? esc(p.avatar) + ' ' : ''}${esc(p.name)}${streakTag(p)}</span><span>${gainHtml}<b class="scoreNum" data-from="${from}" data-to="${p.score}">${from} Pkt</b></span></div>`;
+    return `<div style="animation-delay:${i * 55}ms"><span>${i + 1}. ${p.avatar ? esc(p.avatar) + ' ' : ''}${esc(p.name)}${streakTag(p)}${p.jokers > 0 ? `<span class="jkBadge">🃏×${p.jokers}</span>` : ''}</span><span>${gainHtml}<b class="scoreNum" data-from="${from}" data-to="${p.score}">${from} Pkt</b></span></div>`;
   }).join('')}</div>`;
 };
 
@@ -665,7 +722,7 @@ function animateScores() {
 
 function renderLiveAvBar(justSet) {
   if (!S || !S.players || !S.players.length) return '';
-  return S.players.map(p => {
+  return answererPlayers().map(p => {
     const isDone = !!p.answered;
     const isJust = justSet && justSet.has(p.name);
     return `<span class="liveAvPill ${isDone ? 'done' : ''} ${isJust ? 'justDone' : ''}">${p.avatar ? esc(p.avatar) : '😎'} ${esc(p.name)}${isDone ? ' ✓' : ''}${streakTag(p)}</span>`;
@@ -676,6 +733,51 @@ const infoBanner = (title, sub = '', good = true) => title
   ? `<div class="drink ${good ? 'good' : ''}">${title}${sub ? `<small>${sub}</small>` : ''}</div>`
   : '';
 const emptyRes = (title, sub = '') => `<div class="emptyRes">${title}${sub ? `<small>${sub}</small>` : ''}</div>`;
+
+// Wer antwortet selbst? Finale-Duell: nur die zwei; Kapitän/Partner: nur der Antwortende je Gruppe
+function answererPlayers() {
+  const ps = S.players || [];
+  if (S.duel) return ps.filter(p => S.duel.names.includes(p.name));
+  const groups = S.answerGroups || [];
+  if (!groups.length) return ps;
+  return ps.filter(p => {
+    const g = groups.find(x => x.members.includes(p.name));
+    return !g || g.lead === p.name;
+  });
+}
+const jokerLabel = t => ((S && S.jokerLabels) || {})[t] || t;
+const avWho = n => `${esc(hostAvatarOf(n))} ${esc(n)}`;
+// Banner für Kapitäns- bzw. Partner-Runden (Frage & Auflösung)
+function groupBannerHtml() {
+  const gs = S.answerGroups || [];
+  if (!gs.length) return '';
+  if (gs[0].kind === 'captain') {
+    const teamIcon = id => T_ICON[id] || ((S.teams || []).find(t => t.id === id) || {}).icon || '';
+    return `<div class="grpBanner">👑 Kapitäne: ${gs.map(g => `<span>${esc(teamIcon(g.team))} ${avWho(g.lead)}</span>`).join(' · ')} <small>– nur sie antworten fürs ganze Team</small></div>`;
+  }
+  return `<div class="grpBanner">👫 PARTNER-RUNDE: ${gs.map(g => `<span>${g.members.map(n => `${n === g.lead ? '📱' : ''}${avWho(n)}`).join(' + ')}</span>`).join(' · ')} <small>– besprecht euch, 📱 tippt für alle</small></div>`;
+}
+// Finale-Duell: nur die zwei antworten
+function duelBannerHtml() {
+  if (!S.duel) return '';
+  const [a, b] = S.duel.names;
+  return `<div class="grpBanner duel">⚔️ Nur ${avWho(a)} und ${avWho(b)} antworten – alle anderen: anfeuern! 🍿</div>`;
+}
+// Joker, die in der laufenden Runde wirken (nur während der Frage)
+function jokerChipsHtml() {
+  if (S.phase !== 'question' || !(S.roundJokers || []).length) return '';
+  const chips = S.roundJokers.map(j => {
+    if (j.type === 'double') return `<span>✖️2 ${esc(j.by)}</span>`;
+    if (j.type === 'copy') return `<span>📋 ${esc(j.by)} schreibt bei ${esc(j.target)} ab</span>`;
+    if (j.type === 'timethief') return `<span class="jkCut" data-target="${esc(j.target)}">⏳ Zeitdieb → ${esc(j.target)} <b class="jkCutLeft"></b></span>`;
+    return '';
+  }).join('');
+  return chips ? `<div class="jkChips">${chips}</div>` : '';
+}
+// Diskussion vor der Abstimmung („Wer würde?“ / „Entweder-Oder“); Countdown läuft lokal in updateInteractionCountdowns()
+const discussHtml = () => S.phase === 'question' && S.discussLeftMs > 0
+  ? `<div id="discussBanner" class="discussBanner">💬 Diskutiert! Abstimmung in <b id="discussSec">${Math.ceil(S.discussLeftMs / 1000)}</b>s<small>Erst reden – die Handys sind noch gesperrt</small></div>`
+  : '';
 
 // Gleiche Formen wie auf den Handys (TV-Modus), damit niemand nur über die Farbe zuordnen muss
 const ANS_SHAPES = ['▲', '◆', '●', '■'];
@@ -876,7 +978,7 @@ function renderView() {
 
   if (S.phase === 'card' && S.card) {
     const c = S.card;
-    const cardSig = `card:${S.idx}:${JSON.stringify(c)}:${c.resolved ? S.players.map(p => p.score).join(',') : ''}`;
+    const cardSig = `card:${S.idx}:${JSON.stringify(c)}:${c.resolved ? S.players.map(p => `${p.score}:${p.jokers || 0}`).join(',') : ''}`;
     if (cardSig === lastRenderSig) return;
     lastRenderSig = cardSig;
     const avName = n => esc((S.players.find(p => p.name === n) || {}).avatar || '😎') + ' ' + esc(n);
@@ -953,21 +1055,38 @@ function renderView() {
   }
 
   const res = S.phase === 'result';
-  const done = S.players.filter(p => p.answered).length;
-  const finalTag = S.isFinalRound ? ` &nbsp;|&nbsp; <span style="background:#e21b3c;padding:.3vh 1vw;border-radius:8px;font-weight:800">🔥 FINALRUNDE · 2× PUNKTE</span>` : '';
-  const liveBarHtml = !res && S.phase !== 'discuss' && S.phase !== 'write'
+  // Fortschritt nur über die, die selbst antworten (Duell: die zwei; Gruppen: Kapitän/Partner-lead + Spieler ohne Gruppe)
+  const answerers = answererPlayers();
+  const done = answerers.filter(p => p.answered).length;
+  const standup = S.mode === 'neverhavei' && !!(S.q && S.q.standup);
+  const doneTxt = standup ? '🧍 Aufstehen statt tippen' : `${done}/${answerers.length} fertig`;
+  const finalTag = S.isFinalRound && !S.duel ? ` &nbsp;|&nbsp; <span style="background:#e21b3c;padding:.3vh 1vw;border-radius:8px;font-weight:800">🔥 FINALRUNDE · 2× PUNKTE</span>` : '';
+  const roundTxt = S.duel
+    ? `<span class="duelTag">⚔️ FINALE-DUELL · Frage ${S.duel.n}/${S.duel.total} · ${S.duel.names.map(avWho).join(' vs ')} · 2× Punkte</span>`
+    : `Runde ${S.idx + 1} / ${S.total}`;
+  const liveBarHtml = !res && !standup && S.phase !== 'discuss' && S.phase !== 'write'
     ? `<div id="liveAvBar" class="liveAvBar">${renderLiveAvBar(justAnswered)}</div>`
     : '';
   const header = `<div class="bar"><div id="bar" style="width:100%"></div></div>
-    <div class="hdrInfo">${title} &nbsp;|&nbsp; Runde ${S.idx + 1} / ${S.total} &nbsp;|&nbsp; <span id="doneCnt">${done}/${S.players.length} fertig</span>${finalTag}<span id="sec" style="float:right;font-weight:700"></span></div>${S.rule ? `<div class="ruleTag">📜 Regel: ${esc(S.rule)}</div>` : ''}${liveBarHtml}<div class="hdrEnd"></div>`;
+    <div class="hdrInfo">${title} &nbsp;|&nbsp; ${roundTxt} &nbsp;|&nbsp; <span id="doneCnt">${doneTxt}</span>${finalTag}<span id="sec" style="float:right;font-weight:700"></span></div>${S.rule ? `<div class="ruleTag">📜 Regel: ${esc(S.rule)}</div>` : ''}${duelBannerHtml()}${groupBannerHtml()}${jokerChipsHtml()}${liveBarHtml}<div class="hdrEnd"></div>`;
   // Kandidaten-Chips mit Avatar für Abstimmungen (Wer würde am ehesten / Imposter)
   const voteChips = () => `<div class="voteChips">${S.players.map((p, i) => `<span style="animation-delay:${i * 45}ms"><i>${esc(p.avatar || '😎')}</i>${esc(p.name)}</span>`).join('')}</div>`;
 
   // In-place update when only player answer status or skipVote changed
   const mr = S.missionReveal;
-  const sig = `${S.mode}:${S.idx}:${S.phase}:${S.paused}:${audioBlocked}:${audioError}:${(S.q && S.q.guessed ? S.q.guessed.join(',') : '')}:${(S.q && S.q.mask) ? S.q.mask : ''}:${mr ? `${mr.resolved}:${mr.success}` : ''}:${res ? (S.players || []).map(p => `${p.name}:${p.score}`).join(',') : ''}`;
+  // Interaktions-Felder (Diskussion, Gruppen, Duell, Joker, Aufsteh-Runde, Heißer Stuhl) erzwingen ein Neu-Rendern
+  const ixSig = [
+    S.discussLeftMs > 0 ? 'disc' : '',
+    JSON.stringify(S.answerGroups || null),
+    S.duel ? `${S.duel.n}/${S.duel.total}:${S.duel.names.join(',')}` : '',
+    (S.roundJokers || []).map(j => `${j.type}>${j.by}>${j.target || ''}`).join(','),
+    (S.jokerNews || []).map(j => `${j.name}>${j.type}`).join(','),
+    standup ? 'standup' : '',
+    (S.q && S.q.hot) || '',
+  ].join('|');
+  const sig = `${S.mode}:${S.idx}:${S.phase}:${S.paused}:${audioBlocked}:${audioError}:${(S.q && S.q.guessed ? S.q.guessed.join(',') : '')}:${(S.q && S.q.mask) ? S.q.mask : ''}:${mr ? `${mr.resolved}:${mr.success}` : ''}:${res ? (S.players || []).map(p => `${p.name}:${p.score}:${p.jokers || 0}`).join(',') : ''}:${ixSig}`;
   if (!S.paused && sig === lastRenderSig && document.getElementById('doneCnt')) {
-    document.getElementById('doneCnt').textContent = `${done}/${S.players.length} fertig`;
+    document.getElementById('doneCnt').textContent = doneTxt;
     if (!res) {
       const avEl = document.getElementById('liveAvBar');
       if (avEl) avEl.innerHTML = renderLiveAvBar(justAnswered);
@@ -1012,7 +1131,7 @@ function renderView() {
 
   if (S.mode === 'mostlikely') {
     if (!res) {
-      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>${voteChips()}`;
+      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>${discussHtml()}${voteChips()}`;
     } else {
       const r = S.result;
       const voted = r.votes.filter(v => v.count > 0);
@@ -1049,9 +1168,42 @@ function renderView() {
       count: res ? names.length : 0,
       pickers: res ? namesToPickers(names) : null,
     });
-    app.innerHTML = header + `<div class="q">Entweder … oder?</div>
+    app.innerHTML = header + `<div class="q">Entweder … oder?</div>${res ? '' : discussHtml()}
       <div class="answers">${side(0, S.q.a, res ? r.aNames : [], 'A', 'B')}${side(1, S.q.b, res ? r.bNames : [], 'B', 'A')}</div>${tugHtml}` +
       (res && !r.aNames.length && !r.bNames.length ? emptyRes('🤷 Keine Stimmen abgegeben', 'Diesmal hat sich niemand entschieden.') : '');
+    return;
+  }
+
+  if (S.mode === 'hotseat') {
+    // Heißer Stuhl: alle raten, was {hot} lieber würde; {hot} wählt geheim
+    const r = res ? S.result : null;
+    const hot = r ? r.hot : S.q.hot;
+    const pick = r ? r.pick : null;
+    const side = (i, label, list) => ansTile(i, label, {
+      res,
+      state: res && pick !== null ? (i === pick ? 'winner' : 'dim') : '',
+      prefix: res && i === pick ? '🔥 ' : '',
+      count: res ? list.length : 0,
+      pickers: res ? list : null,
+    });
+    const tiles = `<div class="answers">${side(0, S.q.a, r ? r.aNames : [])}${side(1, S.q.b, r ? r.bNames : [])}</div>`;
+    if (!res) {
+      app.innerHTML = header + `<div class="q hotWho">🔥 Heißer Stuhl: ${avWho(hot)}</div>` +
+        `<div class="big hotSub">Was würde ${esc(hot)} lieber? <small style="opacity:.75;font-weight:600">🤫 ${esc(hot)} wählt geheim – alle anderen raten!</small></div>${tiles}`;
+      return;
+    }
+    const mult = S.isFinalRound ? 2 : 1;
+    let banner;
+    if (pick === null) {
+      banner = emptyRes(`🤷 ${avWho(hot)} hat nicht geantwortet`, 'Keine Punkte diesmal.');
+    } else {
+      const subParts = [r.correct.length
+        ? `✅ Richtig: ${r.correct.map(esc).join(', ')} (+${50 * mult} Pkt) · ${esc(hot)} +${10 * mult} pro Treffer`
+        : '😅 Niemand lag richtig'];
+      if (r.drinkers.length) subParts.push(`${S.alcoholFree ? '🏋️' : '🍺'} Daneben: ${r.drinkers.map(esc).join(', ')} – ${S.alcoholFree ? '5 Kniebeugen' : '1 Schluck'}`);
+      banner = infoBanner(`🔥 ${avWho(hot)} würde lieber: „${esc(pick === 0 ? S.q.a : S.q.b)}“`, subParts.join('<br>'), r.correct.length > 0);
+    }
+    app.innerHTML = header + banner + `<div class="resSplit side"><div>${tiles}</div><div><h2>Rangliste</h2>${lb()}</div></div>`;
     return;
   }
 
@@ -1082,7 +1234,12 @@ function renderView() {
 
   if (S.mode === 'neverhavei') {
     if (!res) {
-      app.innerHTML = header + `<div class="q">${esc(S.q.q)}</div>`;
+      app.innerHTML = header + (S.q.standup
+        ? `<div class="standupQ">🧍 Wer das schon mal gemacht hat, steht auf!</div><div class="q" style="text-align:center">${esc(S.q.q)}</div>`
+        : `<div class="q">${esc(S.q.q)}</div>`);
+    } else if (S.result.standup) {
+      app.innerHTML = header + `<div class="q" style="text-align:center">${esc(S.q.q)}</div>` +
+        infoBanner(S.alcoholFree ? '🧍 Alle, die stehen, machen 5 Kniebeugen!' : '🧍 Alle, die stehen: 1 Schluck!', 'Danach wieder hinsetzen 😄', false);
     } else {
       const r = S.result;
       const nameChips = list => list.map(n => `<span>${esc(hostAvatarOf(n))} ${esc(n)}</span>`).join('') || '—';
@@ -1296,11 +1453,34 @@ function renderView() {
       <div style="font-size:2.8vh;font-weight:700">${status}</div>
     </div>`);
   }
+  // Joker verdient: in der Auflösung zeigen, wer einen neuen Joker bekommt
+  if (S.phase === 'result' && (S.jokerNews || []).length) {
+    app.insertAdjacentHTML('beforeend', `<div class="jkNews">${S.jokerNews.map((j, i) => `<span style="animation-delay:${400 + i * 150}ms">🃏 ${avWho(j.name)} bekommt einen Joker: <b>${esc(jokerLabel(j.type))}</b></span>`).join('')}</div>`);
+  }
+}
+
+// Diskussions-Countdown und Zeitdieb-Restzeit lokal weiterzählen (Server schickt nur relative Zeiten)
+function updateInteractionCountdowns() {
+  const now = performance.now();
+  const db = document.getElementById('discussBanner');
+  if (db) {
+    const left = discussUntil - now;
+    if (left <= 0) db.remove();
+    else pgSetText(document.getElementById('discussSec'), String(Math.ceil(left / 1000)));
+  }
+  document.querySelectorAll('.jkCut').forEach(el => {
+    const at = jokerCutAt[el.dataset.target];
+    if (at === undefined) return;
+    const left = at - now;
+    el.classList.toggle('over', left <= 0);
+    pgSetText(el.querySelector('.jkCutLeft'), left > 0 ? `· noch ${Math.ceil(left / 1000)}s` : '· ⛔ gesperrt');
+  });
 }
 
 function updateTimerUI() {
   const b = document.getElementById('bar'), sec = document.getElementById('sec');
   if (!S || S.phase === 'lobby' || S.phase === 'end' || S.phase === 'spin') return;
+  updateInteractionCountdowns();
   if (!clientDeadline) {
     pgSetBar(b, 1);
     const cardIdle = S.phase === 'card' && S.card && (S.card.resolved || ['info', 'rule'].includes(S.card.act));

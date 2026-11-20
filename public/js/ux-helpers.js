@@ -338,7 +338,7 @@
   };
 
   // ---- Trommelwirbel vor der Auflösung: kurzes Overlay, damit TV und Handys nicht sofort verraten, was richtig ist ----
-  const SUSPENSE_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'truthlie', 'imposter', 'mostlikely', 'wouldyourather'];
+  const SUSPENSE_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'truthlie', 'imposter', 'mostlikely', 'wouldyourather', 'hotseat'];
   window.PG_SUSPENSE_MS = 1250;
   let suspenseUntil = 0, suspenseDeferT = 0, lastConnectAt = 0;
   function hideSuspense() {

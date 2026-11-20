@@ -135,6 +135,7 @@ const GAMES = [
   ['wordassoc', '⚡ Wort-Assoziation'],
   ['songquiz', '🎵 Erkenne den Song'],
   ['imagequiz', '🖼️ Bild-Quiz'],
+  ['hotseat', '🔥 Heißer Stuhl'],
   ['mix', '🎲 Party-Mix'],
 ];
 const CATS = [
@@ -159,6 +160,7 @@ const MIX_OPTS = [
   ['sort', '🔢 Sortieren'],
   ['songquiz', '🎵 Song-Quiz'],
   ['imagequiz', '🖼️ Bild-Quiz'],
+  ['hotseat', '🔥 Heißer Stuhl'],
 ];
 const ROOM_CODE = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 async function createAndOpenAdmin() {
@@ -390,14 +392,17 @@ function renderBar(mainBtn, statusTxt) {
 }
 function render() {
   if (!S) return;
-  const done = S.players.filter(p => p.answered).length;
+  // Nur wer selbst antwortet zählt (Finale-Duell: die zwei; Kapitän/Partner: der Antwortende der Gruppe)
+  const answerers = S.players.filter(p => (S.duel ? S.duel.names.includes(p.name)
+    : !(S.answerGroups || []).some(g => g.members.includes(p.name) && g.lead !== p.name)));
+  const done = answerers.filter(p => p.answered).length;
   let mainBtn = '';
   if (S.phase === 'lobby') mainBtn = `<button class="go" onclick="socket.emit('host:start')">▶ Spiel starten</button>`;
   else if (S.phase === 'spin') mainBtn = `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Drehrad überspringen</button>`;
   else if (S.phase === 'discuss') mainBtn = `<button class="go" onclick="socket.emit('host:next')">🗳 Abstimmung starten</button>`;
   else if (S.phase === 'write') mainBtn = `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Runde überspringen</button>`;
   else if (S.phase === 'wait') mainBtn = `<button class="go" style="background:#555" disabled>⏳ Warte auf GRÜN…</button>`;
-  else if (S.phase === 'question' || S.phase === 'go') mainBtn = `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Auswertung zeigen (${done}/${S.players.length})</button>`;
+  else if (S.phase === 'question' || S.phase === 'go') mainBtn = `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Auswertung zeigen (${done}/${answerers.length})</button>`;
   else if (S.phase === 'result') mainBtn = `<button class="go" onclick="socket.emit('host:next')">▶ Nächste Runde</button>`;
   else if (S.phase === 'card') {
     const waiting = S.card && !S.card.resolved && !['info', 'rule'].includes(S.card.act);
@@ -416,6 +421,7 @@ function render() {
   const phaseLbl = S.paused ? '⏸ Pausiert' : PHASE_LABELS[S.phase];
   const statusTxt = S.phase === 'lobby' ? (S.paused ? '⏸ Pausiert' : 'Lobby')
     : S.phase === 'end' ? 'Ende'
+    : S.duel ? `⚔️ Finale-Duell ${S.duel.n}/${S.duel.total}${phaseLbl ? ' · ' + phaseLbl : ''}`
     : `Runde ${S.idx + 1}/${S.total}${phaseLbl ? ' · ' + phaseLbl : ''}`;
 
   // Die Aktionsleiste liegt außerhalb von #app und wird immer (diff-basiert) aktualisiert.
@@ -436,6 +442,7 @@ function render() {
     S.effectiveRussianShare ?? S.russianShare ?? 0, S.songOnlyArtistTitle,
     S.roundLimit, S.teamMode, S.displayMode || (S.noTvMode ? 'notv' : 'tv'),
     S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree, S.partyCards, S.remote,
+    S.discussVotes, S.standUp, S.captainMode, S.partnerRounds, S.duelFinale, S.jokersOn, S.duel ? S.duel.n : '',
     S.card ? JSON.stringify(S.card) : '', S.rule || '', S.photoCount,
     S.lobbyBanner || '', S.spin?.id || '',
     S.q?.q || '', S.q?.drawer || '', S.q?.guessed ? S.q.guessed.length : '',
@@ -593,6 +600,18 @@ function render() {
         <button class="${S.secretMissions ? 'active' : ''}" onclick="socket.emit('host:secretMissions',!S.secretMissions)">🕵️ Geheime Missionen: ${S.secretMissions ? 'An' : 'Aus'}</button>
         <button class="${S.alcoholFree ? 'active' : ''}" onclick="socket.emit('host:alcoholFree',!S.alcoholFree)">🥤 Alkoholfrei: ${S.alcoholFree ? 'An' : 'Aus'}</button>
       </div>
+    `)}
+    ${grp('interact', '🤝 Interaktion', `${[S.discussVotes, S.standUp, S.captainMode, S.partnerRounds, S.duelFinale, S.jokersOn].filter(Boolean).length} von 6 an`, `
+      <div class="sub">Mehr Miteinander statt nur Tippen. Alles wirkt ab der nächsten Runde.</div>
+      <div class="cats">
+        <button class="${S.discussVotes ? 'active' : ''}" onclick="socket.emit('host:discussVotes',!S.discussVotes)">💬 Diskussion vor Abstimmung: ${S.discussVotes ? 'An' : 'Aus'}</button>
+        <button class="${S.standUp ? 'active' : ''}" onclick="socket.emit('host:standUp',!S.standUp)">🧍 Aufsteh-Runden: ${S.standUp ? 'An' : 'Aus'}</button>
+        <button class="${S.captainMode ? 'active' : ''}" onclick="socket.emit('host:captainMode',!S.captainMode)">👑 Team-Kapitän: ${S.captainMode ? 'An' : 'Aus'}</button>
+        <button class="${S.partnerRounds ? 'active' : ''}" onclick="socket.emit('host:partnerRounds',!S.partnerRounds)">👫 Partner-Runden: ${S.partnerRounds ? 'An' : 'Aus'}</button>
+        <button class="${S.duelFinale ? 'active' : ''}" onclick="socket.emit('host:duelFinale',!S.duelFinale)">⚔️ Finale-Duell: ${S.duelFinale ? 'An' : 'Aus'}</button>
+        <button class="${S.jokersOn ? 'active' : ''}" onclick="socket.emit('host:jokers',!S.jokersOn)">🃏 Joker: ${S.jokersOn ? 'An' : 'Aus'}</button>
+      </div>
+      <div class="sub">💬 „Wer würde?“/„Entweder-Oder“: erst 15 s diskutieren, dann abstimmen · 🧍 „Ich hab noch nie“: aufstehen statt tippen · 👑 Team-Modus: pro Runde antwortet ein Kapitän fürs Team · 👫 ab 4 Spielern antworten manchmal zwei zusammen auf einem Handy · ⚔️ nach der letzten Runde 3 Quizfragen nur für die zwei Besten (2× Punkte) · 🃏 Rundensieger bekommen Joker (Doppelt, Abschreiben, Zeitdieb, Punkteklau).</div>
     `)}
     ${grp('photos', '📸 Fotos', `${S.photoCount || 0} ${S.photoCount === 1 ? 'Foto' : 'Fotos'}`, `
       <div class="sub">Alle im Raum können über den Galerie-Link Fotos ansehen, herunterladen und hochladen. Jedes Foto wird 7 Tage nach dem Hochladen gelöscht. Am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie.</div>

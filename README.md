@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.21.0)
+# 🎉 PartyGame (Version 3.22.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -24,7 +24,7 @@ Es gibt drei URLs:
 
 ---
 
-## 🎮 Alle 18 Spielmodi
+## 🎮 Alle 19 Spielmodi
 
 | Modus | Beschreibung |
 |---|---|
@@ -46,13 +46,14 @@ Es gibt drei URLs:
 | ⚡ **Wort-Assoziation** | Schnell das erste Wort eintippen, das zum Begriff passt |
 | 🎵 **Erkenne den Song** | Spielt 30s-iTunes-Previews ab und fragt nach Interpret, Titel, Jahr, Jahrzehnt oder Solo/Gruppe |
 | 🖼️ **Bild-Quiz** | Firmenlogos ohne Schriftzug (50), Sehenswürdigkeiten (40), Flaggen (41), Automarken-Embleme ohne Schriftzug (30) & Länder-Umrisse (40) per 4-Optionen-Quiz erraten |
-| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl, Pantomime – Kennenlernen, Wort-Assoziation & Skala nur manuell zuschaltbar) |
+| 🔥 **Heißer Stuhl** | Eine ausgeloste Person wählt geheim zwischen zwei Optionen („Was würdest du lieber …“), alle anderen tippen, was sie wählt: richtig +50, die Person +10 pro richtigem Rater, falsch = 1 Schluck |
+| 🎲 **Party-Mix** | 12 bunte Runden aus den ausgewählten Spielmodi (Standard und Presets Klassik/18+/Alkoholfrei: Quiz, Wer würde, Entweder-Oder, Schätzen, Noch nie, Team-Wahl, Pantomime, Heißer Stuhl – Kennenlernen, Wort-Assoziation & Skala nur manuell zuschaltbar) |
 
 ---
 
 ## ✨ Weitere Features & Animationen
 - **🎡 Animiertes Glücksrad (Drehrad):**
-  - **Spieler-Rad:** Vor jeder Runde bei *Zeichnen & Raten*, *Erklär-Spiel (Tabu)*, *Pantomime* und *2 Wahrheiten, 1 Lüge* dreht sich ein Glücksrad mit Soundeffekten und lost fair aus, wer als Nächstes dran ist.
+  - **Spieler-Rad:** Vor jeder Runde bei *Zeichnen & Raten*, *Erklär-Spiel (Tabu)*, *Pantomime*, *Heißer Stuhl* und *2 Wahrheiten, 1 Lüge* dreht sich ein Glücksrad mit Soundeffekten und lost fair aus, wer als Nächstes dran ist.
   - **Modus-Rad im Party-Mix:** Vor jeder Mix-Runde dreht sich das Rad und zeigt, welches Minispiel als Nächstes kommt.
   - **Zufalls-Rad in der Lobby (`/admin` & Taste `W`):** Jederzeit per Knopfdruck ein zufälliges Spiel (`🎰 Zufalls-Spiel`) oder einen zufälligen Spieler (`🎡 Spieler auslosen`) bestimmen. In `/admin` auch komplett abschaltbar.
 - **💿 Vinyl-Schallplatte & Equalizer (`songquiz`):** Drehende Schallplatte mit animierten Frequenz-Balken während der Song läuft; bei der Auflösung erscheint das echte Album-Cover auf der Schallplatte.
@@ -72,6 +73,13 @@ Es gibt drei URLs:
 - **📸 Foto-Wand:** Bei 📸-Party-Karten, auf dem Endbildschirm der Handys, im Admin und in der Galerie (`/fotos?room=CODE`) lassen sich Fotos direkt mit der Kamera aufnehmen („📷 Foto aufnehmen“) oder aus der Handy-Galerie hochladen (wird vorher auf max. 1600 px verkleinert). Neue Fotos erscheinen kurz auf dem TV (während Fragen klein in der Ecke); am Spielende zeigt der TV eine Diashow und einen QR-Code zur Galerie. Alle mit dem Raum-Link sehen die Galerie; Fotos liegen in `data/photos/<CODE>/` und werden 7 Tage nach dem Hochladen automatisch gelöscht. Raumcodes mit noch vorhandenen Fotos werden nicht neu vergeben.
 - **Lautstärke-Regler & Auto-Timer-Sync:** Eigener Lautstärke-Slider auf TV und Handy; der Song-Timer synchronisiert sich unabhängig von unterschiedlichen Geräte-Uhrzeiten exakt mit dem Audio-Start.
 - **Finalrunde (2× Punkte):** Die letzte Runde eines Spiels zählt automatisch doppelt (in `/admin` ein-/ausschaltbar).
+- **🤝 Interaktion (in `/admin` → „🤝 Interaktion“, alles standardmäßig an):**
+  - **💬 Diskussion vor Abstimmung:** Bei *Wer würde?* und *Entweder-Oder* sind die Handys 15 s gesperrt – erst diskutieren, dann abstimmen.
+  - **🧍 Aufsteh-Runden:** *Ich hab noch nie* ohne Handy – wer es schon gemacht hat, steht auf; wer steht, trinkt (alkoholfrei: Kniebeugen).
+  - **👑 Team-Kapitän:** Im Team-Modus antwortet bei Quiz, Bild-Quiz, Song, Schätzen und Sortieren pro Runde nur ein (rotierender) Kapitän – seine Antwort zählt fürs ganze Team, die anderen müssen ihn überzeugen.
+  - **👫 Partner-Runden:** Ab 4 Spielern werden manche dieser Runden zur Partner-Runde: ausgeloste Paare antworten zusammen auf einem Handy, beide bekommen die Punkte.
+  - **⚔️ Finale-Duell:** Nach der letzten Runde beantworten die zwei Besten 3 Quizfragen Kopf an Kopf (2× Punkte), alle anderen schauen zu und feuern an (ab 3 Spielern, nicht im Team-Modus).
+  - **🃏 Joker:** Wer eine Punkte-Runde gewinnt, bekommt einen Joker (max. 2) und kann ihn zwischen den Runden am Handy einsetzen: *✖️2 Doppelte Punkte* (nächste Runde), *📋 Abschreiben* (Antwort eines Mitspielers übernehmen), *⏳ Zeitdieb* (Mitspieler hat nur die halbe Zeit), *💰 Punkteklau* (sofort 15 Punkte klauen). Der TV blendet jeden Joker ein.
 - **Abend-Rückblick:** Am Spielende gibt es Auszeichnungen (*Trinkkönig*, *Blitzdenker*, *Rate-Profi*, *Schätz-Meister*, *📸 Fotograf des Abends*, *🎪 Party-Tier* (meiste Punkte aus Party-Karten), *🔥 Auf Feuer* (längste Serie), *🙈 Daneben-König*); die Diashow zeigt zuerst die Siegerfotos der Foto-Challenges mit Aufgabe.
 - **Reconnect-Schutz:** Bricht bei einem Spieler kurz das WLAN ab, bleiben Punkte, Team und Schlücke 120 Sekunden lang erhalten.
 - **Kein Wiederholen:** Gespielte Fragen/Songs werden in `data/used.json` gespeichert und erst zurückgesetzt, wenn ein Pool durchgespielt ist.
@@ -223,7 +231,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.21.0 (Aktueller Stand):** Mitmach-Karten mit Foto-Aufgabe: +5 Punkte fürs erste Foto pro Person (TV-Einblendung „+5 Punkte“, Hinweis am Handy); keine Fuß-Fotos mehr (Turnschuh- und Socken-Karte ersetzt).
+- **v3.22.0 (Aktueller Stand):** Mehr Interaktion: neuer Modus 🔥 Heißer Stuhl (auch im Standard-Mix), 💬 Diskussion vor Abstimmungen, 🧍 Aufsteh-Runden bei „Ich hab noch nie“, 👑 Team-Kapitän, 👫 Partner-Runden, ⚔️ Finale-Duell der zwei Besten und 🃏 Joker (Doppelt, Abschreiben, Zeitdieb, Punkteklau) – alles in `/admin` unter „🤝 Interaktion“ abschaltbar.
+- **v3.21.0:** Mitmach-Karten mit Foto-Aufgabe: +5 Punkte fürs erste Foto pro Person (TV-Einblendung „+5 Punkte“, Hinweis am Handy); keine Fuß-Fotos mehr (Turnschuh- und Socken-Karte ersetzt).
 - **v3.20.0:** 👥 Mitmach-Karten (26 neue Party-Karten nach Merkmal/Lieblingsperson, z. B. „Alle mit Brille: Gruppenfoto mit Getränk“), Foto-Aufgaben mit Kamera-Knopf am Handy; neuer Typ auch für eigene Karten im Admin.
 - **v3.19.0:** Alle Punkte auf ein Zehntel (z. B. Quiz 50–100 statt 500–1000, Schätzen/Reaktion/Imposter 100, Party-Karten 20–50, Foto-Challenge 30 + 10 pro Foto, Mission 15), damit Spielstände nicht sofort vierstellig werden. Laufende Spiele behalten ihren alten Punktestand bis „Nochmal“.
 - **v3.18.0:** 📸 Foto-Duell (Remote, ab 4 Spielern); Foto-Abstimmung ohne Zeitlimit, Auswerten erst ab 2 Stimmen; eigenes Foto erkennt der Server (bleibt nach Neuladen markiert); nur 1 Foto wird trotzdem gezeigt (+100); „Bis 20 zählen“ und „Auf 3 ein Wort“ nur noch vor Ort; Handy-Hinweis bei Verbindungsverlust mit „Tippen zum Neu-Verbinden/Neuladen“; Abend-Rückblick mit vier neuen Auszeichnungen und Siegerfotos zuerst in der Diashow; eigene Party-Karten im Admin.

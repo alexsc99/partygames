@@ -40,6 +40,8 @@ const DATA = {
   imagequiz: require('./data/imagequiz.json'),
   pantomime: require('./data/pantomime.json'),
 };
+// Heißer Stuhl nutzt die Entweder-Oder-Paare („Was würde Alex lieber?“) – gleiches Array, eigene „schon gespielt“-Liste
+DATA.hotseat = DATA.wouldyourather;
 DATA.songs.forEach((s, i) => { s._idx = i; });
 
 const CUSTOM_FILE = path.join(__dirname, 'data', 'custom.json');
@@ -56,10 +58,10 @@ try {
   writeLog('WARN', 'custom_json_load_failed', { error: err?.message || String(err) });
 }
 
-const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'pantomime', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'mix'];
-const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'pantomime', 'sort', 'songquiz', 'imagequiz'];
+const MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'reaction', 'neverhavei', 'imposter', 'draw', 'taboo', 'pantomime', 'sort', 'icebreaker', 'teams', 'scale', 'truthlie', 'wordassoc', 'songquiz', 'imagequiz', 'hotseat', 'mix'];
+const MIX_MODES_ALL = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'pantomime', 'sort', 'songquiz', 'imagequiz', 'hotseat'];
 // Standard-Mix (auch für die Presets Klassik/18+/Alkoholfrei): ohne Kennenlernen, Wort-Assoziation & Skala – die bleiben manuell zuschaltbar
-const DEFAULT_MIX_MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'pantomime'];
+const DEFAULT_MIX_MODES = ['quiz', 'mostlikely', 'wouldyourather', 'estimate', 'neverhavei', 'teams', 'pantomime', 'hotseat'];
 const IQ_THEMES = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
 // ---- Party-Karten: Aufgaben zwischen zwei Runden (Gruppe, Spitzenreiter, Letzter, Duell, Regel …) ----
 const PARTY_CARDS = require('./data/partycards.json');
@@ -128,18 +130,38 @@ const MODE_LABELS = {
   wordassoc: '⚡ Wort-Assoz.',
   songquiz: '🎵 Song-Quiz',
   imagequiz: '🖼️ Bild-Quiz',
+  hotseat: '🔥 Heißer Stuhl',
   mix: '🎲 Party-Mix',
 };
 const SPIN_DURATION_MS = 4200;
 const MIX_ROUNDS = 12;
 const CATEGORIES = ['party', 'peinlich', 'kennenlernen', 'date', 'hot18'];
-const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, pantomime: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20 };
+const TIME = { quiz: 20, mostlikely: 25, wouldyourather: 20, estimate: 25, reaction: 8, neverhavei: 20, imposter: 25, draw: 75, taboo: 60, pantomime: 60, sort: 30, icebreaker: 50, teams: 20, scale: 25, truthlie: 30, wordassoc: 18, songquiz: 25, imagequiz: 20, hotseat: 25 };
 const MIME_SKIPS = 2; // so oft darf der Darsteller einen Begriff tauschen
 const MIME_GUESS_PTS = 80; // Rater
 const MIME_ACTOR_PTS = 50; // Darsteller
 const MISSION_PTS = 15; // geheime Mission geschafft
+// ---- Mehr Interaktion (alle in /admin abschaltbar) ----
+const HOT_GUESS_PTS = 50; // Heißer Stuhl: richtig geraten, was die Person wählt
+const HOT_SEAT_PTS = 10; // … die Person selbst pro richtigem Rater
+const DISCUSS_MS = 15000; // „Wer würde?“/„Entweder-Oder“: erst diskutieren, dann abstimmen
+const DISCUSS_MODES = ['mostlikely', 'wouldyourather'];
+const STANDUP_MS = 10000; // „Ich hab noch nie“ als Aufsteh-Runde: kein Handy, nur aufstehen
+// Kapitän (Teams) / Partner-Runde: ein Handy antwortet für die Gruppe, die Antwort zählt für alle
+const GROUP_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort'];
+const PARTNER_CHANCE = 0.35; // Anteil der passenden Runden, die zur Partner-Runde werden (ab 4 Spielern)
+const DUEL_QUESTIONS = 3; // Finale-Duell der zwei Besten nach der letzten Runde
+const DUEL_MODES = ['mix', 'quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'mostlikely', 'wouldyourather', 'neverhavei', 'teams', 'scale', 'icebreaker', 'wordassoc', 'taboo', 'pantomime', 'hotseat'];
+// Joker: Rundensieger bekommen einen (max. 2), einsetzbar zwischen den Runden
+const JOKER_TYPES = ['double', 'copy', 'timethief', 'steal'];
+const JOKER_TARGETED = ['copy', 'timethief', 'steal'];
+const JOKER_LABELS = { double: '✖️2 Doppelte Punkte', copy: '📋 Abschreiben', timethief: '⏳ Zeitdieb', steal: '💰 Punkteklau' };
+const JOKER_MAX = 2;
+const JOKER_STEAL_PTS = 15;
+const JOKER_ANSWER_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'hotseat']; // Abschreiben/Zeitdieb
+const SCORING_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'reaction', 'imposter', 'draw', 'taboo', 'pantomime', 'truthlie', 'sort', 'hotseat'];
 // Auflösungen mit Trommelwirbel-Overlay (Clients: SUSPENSE_MODES in ux-helpers.js) – die Pause verlängert sich um dessen Dauer
-const SUSPENSE_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'truthlie', 'imposter', 'mostlikely', 'wouldyourather'];
+const SUSPENSE_MODES = ['quiz', 'imagequiz', 'songquiz', 'estimate', 'sort', 'truthlie', 'imposter', 'mostlikely', 'wouldyourather', 'hotseat'];
 const SUSPENSE_MS = 1250;
 const TIMER_MULT = { fast: 0.7, normal: 1.0, relaxed: 1.5 }; // Antwortzeit
 const RESULT_MULT = { fast: 0.7, normal: 1.0, relaxed: 0 }; // Auflösung/Karten-Ergebnis; 0 = kein Auto-Weiter (Zeit zum Quatschen)
@@ -697,6 +719,13 @@ let secretMissions = false;
 let alcoholFree = false;
 let partyCards = 'off'; // 'off' | 'rare' | 'normal' | 'often'
 let remoteMode = false; // alle an verschiedenen Orten (Video-Call) → andere Party-Karten
+// Mehr Interaktion (Standard an, in /admin abschaltbar)
+let discussVotes = true; // „Wer würde?“/„Entweder-Oder“: 15 s diskutieren, dann abstimmen
+let standUp = true; // „Ich hab noch nie“: aufstehen statt tippen
+let captainMode = true; // Team-Modus: ein Kapitän pro Team antwortet (rotiert)
+let partnerRounds = true; // ab 4 Spielern: manche Runden zu zweit auf einem Handy
+let duelFinale = true; // nach der letzten Runde: Finale-Duell der zwei Besten
+let jokersOn = true; // Rundensieger bekommen Joker
 let timerSpeed = 'normal';
 let mixRounds = MIX_ROUNDS;
 const MIN_ANSWER_S = { wordassoc: 16 }; // Tipp-Modi brauchen auch bei „Schnell“ genug Zeit
@@ -765,7 +794,7 @@ function finalizePlayerDisconnect(socketId, reason, recovered) {
   disconnectedPlayers.set(key, {
     data: {
       name: p.name, avatar: p.avatar, team: p.team, score: p.score, prevScore: p.prevScore, lastGain: p.lastGain, streak: p.streak,
-      drinks: p.drinks, stats: p.stats, reconnectToken: p.reconnectToken, answer: p.answer, answeredAt: p.answeredAt, roundSeq,
+      drinks: p.drinks, stats: p.stats, jokers: p.jokers, reconnectToken: p.reconnectToken, answer: p.answer, answeredAt: p.answeredAt, roundSeq,
       prevId: socketId, // für das Umhängen der Imposter-Rolle beim Rejoin
     },
     timer: t,
@@ -776,6 +805,7 @@ function finalizePlayerDisconnect(socketId, reason, recovered) {
   broadcast();
 }
 let timer = null;
+let discussTimer = null; // Ende der Diskussionsphase → Abstimmung freigeben
 
 function freshState(mode) {
   return {
@@ -794,12 +824,22 @@ function freshState(mode) {
     songQ: null,
     mission: null,
     card: null, rule: null, lastCardIdx: -1, usedCards: [], cardShownAt: 0, snapHighlights: [],
+    hotName: null, // Heißer Stuhl
+    discussUntil: 0, // Diskussion vor der Abstimmung läuft bis …
+    answerGroups: null, // [{ kind: 'captain'|'partner', lead, members }] – nur lead antwortet, zählt für alle
+    duel: null, // Finale-Duell { names, n, total, order, active }
+    jokerQueue: [], // gespielte Joker für die nächste passende Runde { type, by, target }
+    roundJokers: [], // in dieser Runde wirksame Joker (Zeitdieb: cutAt)
+    jokerNews: [], // in der Auflösung neu verteilte Joker { name, type }
   };
 }
 
 const pVals = () => Object.values(players);
 const pickOf = p => ({ name: p.name, avatar: p.avatar || '😎' });
-const activeMode = () => (state.mode === 'mix' && state.subMode ? state.subMode : state.mode);
+const duelActive = () => !!(state.duel && state.duel.active);
+const activeMode = () => (duelActive() ? 'quiz' : state.mode === 'mix' && state.subMode ? state.subMode : state.mode);
+// Index der aktuellen Frage im Pool des aktiven Modus (Mix-Unterrunde bzw. Finale-Duell über subIdx)
+const curQIdx = () => (state.mode === 'mix' || duelActive() ? state.subIdx : state.order[state.idx]);
 
 
 function effectiveRussianShare() {
@@ -931,6 +971,7 @@ const list = (ps = pVals()) => ps
     streak: p.streak || 0,
     drinks: p.drinks,
     answered: p.answer !== null,
+    jokers: (p.jokers || []).length,
   }))
   .sort((a, b) => b.score - a.score || a.drinks - b.drinks);
 
@@ -943,15 +984,16 @@ function currentQuestion() {
       statements: state.tlStatements.map(s => s.text),
     };
   }
-  const qIdx = state.mode === 'mix' ? state.subIdx : state.order[state.idx];
+  const qIdx = curQIdx();
   const item = (m === 'reaction' || m === 'songquiz') ? null : getPool(m)[qIdx];
   switch (m) {
     case 'quiz': return item ? { q: item.q, a: item.a } : null;
     case 'imagequiz': return item ? { q: item.q, a: item.a, img: '/iq/' + item.img, theme: item.theme } : null;
     case 'mostlikely': return item ? { q: item.q ?? item } : null;
     case 'wouldyourather': return item ? { a: item.a ?? item[0], b: item.b ?? item[1] } : null;
+    case 'hotseat': return item ? { a: item.a ?? item[0], b: item.b ?? item[1], hot: state.hotName } : null;
     case 'estimate': return item ? { q: item.q, unit: item.unit } : null;
-    case 'neverhavei': return item ? { q: item.q ?? item } : null;
+    case 'neverhavei': return item ? { q: item.q ?? item, standup: !!state.standup } : null;
     case 'reaction': return { q: 'Drücke erst, wenn es GRÜN wird!' };
     case 'imposter': return { q: state.phase === 'discuss' ? 'Lies dein geheimes Wort und gib einen Hinweis!' : 'Wer ist der Imposter?' };
     case 'draw': return { drawer: state.drawerName, len: state.drawWord ? state.drawWord.length : 0, mask: formatWordMask(state.drawWord, state.drawRevealed), guessed: state.guessedBy };
@@ -1004,6 +1046,7 @@ function getNextPreloadAssets(m, total) {
 
 const isFinalRound = (total) => {
   if (!finalDouble || state.phase === 'lobby' || state.phase === 'end') return false;
+  if (duelActive()) return true; // Finale-Duell zählt doppelt
   const n = total ?? totalRounds();
   return n > 1 && state.idx === n - 1;
 };
@@ -1071,6 +1114,17 @@ function pub() {
     songLangs, imageQuizThemes, russianShare, effectiveRussianShare: effectiveRussianShare(), songOnlyArtistTitle, finalDouble, wheelEnabled, secretMissions, alcoholFree, timerSpeed, mixRounds, mixModes,
     publicUrl, defaultPublicUrl: DEFAULT_URL_PLAY,
     partyCards,
+    discussVotes, standUp, captainMode, partnerRounds, duelFinale, jokersOn,
+    // Diskussion vor der Abstimmung: so lange sind die Abstimm-Knöpfe gesperrt
+    discussLeftMs: state.phase === 'question' && state.discussUntil > Date.now() ? state.discussUntil - Date.now() : 0,
+    answerGroups: state.phase === 'question' || state.phase === 'result' ? state.answerGroups : null,
+    duel: duelActive() ? { names: state.duel.names, n: state.duel.n, total: state.duel.total } : null,
+    jokerQueue: state.jokerQueue || [],
+    // Zeitdieb: bis wann das Ziel noch antworten darf (relativ, wie leftMs)
+    roundJokers: (state.roundJokers || []).map(j => (j.type === 'timethief' && state.phase === 'question' && state.deadline > 0
+      ? { ...j, cutLeftMs: Math.max(0, state.deadline - state.totalMs / 2 - Date.now()) } : j)),
+    jokerNews: state.phase === 'result' ? (state.jokerNews || []) : [],
+    jokerLabels: JOKER_LABELS,
     remote: remoteMode,
     photoCount: photos.list(code).length,
     card: state.phase === 'card' && state.card ? publicCard() : null,
@@ -1135,6 +1189,8 @@ function sendPrivate(socket, id) {
     } else if (mission) {
       priv = { mission };
     }
+    // Joker-Hand ist privat (die anderen sehen nur die Anzahl)
+    if (p.jokers && p.jokers.length) priv = { ...(priv || {}), jokers: p.jokers };
   }
   if (!priv) {
     if (!socket.data.hasPrivate) return;
@@ -1231,9 +1287,13 @@ function startGame() {
   state.idx = -1;
   state.card = null;
   state.snapHighlights = [];
+  state.duel = null;
+  state.jokerQueue = [];
+  state.roundJokers = [];
+  state.jokerNews = [];
   state.rule = null;
   state.lastCardIdx = -1;
-  pVals().forEach(p => { p.score = 0; p.prevScore = 0; p.lastGain = 0; p.streak = 0; p.drinks = 0; p.stats = freshStats(); });
+  pVals().forEach(p => { p.score = 0; p.prevScore = 0; p.lastGain = 0; p.streak = 0; p.drinks = 0; p.stats = freshStats(); p.jokers = []; });
   nextRound();
 }
 
@@ -1720,13 +1780,17 @@ async function nextRound() {
   // Nach einer Auflösung kann zuerst eine Party-Karte kommen; ihr „Weiter“ ruft nextRound erneut auf.
   if (maybeStartPartyCard()) return;
   clearTimeout(timer);
+  clearTimeout(discussTimer);
   state.card = null;
   skipVotes.clear();
   pendingSpinNext = null;
   state.spin = null;
   const seq = ++roundSeq;
   state.idx++;
-  if (state.idx >= totalRounds()) {
+  // Nach der letzten Runde: Finale-Duell der zwei Besten (falls an), danach Ende
+  const duelQ = state.idx >= totalRounds() ? nextDuelQuestion() : -1;
+  if (state.idx >= totalRounds() && duelQ < 0) {
+    if (state.duel) state.duel.active = false;
     state.phase = 'end';
     state.subMode = null;
     return broadcast();
@@ -1758,8 +1822,16 @@ async function nextRound() {
   state.storytellerName = null;
   state.tlStatements = [];
   state.tlLieIdx = -1;
+  state.hotName = null;
+  state.discussUntil = 0;
+  state.answerGroups = null;
+  state.roundJokers = [];
+  state.jokerNews = [];
+  state.standup = false;
 
-  if (state.mode === 'mix') {
+  if (duelActive()) {
+    state.subIdx = duelQ;
+  } else if (state.mode === 'mix') {
     state.subMode = state.mixOrder[state.idx];
     if (!state.mixPools[state.subMode] || !state.mixPools[state.subMode].length) {
       state.mixPools[state.subMode] = pickOrder(state.subMode);
@@ -1771,14 +1843,14 @@ async function nextRound() {
   }
 
   const m = activeMode();
-  const playedIdx = state.mode === 'mix' ? state.subIdx : state.order[state.idx];
+  const playedIdx = curQIdx();
   if (typeof playedIdx === 'number' && playedIdx >= 0 && m !== 'reaction' && m !== 'truthlie') {
     (usedIndices[m] || (usedIndices[m] = new Set())).add(playedIdx);
     saveUsedIndices();
   }
 
   const spins = [];
-  if (state.mode === 'mix') {
+  if (state.mode === 'mix' && !duelActive()) {
     const activeMix = mixModes.length ? mixModes : MIX_MODES_ALL;
     const pool = activeMix.includes(state.subMode) ? activeMix : [...activeMix, state.subMode];
     const wIdx = Math.max(0, pool.indexOf(state.subMode));
@@ -1795,12 +1867,13 @@ async function nextRound() {
   }
 
   const ps = pVals();
-  if (m === 'truthlie' || m === 'draw' || m === 'taboo' || m === 'pantomime') {
+  if (m === 'truthlie' || m === 'draw' || m === 'taboo' || m === 'pantomime' || m === 'hotseat') {
     const chosenName = pickNextActor(m);
     if (m === 'truthlie') state.storytellerName = chosenName;
     else if (m === 'draw') state.drawerName = chosenName;
     else if (m === 'taboo') state.explainerName = chosenName;
     else if (m === 'pantomime') state.mimeName = chosenName;
+    else if (m === 'hotseat') state.hotName = chosenName;
 
     if (ps.length >= 2 && chosenName) {
       const wIdx = Math.max(0, ps.findIndex(p => p.name === chosenName));
@@ -1812,6 +1885,8 @@ async function nextRound() {
         ? '🗣️ Wer erklärt als Nächstes?'
         : m === 'pantomime'
         ? '🤸 Wer spielt als Nächstes vor?'
+        : m === 'hotseat'
+        ? '🔥 Wer sitzt auf dem heißen Stuhl?'
         : '🎭 Wer ist als Nächstes dran?';
       spins.push({
         id: ++spinSeq,
@@ -1849,7 +1924,9 @@ function mimeGuessed(winnerName) {
 async function activateRound(seq, m, playedIdx) {
   if (seq !== roundSeq) return;
   state.mission = null;
-  if (secretMissions && m !== 'reaction' && displayMode !== 'onedevice') {
+  armRoundJokers(m);
+  state.answerGroups = buildAnswerGroups(m);
+  if (secretMissions && m !== 'reaction' && displayMode !== 'onedevice' && !duelActive()) {
     const online = Object.entries(players).filter(([, p]) => !p.isLocal);
     if (online.length >= 2 && Math.random() < 0.45) {
       const [pid, mp] = online[crypto.randomInt(online.length)];
@@ -1956,12 +2033,75 @@ async function activateRound(seq, m, playedIdx) {
     return;
   }
 
+  if (m === 'hotseat' && !state.hotName) state.hotName = pickNextActor('hotseat');
+  // „Ich hab noch nie“ als Aufsteh-Runde: kein Handy, nur kurz aufstehen
+  state.standup = m === 'neverhavei' && standUp && displayMode !== 'onedevice';
+  // „Wer würde?“/„Entweder-Oder“: erst diskutieren, Abstimmen erst danach (Zeit kommt oben drauf)
+  const discuss = discussVotes && DISCUSS_MODES.includes(m) && displayMode !== 'onedevice' ? DISCUSS_MS : 0;
   state.phase = 'question';
-  state.totalMs = roundTimeMs(m);
+  state.totalMs = state.standup ? STANDUP_MS : roundTimeMs(m) + discuss;
   state.deadline = displayMode === 'onedevice' ? 0 : Date.now() + state.totalMs;
+  state.discussUntil = discuss ? Date.now() + discuss : 0;
   broadcast();
   if (displayMode !== 'onedevice') timer = setTimeout(showResult, state.totalMs);
+  if (discuss) discussTimer = setTimeout(broadcast, discuss + 50); // Handys schalten die Abstimmung frei
 }
+
+// ---- Finale-Duell: die zwei Besten beantworten nach der letzten Runde DUEL_QUESTIONS Quizfragen (2× Punkte) ----
+function nextDuelQuestion() {
+  if (!state.duel) {
+    const online = rankedPlayers().filter(p => !p.isLocal);
+    if (!duelFinale || teamMode || displayMode === 'onedevice' || !DUEL_MODES.includes(state.mode) || online.length < 3) return -1;
+    state.duel = { names: online.slice(0, 2).map(p => p.name), n: 0, total: DUEL_QUESTIONS, order: pickOrder('quiz').slice(0, DUEL_QUESTIONS), active: true };
+  }
+  if (!state.duel.active || state.duel.n >= state.duel.total) return -1;
+  const q = state.duel.order[state.duel.n++];
+  return Number.isInteger(q) ? q : -1;
+}
+
+// ---- Kapitän (Team-Modus) / Partner-Runde: nur der „lead“ antwortet, seine Antwort zählt für alle in der Gruppe ----
+function buildAnswerGroups(m) {
+  if (!GROUP_MODES.includes(m) || duelActive() || displayMode === 'onedevice') return null;
+  const online = pVals().filter(p => !p.isLocal);
+  if (teamMode) {
+    if (!captainMode) return null;
+    const groups = [];
+    for (const t of TEAMS) {
+      const members = online.filter(p => p.team === t.id).map(p => p.name).sort((a, b) => a.localeCompare(b));
+      if (members.length >= 2) groups.push({ kind: 'captain', team: t.id, lead: members[state.idx % members.length], members });
+    }
+    return groups.length ? groups : null;
+  }
+  if (!partnerRounds || online.length < 4 || Math.random() >= PARTNER_CHANCE) return null;
+  const names = shuffle(online.map(p => p.name));
+  const groups = [];
+  for (let i = 0; i + 1 < names.length; i += 2) groups.push({ kind: 'partner', lead: names[i], members: [names[i], names[i + 1]] });
+  if (names.length % 2) groups[groups.length - 1].members.push(names[names.length - 1]); // ungerade: ein Dreier-Team
+  return groups;
+}
+
+// Darf dieser Spieler gerade selbst antworten? (Finale-Duell: nur die zwei; Gruppen: nur der Antwortende)
+function mayAnswer(p) {
+  if (duelActive()) return state.duel.names.includes(p.name);
+  const g = (state.answerGroups || []).find(x => x.members.includes(p.name));
+  return !g || g.lead === p.name;
+}
+
+// ---- Joker: aus der Warteschlange die nehmen, die in dieser Runde greifen (Abschreiben/Zeitdieb nur bei Antwort-Runden) ----
+function armRoundJokers(m) {
+  state.roundJokers = [];
+  if (!jokersOn || duelActive() || !(state.jokerQueue || []).length) return;
+  const keep = [];
+  for (const j of state.jokerQueue) {
+    const fits = j.type === 'double' ? SCORING_MODES.includes(m) : JOKER_ANSWER_MODES.includes(m);
+    (fits ? state.roundJokers : keep).push(j);
+  }
+  state.jokerQueue = keep;
+}
+
+// Zeitdieb: das Ziel darf nur in der ersten Hälfte der Antwortzeit antworten
+const timeThiefCut = p => (state.roundJokers || []).some(j => j.type === 'timethief' && j.target === p.name)
+  && state.deadline > 0 && Date.now() > state.deadline - state.totalMs / 2;
 
 function startReactionGo() {
   if (state.phase !== 'wait') return;
@@ -1994,8 +2134,26 @@ function showResult() {
   const ps = pVals();
   const m = activeMode();
   const mult = isFinalRound() ? 2 : 1;
-  const qIdx = state.mode === 'mix' ? state.subIdx : state.order[state.idx];
+  const qIdx = curQIdx();
   let autoNextMs = 7000;
+  clearTimeout(discussTimer);
+  state.discussUntil = 0;
+
+  // Kapitän/Partner: die Antwort des Antwortenden gilt für die ganze Gruppe
+  for (const g of state.answerGroups || []) {
+    const lead = byName(g.lead);
+    if (!lead) continue;
+    for (const n of g.members) {
+      const p = byName(n);
+      if (p && p !== lead) { p.answer = Array.isArray(lead.answer) ? [...lead.answer] : lead.answer; p.answeredAt = lead.answeredAt; }
+    }
+  }
+  // Joker „Abschreiben“: übernimmt die Antwort des Ziels (wenn es geantwortet hat)
+  for (const j of state.roundJokers || []) {
+    if (j.type !== 'copy') continue;
+    const by = byName(j.by), t = byName(j.target);
+    if (by && t && t.answer !== null) { by.answer = Array.isArray(t.answer) ? [...t.answer] : t.answer; by.answeredAt = t.answeredAt; }
+  }
 
   if (m === 'quiz' || m === 'imagequiz') {
     const q = getPool(m)[qIdx];
@@ -2009,6 +2167,24 @@ function showResult() {
     const counts = q.a.map((_, i) => ps.filter(p => p.answer === i).length);
     const pickers = q.a.map((_, i) => ps.filter(p => p.answer === i).map(pickOf));
     state.result = { correct: q.c, counts, pickers };
+  } else if (m === 'hotseat') {
+    // Heißer Stuhl: alle tippen, was die Person wählt; sie selbst wählt geheim
+    const hot = byName(state.hotName);
+    const pick = hot && (hot.answer === 0 || hot.answer === 1) ? hot.answer : null;
+    const guessers = ps.filter(p => p.name !== state.hotName);
+    const correct = pick === null ? [] : guessers.filter(p => p.answer === pick).map(p => p.name);
+    const drinkers = pick === null ? [] : guessers.filter(p => p.answer !== pick).map(p => p.name);
+    ps.forEach(p => {
+      if (correct.includes(p.name)) p.score += HOT_GUESS_PTS * mult;
+      if (drinkers.includes(p.name)) p.drinks++;
+    });
+    if (hot && correct.length) hot.score += HOT_SEAT_PTS * correct.length * mult;
+    state.result = {
+      hot: state.hotName, pick, correct, drinkers,
+      aNames: guessers.filter(p => p.answer === 0).map(pickOf),
+      bNames: guessers.filter(p => p.answer === 1).map(pickOf),
+    };
+    autoNextMs = 9000;
   } else if (m === 'mostlikely') {
     const counts = Object.fromEntries(ps.map(p => [p.name, 0]));
     ps.forEach(p => { if (typeof p.answer === 'string' && counts[p.answer] !== undefined) counts[p.answer]++; });
@@ -2076,7 +2252,7 @@ function showResult() {
     const yes = ps.filter(p => p.answer === true).map(p => p.name);
     const no = ps.filter(p => p.answer === false).map(p => p.name);
     ps.forEach(p => { if (p.answer === true) { p.drinks++; p.score++; } });
-    state.result = { yes, no };
+    state.result = { yes, no, standup: !!state.standup };
   } else if (m === 'imposter') {
     const counts = Object.fromEntries(ps.map(p => [p.name, 0]));
     ps.forEach(p => { if (typeof p.answer === 'string' && counts[p.answer] !== undefined) counts[p.answer]++; });
@@ -2221,16 +2397,37 @@ function showResult() {
     }
   }
 
+  // Joker „Doppelte Punkte“: Rundengewinn noch einmal obendrauf
+  for (const j of state.roundJokers || []) {
+    if (j.type !== 'double') continue;
+    const p = byName(j.by);
+    const gain = p ? (p.score || 0) - (p.prevScore ?? p.score ?? 0) : 0;
+    if (gain > 0) p.score += gain;
+  }
+
   ps.forEach(p => {
     const gain = (p.score || 0) - (p.prevScore ?? p.score ?? 0);
     p.lastGain = Math.max(0, gain);
-    if (['quiz', 'imagequiz', 'songquiz', 'estimate', 'reaction', 'imposter', 'draw', 'taboo', 'pantomime', 'truthlie', 'sort'].includes(m)) {
+    if (duelActive() && !state.duel.names.includes(p.name)) return; // Zuschauer im Finale-Duell
+    if (SCORING_MODES.includes(m)) {
       const wonRound = m === 'sort' ? gain >= 50 : gain > 0;
       p.streak = wonRound ? (p.streak || 0) + 1 : 0;
       if (!wonRound) bumpStat(p, 'misses');
       if (p.stats && p.streak > (p.stats.bestStreak || 0)) p.stats.bestStreak = p.streak;
     }
   });
+
+  // Joker verteilen: wer die Runde mit den meisten Punkten gewinnt, bekommt einen (max. JOKER_MAX)
+  state.jokerNews = [];
+  if (jokersOn && !duelActive() && displayMode !== 'onedevice' && SCORING_MODES.includes(m)) {
+    const best = Math.max(0, ...ps.map(p => p.lastGain || 0));
+    for (const p of best > 0 ? ps : []) {
+      if (p.isLocal || p.lastGain !== best || (p.jokers ||= []).length >= JOKER_MAX) continue;
+      const type = JOKER_TYPES[crypto.randomInt(JOKER_TYPES.length)];
+      p.jokers.push(type);
+      state.jokerNews.push({ name: p.name, type });
+    }
+  }
 
   state.phase = 'result';
   armAutoNext(state.mission && !state.mission.resolved ? 0 : autoNextMs, SUSPENSE_MODES.includes(m) ? SUSPENSE_MS : 0);
@@ -2251,7 +2448,7 @@ function validateAnswer(m, val) {
     return Number.isFinite(n) && n >= 1 && n <= 10 ? { ok: true, val: n } : { ok: false };
   }
   if (m === 'neverhavei') return typeof val === 'boolean' ? { ok: true, val } : { ok: false };
-  if (m === 'quiz' || m === 'imagequiz' || m === 'wouldyourather' || m === 'teams' || m === 'truthlie' || m === 'songquiz') {
+  if (m === 'quiz' || m === 'imagequiz' || m === 'wouldyourather' || m === 'teams' || m === 'truthlie' || m === 'songquiz' || m === 'hotseat') {
     return Number.isInteger(val) && val >= 0 && val < 8 ? { ok: true, val } : { ok: false };
   }
   if (m === 'sort') {
@@ -2271,12 +2468,15 @@ function submitPlayerAnswer(p, val) {
   const m = activeMode();
   if (state.phase !== 'question') return false;
   if (m === 'truthlie' && p.name === state.storytellerName) return false;
+  if (state.standup) return false; // Aufsteh-Runde: kein Handy
+  if (state.discussUntil && Date.now() < state.discussUntil) return false; // erst diskutieren
+  if (!mayAnswer(p) || timeThiefCut(p)) return false;
   const res = validateAnswer(m, val);
   if (!res.ok) return false;
   p.answer = res.val;
   p.answeredAt = Date.now();
   broadcast();
-  const waiters = m === 'truthlie' ? pVals().filter(x => x.name !== state.storytellerName) : pVals();
+  const waiters = (m === 'truthlie' ? pVals().filter(x => x.name !== state.storytellerName) : pVals()).filter(mayAnswer);
   if (waiters.length > 0 && waiters.every(x => x.answer !== null)) showResult();
   return true;
 }
@@ -2840,6 +3040,47 @@ function attachSocket(socket, ip, allowEvent) {
     remoteMode = !!on;
     broadcast();
   });
+  // Interaktions-Optionen (an/aus) aus /admin
+  const interactionToggles = {
+    'host:discussVotes': v => { discussVotes = v; },
+    'host:standUp': v => { standUp = v; },
+    'host:captainMode': v => { captainMode = v; },
+    'host:partnerRounds': v => { partnerRounds = v; },
+    'host:duelFinale': v => { duelFinale = v; },
+    'host:jokers': v => { jokersOn = v; },
+  };
+  for (const [ev, set] of Object.entries(interactionToggles)) {
+    socket.on(ev, on => { set(!!on); broadcast(); });
+  }
+  // Joker einsetzen (zwischen den Runden): Doppelt/Abschreiben/Zeitdieb wirken in der nächsten passenden Runde, Punkteklau sofort
+  socket.on('joker:use', (payload, ack) => {
+    const reply = (ok, error) => { if (typeof ack === 'function') ack({ ok, error }); };
+    if (!allowEvent('joker', 10_000, 6)) return reply(false, 'Kurz warten');
+    const p = players[socket.id];
+    const type = payload && payload.type;
+    if (!jokersOn || !p || !JOKER_TYPES.includes(type) || !(p.jokers || []).includes(type)) return reply(false, 'Joker nicht verfügbar');
+    if (!['result', 'card', 'spin'].includes(state.phase) || duelActive()) return reply(false, 'Joker gehen nur zwischen den Runden');
+    let target = null;
+    if (JOKER_TARGETED.includes(type)) {
+      target = byName(payload.target);
+      if (!target || target === p || target.isLocal) return reply(false, 'Bitte einen Mitspieler wählen');
+    }
+    if ((state.jokerQueue || []).some(j => j.by === p.name && j.type === type)) return reply(false, 'Schon gespielt – wirkt in der nächsten Runde');
+    p.jokers.splice(p.jokers.indexOf(type), 1);
+    let detail = '';
+    if (type === 'steal') {
+      const amt = Math.min(JOKER_STEAL_PTS, target.score || 0);
+      target.score -= amt;
+      p.score += amt;
+      detail = `${amt} Punkte`;
+    } else {
+      (state.jokerQueue ||= []).push({ type, by: p.name, target: target ? target.name : null });
+    }
+    writeLog('INFO', 'joker_used', { room: code, type });
+    io.to(ROOM_CHAN).emit('joker:played', { by: p.name, type, target: target ? target.name : null, label: JOKER_LABELS[type], detail });
+    broadcast();
+    reply(true);
+  });
   socket.on('card:judge', ok => {
     const card = state.card;
     const p = players[socket.id];
@@ -3133,7 +3374,7 @@ function markDirty() {
   scheduleRoomsSnapshot();
 }
 
-const PLAYER_SNAP_KEYS = ['avatar', 'team', 'score', 'prevScore', 'lastGain', 'streak', 'drinks', 'answer', 'answeredAt', 'stats', 'reconnectToken'];
+const PLAYER_SNAP_KEYS = ['avatar', 'team', 'score', 'prevScore', 'lastGain', 'streak', 'drinks', 'answer', 'answeredAt', 'stats', 'jokers', 'reconnectToken'];
 function playerSnap(name, p, extra) {
   const out = { name };
   for (const k of PLAYER_SNAP_KEYS) if (p[k] !== undefined) out[k] = p[k];
@@ -3161,6 +3402,7 @@ function serialize() {
     settings: {
       activeCategories, roundLimit, teamMode, displayMode, songLangs, imageQuizThemes, russianShare, songOnlyArtistTitle,
       finalDouble, wheelEnabled, secretMissions, alcoholFree, partyCards, remoteMode, timerSpeed, mixRounds, mixModes, publicUrl,
+      discussVotes, standUp, captainMode, partnerRounds, duelFinale, jokersOn,
     },
     // roomCustom wird bewusst nicht gespeichert: host:addCustom schreibt die Einträge nach data/custom.json,
     // die beim Start ohnehin in DATA landen (sonst doppelte Einträge im Pool).
@@ -3194,6 +3436,10 @@ function applySnapshot(snap) {
   alcoholFree = !!s.alcoholFree;
   if (s.partyCards === 'off' || PARTY_CARD_GAP[s.partyCards]) partyCards = s.partyCards;
   remoteMode = !!s.remoteMode;
+  for (const [k, set] of Object.entries({
+    discussVotes: v => { discussVotes = v; }, standUp: v => { standUp = v; }, captainMode: v => { captainMode = v; },
+    partnerRounds: v => { partnerRounds = v; }, duelFinale: v => { duelFinale = v; }, jokersOn: v => { jokersOn = v; },
+  })) if (typeof s[k] === 'boolean') set(s[k]);
   if (TIMER_MULT[s.timerSpeed]) timerSpeed = s.timerSpeed;
   if ([8, 12, 16].includes(s.mixRounds)) mixRounds = s.mixRounds;
   const mm = pickList(s.mixModes, MIX_MODES_ALL);
@@ -3262,7 +3508,7 @@ function rearmAfterRestore() {
     // Weitere (Spieler-)Räder entfallen, der Akteur steht bereits fest
     const seq = roundSeq;
     const m = activeMode();
-    const playedIdx = state.mode === 'mix' ? state.subIdx : state.order[state.idx];
+    const playedIdx = curQIdx();
     pendingSpinNext = () => {
       state.spin = null;
       activateRound(seq, m, playedIdx);
@@ -3281,6 +3527,7 @@ function rearmAfterRestore() {
     timer = setTimeout(startReactionGo, RESTORE_GRACE_MS + 2500 + Math.floor(Math.random() * 3500));
   } else if (state.deadline > 0 && (state.phase === 'question' || state.phase === 'go')) {
     timer = setTimeout(showResult, delayUntil(state.deadline));
+    if (state.discussUntil > Date.now()) discussTimer = setTimeout(broadcast, state.discussUntil - Date.now() + 50);
   } else if (state.deadline > 0 && state.phase === 'result') {
     timer = setTimeout(nextRound, delayUntil(state.deadline));
   } else if (state.deadline > 0 && state.phase === 'card' && state.card && state.card.resolved) {
@@ -3326,6 +3573,7 @@ return {
   destroy: () => {
     markDirty(); // nächster Schnappschuss enthält den Raum nicht mehr
     clearTimeout(timer);
+    clearTimeout(discussTimer);
     for (const gt of pendingDisconnects.values()) clearTimeout(gt);
     pendingDisconnects.clear();
     for (const d of disconnectedPlayers.values()) clearTimeout(d.timer);

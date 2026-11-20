@@ -121,7 +121,7 @@ function pickAnswer(st, self) {
   switch (st.mode) {
     case 'quiz': case 'imagequiz': case 'teams': case 'songquiz':
       return Array.isArray(q.a) && q.a.length ? rnd(q.a.length) : null;
-    case 'wouldyourather': return rnd(2);
+    case 'wouldyourather': case 'hotseat': return rnd(2);
     case 'mostlikely': case 'imposter': {
       const names = (st.players || []).map(p => p.name).filter(n => n !== self);
       return names.length ? names[rnd(names.length)] : null;
