@@ -405,9 +405,11 @@
     if (bmp) bmp.close();
     return new Promise(res => c.toBlob(res, 'image/jpeg', quality));
   }
-  window.pgUploadPhotos = async function (room, files, name, onProgress) {
+  // headers: zusätzliche Header (z. B. x-card für die Foto-Challenge); Rückgabe enthält die hochgeladenen Fotos
+  window.pgUploadPhotos = async function (room, files, name, onProgress, headers = {}) {
     const list = Array.from(files || []);
     let ok = 0, error = '';
+    const photos = [];
     for (const [i, f] of list.entries()) {
       if (onProgress) onProgress(i + 1, list.length);
       let body;
@@ -423,10 +425,16 @@
         try {
           const r = await fetch('/api/photos/' + encodeURIComponent(room), {
             method: 'POST',
-            headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(name || '') },
+            headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(name || ''), ...headers },
             body,
           });
-          if (r.ok) { ok++; fileError = ''; break; }
+          if (r.ok) {
+            ok++;
+            fileError = '';
+            const j = await r.json().catch(() => ({}));
+            if (j.photo) photos.push(j.photo);
+            break;
+          }
           fileError = (await r.json().catch(() => ({}))).error || (r.status === 429 ? 'Zu viele Uploads gleichzeitig' : 'Upload fehlgeschlagen');
           if (r.status !== 429 && r.status < 500) break;
         } catch {
@@ -436,7 +444,7 @@
       }
       if (fileError) error = fileError;
     }
-    return { ok, total: list.length, error };
+    return { ok, total: list.length, error, photos };
   };
   // Kurze Meldung unten am Bildschirm
   window.pgToast = function (text, ms = 2600) {
@@ -454,10 +462,10 @@
     if (ms > 0) el._t = setTimeout(() => el.classList.remove('on'), ms);
   };
   // Datei-Auswahl → Upload mit Fortschritt als Toast (für Handy, Admin, Galerie)
-  window.pgPhotoInput = async function (input, room, name, onDone) {
+  window.pgPhotoInput = async function (input, room, name, onDone, headers) {
     const files = input.files;
     if (!files || !files.length) return;
-    const r = await pgUploadPhotos(room, files, name, (i, n) => pgToast(`📤 Lade Foto ${i}/${n} hoch …`, 0));
+    const r = await pgUploadPhotos(room, files, name, (i, n) => pgToast(`📤 Lade Foto ${i}/${n} hoch …`, 0), headers);
     input.value = '';
     pgToast(r.ok === r.total ? `✅ ${r.ok === 1 ? 'Foto' : `${r.ok} Fotos`} hochgeladen` : `⚠️ ${r.ok}/${r.total} hochgeladen – ${r.error}`, 3500);
     if (onDone) onDone(r);
@@ -465,7 +473,8 @@
   // Für Seiten, die #app ständig neu zeichnen: ein dauerhaftes, verstecktes Datei-Feld außerhalb von #app,
   // sonst geht die Auswahl verloren, wenn der Button während des Foto-Pickers neu gerendert wird.
   // camera=true öffnet direkt die Kamera (capture) – Android bietet sonst oft nur gespeicherte Bilder an.
-  window.pgPickPhotos = function (room, name, onDone, camera = false) {
+  // opts: { headers, single, selfie } – Foto-Challenge: ein Foto, Frontkamera
+  window.pgPickPhotos = function (room, name, onDone, camera = false, opts = {}) {
     let input = document.getElementById('pgPhotoPick');
     if (!input) {
       input = document.createElement('input');
@@ -475,10 +484,10 @@
       input.style.display = 'none';
       document.body.appendChild(input);
     }
-    if (camera) input.setAttribute('capture', 'environment');
+    if (camera) input.setAttribute('capture', opts.selfie ? 'user' : 'environment');
     else input.removeAttribute('capture');
-    input.multiple = !camera;
-    input.onchange = () => pgPhotoInput(input, room, typeof name === 'function' ? name() : name, onDone);
+    input.multiple = !camera && !opts.single;
+    input.onchange = () => pgPhotoInput(input, room, typeof name === 'function' ? name() : name, onDone, opts.headers);
     input.click();
   };
   // Zwei Knöpfe: Foto jetzt aufnehmen / aus der Handy-Galerie wählen

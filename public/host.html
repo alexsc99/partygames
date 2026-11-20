@@ -789,6 +789,21 @@ function render() {
   ctlSync();
 }
 
+// Foto-Challenge: anonyme Fotos zur Abstimmung, nach der Auswertung mit Namen und Stimmen (Sieger zuerst)
+function snapWall(c) {
+  if (c.act !== 'snap' || !c.photos || !c.photos.length) return '';
+  const list = c.resolved ? [...c.photos].sort((a, b) => b.votes - a.votes) : c.photos;
+  const top = c.resolved ? Math.max(...list.map(p => p.votes)) : -1;
+  // Quadrate so groß wie möglich, aber alle unter der Karte sichtbar (Spalten nach Seitenverhältnis der Restfläche)
+  const cnt = list.length, gap = 12, w = innerWidth * 0.94, h = innerHeight * (c.resolved ? 0.38 : 0.5); // Auswertung: Karte ist höher
+  const cols = Math.min(cnt, Math.max(1, Math.ceil(Math.sqrt(cnt * w / h))));
+  const rows = Math.ceil(cnt / cols);
+  const sz = Math.floor(Math.min((w - (cols - 1) * gap) / cols, (h - (rows - 1) * gap) / rows));
+  return `<div class="snapWall" style="--sz:${sz}px">${list.map((p, n) => `<figure class="${c.resolved && top > 0 && p.votes === top ? 'win' : ''}" style="--d:${n * 80}ms">
+    <img src="${esc(p.url)}" alt="${c.resolved ? `Foto von ${esc(p.name)}` : `Foto ${n + 1}`}">
+    <figcaption>${c.resolved ? `${p.votes === top && top > 0 ? '🏆 ' : ''}${esc(p.name)} · ${p.votes} 🗳️` : `#${n + 1}`}</figcaption></figure>`).join('')}</div>`;
+}
+
 function renderView() {
   if (!S) return;
   if (S.phase !== 'end') stopEndSlides();
@@ -862,6 +877,11 @@ function renderView() {
         else if (c.type === 'group') info = `✅ +${c.reward} für alle · ❌ ${S.alcoholFree ? 'alle machen 5 Kniebeugen' : 'alle trinken'}${judge}`;
         else info = `✅ +${c.reward}${c.minus ? ` · ❌ −${c.minus}` : ''}${judge}`;
       }
+      else if (c.act === 'snap' && c.stage === 'collect') {
+        const done = c.submitted || [];
+        info = `📱 Jeder macht ein Foto am Handy – die Fotos gibt’s erst bei der Abstimmung zu sehen<br>📸 ${done.length}/${S.players.length} Fotos da · Bestes Foto +${c.reward}, jedes Foto +100
+          <div class="snapWho">${S.players.map(p => `<span class="${done.includes(p.name) ? 'ok' : ''}">${esc(p.avatar || '😎')} ${esc(p.name)}${done.includes(p.name) ? ' ✓' : ''}</span>`).join('')}</div>`;
+      } else if (c.act === 'snap') info = `🗳️ Welches Foto ist das beste? Abstimmung am Handy (anonym) – ${c.voters.length}/${S.players.length}`;
       else info = '⏳ Der Gastgeber wertet im Admin aus…';
     }
     const bad = /^❌/u.test(c.outcome || '');
@@ -876,7 +896,8 @@ function renderView() {
         ${info ? `<div class="pcInfo">${info}</div>` : ''}
         ${c.resolved ? `<div class="pcOutcome${bad ? ' bad' : ''}">${esc(c.outcome)}</div>` : ''}
       </div>
-      ${c.resolved ? `<div class="pcLb">${lb()}</div>` : ''}`;
+      ${snapWall(c)}
+      ${c.resolved && !(c.photos && c.photos.length) ? `<div class="pcLb">${lb()}</div>` : ''}`;
     return;
   }
 

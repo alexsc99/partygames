@@ -158,6 +158,21 @@ async function joinByRoomInput() {
   }
 }
 function pickPhotos(camera) { pgPickPhotos(ROOM_CODE, () => name, null, camera); }
+// Foto-Challenge (Remote-Party-Karte): ein Foto mit x-card hochladen; eigene URL merken, damit das Handy es bei der Abstimmung ausblendet
+const snapKey = () => `pg_snap_${ROOM_CODE}_${S && S.idx}_${S && S.card && S.card.id}`;
+function pickSnap(camera) {
+  if (!S || !S.card) return;
+  const key = snapKey();
+  pgPickPhotos(ROOM_CODE, () => name, r => {
+    if (r.photos && r.photos[0]) {
+      try { sessionStorage.setItem(key, r.photos[0].url); } catch { /* privates Fenster */ }
+      render();
+    }
+  }, camera, { single: true, selfie: true, headers: { 'x-card': S.card.id } });
+}
+function mySnapUrl() {
+  try { return sessionStorage.getItem(snapKey()); } catch { return null; }
+}
 async function copyInviteLink() {
   const link = (S && S.publicUrl) || (location.origin + '/?room=' + encodeURIComponent(ROOM_CODE));
   if (!(await pgCopyText(link))) return;
@@ -1083,7 +1098,7 @@ function renderView() {
     mr ? `${mr.resolved}:${mr.success}` : '',
     S.phase === 'lobby' ? `${S.lobbyBanner || ''}:${avatar}:${avPickerOpen ? 1 : 0}:${S.isMix ? 1 : 0}` : '',
     S.phase === 'spin' && S.spin ? S.spin.id : '',
-    S.phase === 'card' && S.card ? JSON.stringify(S.card) : '',
+    S.phase === 'card' && S.card ? JSON.stringify(S.card) + (S.card.act === 'snap' ? mySnapUrl() : '') : '',
     S.rule || '',
     S.phase === 'end' ? S.photoCount : '',
     playersSig,
@@ -1136,13 +1151,31 @@ function renderView() {
     const voted = c.voters.includes(name);
     let body = '';
     if (c.resolved) {
-      body = `<div class="resBox" style="text-align:center;font-size:20px;font-weight:900;background:${/^❌/u.test(c.outcome || '') ? '#e21b3c' : '#26890c'}">${esc(c.outcome)}</div>${renderLb()}`;
+      const snapRes = c.act === 'snap' && c.photos && c.photos.length
+        ? `<div class="snapPick done">${[...c.photos].sort((a, b) => b.votes - a.votes).map(ph => `<figure><img src="${esc(ph.url)}" alt="Foto von ${esc(ph.name)}" loading="lazy"><figcaption>${esc(ph.name)} · ${ph.votes} 🗳️</figcaption></figure>`).join('')}</div>`
+        : '';
+      body = `<div class="resBox" style="text-align:center;font-size:20px;font-weight:900;background:${/^❌/u.test(c.outcome || '') ? '#e21b3c' : '#26890c'}">${esc(c.outcome)}</div>${snapRes}${renderLb()}`;
     } else if (c.act === 'vote') {
       const others = S.players.filter(p => p.name !== name);
       body = voted
         ? `<div class="msg">✅ Stimme abgegeben<br><small>${c.voters.length}/${S.players.length} haben abgestimmt</small></div>`
         : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px">Wer hatte den besten Beitrag? (+${c.reward})</div>
            <div class="grid">${others.map((p, i) => `<button class="c${i % 4}" style="font-size:16px;min-height:9vh" onclick="socket.emit('card:vote', ${esc(JSON.stringify(p.name))})">${esc(p.avatar || '😎')} ${esc(p.name)}</button>`).join('')}</div>`;
+    } else if (c.act === 'snap' && c.stage === 'collect') {
+      const mine = (c.submitted || []).includes(name);
+      const url = mine && mySnapUrl();
+      body = `${mine ? `<div class="msg">✅ Dein Foto ist drin!${url ? `<br><img src="${esc(url)}" alt="Dein Foto" style="max-width:60%;max-height:22vh;border-radius:12px;margin-top:8px">` : ''}<br><small>${c.submitted.length}/${S.players.length} Fotos · Die Fotos sieht man erst bei der Abstimmung</small></div>` : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Mach ein Foto dazu – die Gruppe wählt anonym das beste (+${c.reward}, jedes Foto +100)</div>`}
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">${pgPhotoButtons('pickSnap(true)', 'pickSnap(false)')}</div>
+        ${mine ? '<div class="msg" style="margin-top:6px"><small>Neues Foto ersetzt dein altes.</small></div>' : ''}`;
+    } else if (c.act === 'snap') {
+      const own = mySnapUrl();
+      const pics = (c.photos || []).filter(ph => ph.url !== own);
+      const progress = `${c.voters.length}/${S.players.length} haben abgestimmt`;
+      body = voted
+        ? `<div class="msg">✅ Stimme abgegeben<br><small>${progress}</small></div>`
+        : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px;text-align:center">Welches Foto ist das beste? (anonym, +${c.reward})</div>
+           <div class="snapPick">${pics.map(ph => `<button type="button" onclick="socket.emit('card:vote', ${ph.i})"><img src="${esc(ph.url)}" alt="Foto" loading="lazy"></button>`).join('')}</div>
+           <div class="msg"><small>${progress}</small></div>`;
     } else if (c.act === 'yesno') {
       const judges = c.judges || [];
       const progress = `${c.voters.length}/${judges.length} haben abgestimmt`;

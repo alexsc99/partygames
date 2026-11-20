@@ -693,6 +693,85 @@ describe('PartyGame Server', () => {
     }
   });
 
+  it('remote mode: photo challenge collects one photo per player, votes anonymously and awards the best photo', async () => {
+    const { io: ioc } = require('socket.io-client');
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const photoDir = path.join(__dirname, '..', 'data', 'photos', code);
+    const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
+    const admin = connect();
+    const names = ['Ada', 'Bo', 'Cy'];
+    const players = names.map(connect);
+    let S = null;
+    let pops = 0;
+    admin.on('state', s => { S = s; });
+    admin.on('photo:new', () => { pops++; });
+    const until = async (pred, ms = 3000) => {
+      const end = Date.now() + ms;
+      while (Date.now() < end) { if (S && pred(S)) return S; await new Promise(r => setTimeout(r, 20)); }
+      throw new Error(`timeout, phase=${S && S.phase} stage=${S && S.card && S.card.stage}`);
+    };
+    const upload = (who, cardId, fill) => fetch(`${baseUrl}/api/photos/${code}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/jpeg', 'x-photo-name': encodeURIComponent(who), 'x-card': cardId },
+      body: Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200, fill), Buffer.from([0xff, 0xd9])]),
+    });
+    const realRandom = Math.random;
+    try {
+      await Promise.all(players.map((p, i) => new Promise(res => p.emit('join', { name: names[i], avatar: '😎' }, res))));
+      admin.emit('host:mode', 'quiz');
+      admin.emit('host:wheelEnabled', false);
+      admin.emit('host:partyCards', 'often');
+      admin.emit('host:remote', true);
+      await until(s => s.remote === true && s.players.length === 3);
+      admin.emit('host:start');
+      for (let round = 0; round < 4 && S.phase !== 'card'; round++) {
+        await until(s => s.phase === 'question' && s.idx === round);
+        await Promise.all(players.map((p, i) => new Promise(res => p.emit('answer', i, res))));
+        await until(s => s.phase === 'result');
+        Math.random = () => 0.9999; // gewichtete Typ-Wahl → letzter Typ = Foto-Challenge
+        admin.emit('host:next');
+        await until(s => s.phase === 'card' || (s.phase === 'question' && s.idx === round + 1));
+        Math.random = realRandom;
+      }
+      assert.equal(S.phase, 'card');
+      assert.equal(S.card.act, 'snap');
+      assert.equal(S.card.stage, 'collect');
+      const cardId = S.card.id;
+      const before = Object.fromEntries(S.players.map(p => [p.name, p.score]));
+
+      assert.equal((await upload('Ada', cardId, 1)).status, 201);
+      assert.equal((await upload('Bo', cardId, 2)).status, 201);
+      await until(s => s.card.submitted.length === 2);
+      assert.equal(S.card.stage, 'collect');
+      assert.equal(S.card.photos, null, 'photos stay hidden while collecting');
+      assert.equal((await upload('Cy', cardId, 3)).status, 201);
+      await until(s => s.card.stage === 'vote');
+      assert.equal(S.card.photos.length, 3);
+      assert.ok(S.card.photos.every(p => p.name === null), 'voting is anonymous');
+      assert.equal(pops, 0, 'challenge photos must not pop up on the TV');
+
+      const urls = Object.fromEntries((await (await fetch(`${baseUrl}/api/photos/${code}`)).json()).photos.map(p => [p.name, p.url]));
+      const idxOf = who => S.card.photos.find(p => p.url === urls[who]).i;
+      players[1].emit('card:vote', idxOf('Bo')); // eigenes Foto zählt nicht
+      players[0].emit('card:vote', idxOf('Bo'));
+      players[2].emit('card:vote', idxOf('Bo'));
+      await until(s => s.card.voters.length === 2);
+      assert.ok(!S.card.voters.includes('Bo'));
+      players[1].emit('card:vote', idxOf('Ada'));
+      await until(s => s.card.resolved);
+      const diff = Object.fromEntries(S.players.map(p => [p.name, p.score - before[p.name]]));
+      assert.deepEqual(diff, { Ada: 100, Bo: 400, Cy: 100 });
+      assert.equal(S.card.photos.find(p => p.url === urls.Bo).name, 'Bo');
+    } finally {
+      Math.random = realRandom;
+      admin.close();
+      players.forEach(p => p.close());
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+      fs.rmSync(photoDir, { recursive: true, force: true });
+    }
+  });
+
   it('timer tempo scales the result pause: "relaxed" waits for Weiter, "fast" is shorter', async () => {
     const { io: ioc } = require('socket.io-client');
     const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();

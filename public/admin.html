@@ -298,6 +298,12 @@ function renderCardPanel() {
   } else if (c.act === 'vote') {
     actions = `<div class="sub">🗳️ ${c.voters.length}/${S.players.length} haben auf dem Handy abgestimmt (wertet automatisch aus, wenn alle fertig sind).</div>
       <div class="cats">${btn(`🏁 Jetzt auswerten (+${c.reward} für den Sieger)`, {}, '#26890c')}</div>`;
+  } else if (c.act === 'snap' && c.stage === 'collect') {
+    actions = `<div class="sub">📸 ${(c.submitted || []).length}/${S.players.length} Fotos da – die Abstimmung startet automatisch, wenn alle ein Foto haben oder die Zeit abläuft (unter 2 Fotos: keine Wertung).</div>
+      <div class="cats"><button class="active" style="background:#4b3a9e" onclick="socket.emit('host:snapVote')">🗳️ Abstimmung jetzt starten</button></div>`;
+  } else if (c.act === 'snap') {
+    actions = `<div class="sub">🗳️ ${c.voters.length}/${S.players.length} haben auf dem Handy abgestimmt (wertet automatisch aus, wenn alle fertig sind).</div>
+      <div class="cats">${btn(`🏁 Jetzt auswerten (+${c.reward} fürs beste Foto)`, {}, '#26890c')}</div>`;
   } else {
     actions = `<div class="sub">${c.act === 'rule' ? '📜 Gilt für die nächsten 3 Runden.' : 'Keine Wertung nötig.'} Weiter geht’s unten mit „▶ Weiter“.</div>`;
   }
@@ -374,7 +380,7 @@ function render() {
     S.songLangs?.en !== false, S.songLangs?.de !== false,
     S.effectiveRussianShare ?? S.russianShare ?? 0, S.songOnlyArtistTitle,
     S.roundLimit, S.teamMode, S.displayMode || (S.noTvMode ? 'notv' : 'tv'),
-    S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree, S.partyCards,
+    S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree, S.partyCards, S.remote,
     S.card ? JSON.stringify(S.card) : '', S.rule || '', S.photoCount,
     S.lobbyBanner || '', S.spin?.id || '',
     S.q?.q || '', S.q?.drawer || '', S.q?.guessed ? S.q.guessed.length : '',
@@ -543,11 +549,19 @@ function render() {
         ${S.photoCount ? `<a href="/api/photos/${encodeURIComponent(ROOM_CODE)}/zip" style="text-decoration:none"><button type="button">⬇️ Alle als ZIP</button></a>` : ''}
       </div>
     `)}
-    ${grp('cards', '🎪 Party-Karten', esc(PARTY_FREQ[S.partyCards] || 'Aus'), `
+    ${grp('cards', '🎪 Party-Karten', esc((PARTY_FREQ[S.partyCards] || 'Aus') + (S.remote ? ' · 🌍 Remote' : '')), `
       <div class="sub">Zwischen den Runden kommt ab und zu eine Aufgabe: Gruppen-Challenge, Kopfgeld auf den Ersten, Aufholchance für den Letzten, Duell, Reihum-Runde, Foto & Pose oder neue Regel. Ob eine Aufgabe gelungen ist, stimmen die Spieler am Handy ab; Duelle und Punkte-Vergaben wertest du hier aus.</div>
       <div class="cats">
         ${Object.entries(PARTY_FREQ).map(([f, lbl]) => `<button class="${(S.partyCards || 'off') === f ? 'active' : ''}" onclick="socket.emit('host:partyCards','${f}')">${lbl}</button>`).join('')}
       </div>
+      <div class="label" style="margin-top:12px">Wo wird gespielt?</div>
+      <div class="cats">
+        <button class="${!S.remote ? 'active' : ''}" onclick="socket.emit('host:remote',false)">🏠 Zusammen vor Ort</button>
+        <button class="${S.remote ? 'active' : ''}" onclick="socket.emit('host:remote',true)">🌍 Remote (Video-Call)</button>
+      </div>
+      <div class="sub">${S.remote
+        ? '🌍 Remote: keine Karten mit Sitznachbarn oder Gruppenfotos. Dafür Foto-Challenges (jeder fotografiert z. B. sein Getränk oder eine Pose, alle wählen anonym das beste Foto) und Kamera-Aufgaben. Tipp: Teile den TV-Bildschirm (/host) im Discord-Call, alle spielen am eigenen Handy mit.'
+        : 'Spielt ihr verteilt per Discord/Video-Call? Dann „Remote“ wählen – die Karten passen sich an.'}</div>
     `)}
     ${S.phase === 'lobby' ? grp('wheel', '🎰 Glücksrad', 'Spiel / Spieler auslosen', `
       <div class="cats">
