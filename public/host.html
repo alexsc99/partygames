@@ -886,7 +886,7 @@ function renderView() {
       if (c.act === 'vote') info = `🗣️ Reihum erzählen – dann auf dem Handy den besten Beitrag wählen (+${c.reward})<br>🗳️ ${c.voters.length}/${S.players.length} haben abgestimmt`;
       else if (c.act === 'duel') info = `🏆 Sieger bekommt +${c.reward} · Der Gastgeber entscheidet im Admin`;
       else if (c.act === 'rule') info = '📜 Gilt für die nächsten 3 Runden';
-      else if (c.act === 'info') info = '✋ Los geht’s – danach „▶ Weiter“';
+      else if (c.act === 'info') info = c.photo ? '📸 Foto machen und am Handy hochladen – es landet auf der Foto-Wand · danach „▶ Weiter“' : '✋ Los geht’s – danach „▶ Weiter“';
       else if (c.act === 'yesno') {
         const judge = `<br>📱 Gelungen? Abstimmung am Handy – ${c.voters.length}/${(c.judges || []).length} · Mehrheit entscheidet`;
         if (c.type === 'photo') info = `📸 +${c.reward} ${c.pair ? 'für beide' : 'für alle'}${judge}`;

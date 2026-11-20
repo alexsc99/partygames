@@ -92,6 +92,7 @@
        <option value="duel">⚡ Blitz-Duell (2 Ausgeloste)</option>
        <option value="rule">📜 Neue Regel (3 Runden)</option>
        <option value="snap">📸 Foto-Challenge (nur Remote)</option>
+       <option value="crowd">👥 Mitmach-Karte („Alle mit Brille …“, ohne Punkte)</option>
      </select>
      <select id="ccWhere" style="flex:1;min-width:140px;padding:9px;border-radius:10px;background:#1b1340;color:#fff;border:1px solid #ffffff33;font-size:14px">
        <option value="both">🏠🌍 Vor Ort & Remote</option>
@@ -251,7 +252,7 @@ function toggleMixMode(id) {
   socket.emit('host:mixModes', [...cur]);
 }
 // Eigene Party-Karten: Formular ist statisch (Eingaben gehen bei Status-Updates nicht verloren), nur die Liste wird aktualisiert
-const CC_ICON = { group: '🎉', vote: '🎤', duel: '⚡', rule: '📜', snap: '📸' };
+const CC_ICON = { group: '🎉', vote: '🎤', duel: '⚡', rule: '📜', snap: '📸', crowd: '👥' };
 const CC_WHERE = { both: '🏠🌍', local: '🏠', remote: '🌍' };
 let ccSig = '';
 function renderCustomCardList() {

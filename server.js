@@ -65,7 +65,7 @@ const IQ_THEMES = ['logos', 'landmarks', 'flags', 'cars', 'countries'];
 const PARTY_CARDS = require('./data/partycards.json');
 // Eigene Party-Karten aus /admin (global für alle Räume, nicht im Git – können Insider enthalten)
 const CUSTOM_CARDS_FILE = path.join(__dirname, 'data', 'customcards.json');
-const CUSTOM_CARD_TYPES = ['group', 'vote', 'duel', 'rule', 'snap'];
+const CUSTOM_CARD_TYPES = ['group', 'vote', 'duel', 'rule', 'snap', 'crowd'];
 let CUSTOM_CARDS = [];
 try {
   if (fs.existsSync(CUSTOM_CARDS_FILE)) {
@@ -94,6 +94,7 @@ const PARTY_CARD_TYPES = {
   photo: { title: '📸 Foto & Pose', act: 'yesno', w: 2, local: true }, // who: 'group' (alle) oder 'pair' ({a} & {b})
   snap: { title: '📸 Foto-Challenge', act: 'snap', w: 3, remote: true }, // jeder lädt ein Foto hoch, dann Abstimmung
   snapduel: { title: '📸 Foto-Duell', act: 'snap', w: 2, remote: true, min: 4 }, // nur {a} & {b} fotografieren, die anderen stimmen ab
+  crowd: { title: '👥 Mitmach-Karte', act: 'info', w: 2 }, // „Alle mit Brille …“ – ohne Wertung, photo: true = Foto-Knöpfe am Handy
 };
 // Punkte bewusst klein (seit 3.19: 1/10 der früheren Werte), damit Spielstände nicht sofort vierstellig sind
 const CARD_GROUP_PTS = 20;
@@ -1471,7 +1472,7 @@ function maybeStartPartyCard() {
     target: target ? target.name : null,
     duel: isDuel ? [roles.a.name, roles.b.name] : null,
     pair: isPair ? [roles.a.name, roles.b.name] : null,
-    reward, minus: c.minus || 0, amount: c.amount || 0,
+    reward, minus: c.minus || 0, amount: c.amount || 0, photo: !!c.photo || c.type === 'photo',
     votes: {}, tally: null, resolved: false, outcome: null,
     stage: act === 'snap' ? 'collect' : null, entries: [], order: null,
   };
@@ -1672,7 +1673,7 @@ function publicCard() {
   return {
     id: c.id, type: c.type, title: c.title, act: c.act, text: c.text,
     target: c.target, targetLabel: c.target ? lbl(c.target) : null,
-    duel: c.duel, pair: c.pair, reward: c.reward, minus: c.minus, amount: c.amount,
+    duel: c.duel, pair: c.pair, reward: c.reward, minus: c.minus, amount: c.amount, photo: !!c.photo,
     voters: c.act === 'vote' || c.act === 'yesno' || c.act === 'snap' ? Object.keys(c.votes) : [],
     judges: c.act === 'yesno' ? cardJudges(c) : null,
     tally: c.tally, resolved: c.resolved, outcome: c.outcome,
@@ -2807,6 +2808,7 @@ function attachSocket(socket, ip, allowEvent) {
     if (where === 'remote') card.remote = true;
     if (type === 'group') card.sec = 30;
     if (type === 'snap') card.sec = 90;
+    if (type === 'crowd' && /foto|selfie|bild/i.test(text)) card.photo = true;
     CUSTOM_CARDS.push(card);
     saveCustomCards();
     writeLog('INFO', 'custom_card_added', { room: code, type, where });
