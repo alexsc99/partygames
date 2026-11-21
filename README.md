@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.25.0)
+# 🎉 PartyGame (Version 3.26.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -108,6 +108,7 @@ Es gibt drei URLs:
 - **QR-Code-URL änderbar:** Die Ziel-URL des QR-Codes lässt sich direkt in `/admin` (oder über `PUBLIC_URL`) anpassen.
 - **Kontextabhängiges `/admin`:** Es werden jeweils nur die Optionen angezeigt, die zum gewählten Spiel passen (z. B. bei *Bild-Quiz* direkt *Beide / Nur Firmen-Logos / Nur Sehenswürdigkeiten*, bei *Erkenne den Song* nur die Sprach- & Fragetyp-Filter).
 - **Lobby-Komfort in `/host`:** Ein Klick auf den Lobby-QR-Code kopiert direkt den Beitritts-Link (`✅ Link kopiert!`); unten rechts gibt es zudem einen kleinen `🎮 Als Spieler beitreten (/)`-Button, der nach Spielstart automatisch ausgeblendet wird.
+- **⛶ Vollbild ohne Adressleiste:** Oben rechts auf jeder Seite sitzt ein kleiner Vollbild-Knopf. Android/Chrome und Desktop schalten damit echtes Vollbild ein (✕ beendet es). Auf dem iPhone gibt es dafür keine Browser-Funktion – der Knopf erklärt dort „Teilen → Zum Home-Bildschirm“; von dort gestartet läuft das Spiel wie eine App ohne Leiste (auch unter Android über „Zum Startbildschirm hinzufügen“). Läuft die Seite schon als App, ist der Knopf ausgeblendet.
 
 ---
 
@@ -253,7 +254,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.25.0 (Aktueller Stand):** Party-Mix kann **♾️ endlos** laufen (Admin → Party-Mix → Runden), neuer Admin-Knopf **🏁 Beenden** zeigt jederzeit den Endstand (vorher ggf. Finale-Duell); Runden-Limit „Alle“ heißt jetzt „♾️ Ohne Limit“. Galerie `/fotos`: 🗑️ direkt auf den Fotos, und über „🔑 Spielleitung“ (Host-PIN) lassen sich alle Fotos löschen – auch ältere ohne Lösch-Schlüssel und Fotos von Räumen, die nicht mehr laufen.
+- **v3.26.0 (Aktueller Stand):** ⛶ Vollbild-Knopf auf allen Seiten (Android/Desktop echtes Vollbild, iPhone: Anleitung zum Home-Bildschirm). Richtige App-Icons (PNG 180/192/512) für Home-Bildschirm und „App installieren“; TV-Seite und Foto-Galerie starten vom Home-Bildschirm ebenfalls ohne Adressleiste.
+- **v3.25.0:** Party-Mix kann **♾️ endlos** laufen (Admin → Party-Mix → Runden), neuer Admin-Knopf **🏁 Beenden** zeigt jederzeit den Endstand (vorher ggf. Finale-Duell); Runden-Limit „Alle“ heißt jetzt „♾️ Ohne Limit“. Galerie `/fotos`: 🗑️ direkt auf den Fotos, und über „🔑 Spielleitung“ (Host-PIN) lassen sich alle Fotos löschen – auch ältere ohne Lösch-Schlüssel und Fotos von Räumen, die nicht mehr laufen.
 - **v3.24.1:** Fotos werden schon nach 3 Tagen automatisch gelöscht (vorher 7).
 - **v3.24.0:** Fotos löschen in der Galerie `/fotos`: eigene Uploads (Lösch-Schlüssel bleibt im Browser, mit dem hochgeladen wurde) und als Spielleitung alle Fotos des Raums – 🗑️ in der Großansicht. Gelöschte Fotos verschwinden auch aus TV-Einblendung, Diashow und laufender Foto-Challenge.
 - **v3.23.3:** Rechtlich sauber: die zwei Rybak-Songs wieder als offizielle 30-s-Vorschau (englische Fassung „Fairytale“ / „Europe's Skies“) statt YouTube-Ausschnitt.

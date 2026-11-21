@@ -645,6 +645,43 @@
     })(start);
   };
 
+  // Vollbild-Knopf (⛶): blendet die Adressleiste aus. Android/Desktop: Fullscreen-API. iPhone kennt sie nicht –
+  // dort zeigt der Knopf eine Anleitung zum Ablegen auf dem Home-Bildschirm (dann startet die Seite ohne Leiste).
+  // Nicht sichtbar, wenn die Seite schon als App (standalone/fullscreen) läuft.
+  (function pgFullscreenButton() {
+    const mq = q => { try { return window.matchMedia(q).matches; } catch { return false; } };
+    if (mq('(display-mode: standalone)') || mq('(display-mode: fullscreen)') || navigator.standalone === true) return;
+    const de = document.documentElement;
+    const request = de.requestFullscreen || de.webkitRequestFullscreen;
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (!request && !isIos) return;
+    const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+    const mount = () => {
+      const btn = document.createElement('button');
+      btn.id = 'pgFsBtn';
+      btn.type = 'button';
+      const paint = () => {
+        btn.textContent = isFs() ? '✕' : '⛶';
+        btn.title = btn.ariaLabel = isFs() ? 'Vollbild beenden' : 'Vollbild';
+      };
+      btn.onclick = () => {
+        if (isFs()) { exit.call(document); return; }
+        if (!request) { pgToast('📲 Vollbild: Teilen-Symbol → „Zum Home-Bildschirm“, dann die App von dort starten', 7000); return; }
+        try {
+          const p = request.call(de, { navigationUI: 'hide' });
+          if (p && p.catch) p.catch(() => pgToast('Vollbild wird von diesem Browser nicht erlaubt', 3500));
+        } catch { pgToast('Vollbild wird von diesem Browser nicht erlaubt', 3500); }
+      };
+      for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) document.addEventListener(ev, paint);
+      paint();
+      document.body.appendChild(btn);
+      document.body.classList.add('pgHasFsBtn'); // Seiten rücken Elemente in der oberen rechten Ecke damit beiseite
+    };
+    if (document.body) mount();
+    else document.addEventListener('DOMContentLoaded', mount);
+  })();
+
   // Service Worker: HTML network-first mit Offline-Fallback, Hash-Assets/Bilder aus dem Cache (siehe /sw.js).
   // Nur auf HTTPS/localhost; Fehler werden bewusst still ignoriert (kein Rauschen im Fehler-Reporting).
   try {
