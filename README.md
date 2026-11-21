@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.26.0)
+# 🎉 PartyGame (Version 3.26.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -254,7 +254,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.26.0 (Aktueller Stand):** ⛶ Vollbild-Knopf auf allen Seiten (Android/Desktop echtes Vollbild, iPhone: Anleitung zum Home-Bildschirm). Richtige App-Icons (PNG 180/192/512) für Home-Bildschirm und „App installieren“; TV-Seite und Foto-Galerie starten vom Home-Bildschirm ebenfalls ohne Adressleiste.
+- **v3.26.1 (Aktueller Stand):** Zwei Foto-&-Pose-Karten vereinfacht: statt „Albumcover nachstellen“ und „Boyband-Cover“ jetzt „Rücken an Rücken wie Actionhelden“ (Paar) und „Gruppenfoto mit Daumen hoch“ (alle).
+- **v3.26.0:** ⛶ Vollbild-Knopf auf allen Seiten (Android/Desktop echtes Vollbild, iPhone: Anleitung zum Home-Bildschirm). Richtige App-Icons (PNG 180/192/512) für Home-Bildschirm und „App installieren“; TV-Seite und Foto-Galerie starten vom Home-Bildschirm ebenfalls ohne Adressleiste.
 - **v3.25.0:** Party-Mix kann **♾️ endlos** laufen (Admin → Party-Mix → Runden), neuer Admin-Knopf **🏁 Beenden** zeigt jederzeit den Endstand (vorher ggf. Finale-Duell); Runden-Limit „Alle“ heißt jetzt „♾️ Ohne Limit“. Galerie `/fotos`: 🗑️ direkt auf den Fotos, und über „🔑 Spielleitung“ (Host-PIN) lassen sich alle Fotos löschen – auch ältere ohne Lösch-Schlüssel und Fotos von Räumen, die nicht mehr laufen.
 - **v3.24.1:** Fotos werden schon nach 3 Tagen automatisch gelöscht (vorher 7).
 - **v3.24.0:** Fotos löschen in der Galerie `/fotos`: eigene Uploads (Lösch-Schlüssel bleibt im Browser, mit dem hochgeladen wurde) und als Spielleitung alle Fotos des Raums – 🗑️ in der Großansicht. Gelöschte Fotos verschwinden auch aus TV-Einblendung, Diashow und laufender Foto-Challenge.
