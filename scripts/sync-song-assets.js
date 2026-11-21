@@ -2,8 +2,15 @@
 /**
  * Syncs and audits SongQuiz assets:
  *  - Verifies clean original matches on Deezer / iTunes (ranked, strict non-original exclusion)
- *  - Downloads local album covers to data/song-art/<idx>.jpg
- *  - When --fix-audio is passed, replaces local MP3s with verified official 30s studio previews
+ *  - Downloads local album covers to data/song-art/<idx>.jpg (missing ones, or all with --force-art)
+ *  - Downloads the official 30s preview to data/song-audio/<idx>.mp3 when it is missing (new songs);
+ *    --fix-audio replaces existing MP3s too
+ *  - --only=373-385,236 limits the run to these song indices
+ *  - --dry-run only prints the matches (nothing is written) – to check which track a song resolves to
+ *
+ *   node scripts/sync-song-assets.js --only=373-385 --dry-run
+ *   node scripts/sync-song-assets.js --only=373-385
+ *   node scripts/analyze-song-starts.js   # afterwards: skip quiet intros
  */
 
 const fs = require('fs');
@@ -18,6 +25,18 @@ const ART_DIR = path.join(ROOT, 'data', 'song-art');
 
 const FIX_AUDIO = process.argv.includes('--fix-audio');
 const FORCE_ART = process.argv.includes('--force-art');
+const DRY_RUN = process.argv.includes('--dry-run');
+// --only=1,5,10-12 → Set der Indizes (ohne Angabe: alle)
+const ONLY = (() => {
+  const arg = process.argv.find((a) => a.startsWith('--only='));
+  if (!arg) return null;
+  const set = new Set();
+  for (const part of arg.slice(7).split(',')) {
+    const [a, b] = part.split('-').map(Number);
+    for (let i = a; i <= (Number.isInteger(b) ? b : a); i++) set.add(i);
+  }
+  return set;
+})();
 
 fs.mkdirSync(ART_DIR, { recursive: true });
 fs.mkdirSync(AUDIO_DIR, { recursive: true });
@@ -126,9 +145,15 @@ function buildMatcher(song) {
     return 0;
   };
 
+  // Gewünschte Fassung aus dem Titel, z. B. „Day 'N' Nite (Crookers Remix)“: ein Remix-Titel braucht einen
+  // Remix-Treffer, und die passende Klammer-Angabe hat Vorrang vor anderen Fassungen
+  const wantRemix = /remix/i.test(song.title || '');
+  const wantVersion = norm((String(song.title || '').match(/\(([^)]*)\)/) || [])[1] || '');
+
   const scoreCandidate = (ar, tr) => {
     if (isBadText(ar) || isBadText(tr)) return -1;
     if (!/[&/]/.test(song.title || '') && /&/.test(stripParens(tr))) return -1;
+    if (wantRemix && !/remix/i.test(tr || '')) return -1;
     const am = artistMatch(ar);
     const tm = titleMatch(tr);
     if (!am || !tm) return -1;
@@ -136,6 +161,7 @@ function buildMatcher(song) {
     if (!/\(.*?(version|edit|remaster|mix)/i.test(tr || '')) score += 15;
     if (/\b(single\s*edit|radio\s*edit|7["”']?\s*mix)\b/i.test(tr || '')) score += 8;
     if (norm(stripParens(tr)) === tStrip || toLat(stripParens(tr)) === tLatStrip) score += 20;
+    if (wantVersion && norm(tr).includes(wantVersion)) score += 30;
     return score;
   };
 
@@ -235,11 +261,13 @@ function transcodeTo96kMp3(inputPath, outMp3) {
 (async () => {
   const report = { matched: [], missed: [], artSaved: 0, audioReplaced: 0 };
   for (let i = 0; i < songs.length; i++) {
+    if (ONLY && !ONLY.has(i)) continue;
     const song = songs[i];
     const artFile = path.join(ART_DIR, `${i}.jpg`);
     const audioFile = path.join(AUDIO_DIR, `${i}.mp3`);
     const needArt = FORCE_ART || !fs.existsSync(artFile);
-    if (!needArt && !FIX_AUDIO) continue;
+    const needAudio = FIX_AUDIO || !fs.existsSync(audioFile);
+    if (!needArt && !needAudio && !(DRY_RUN && ONLY)) continue;
 
     // Special case: Estelle feat. Kanye West (Lost Frequencies Remix) keeps its existing remix MP3
     // and uses the official Estelle - American Boy album cover.
@@ -268,12 +296,14 @@ function transcodeTo96kMp3(inputPath, outMp3) {
       continue;
     }
     report.matched.push({ idx: i, song: `${song.artist} - ${song.title}`, matched: match.matched, source: match.source, score: match.score });
+    console.log(`[OK] ${i}: ${song.artist} - ${song.title}  →  ${match.matched}  (${match.source}, Score ${match.score})${DRY_RUN ? '' : `${needArt ? ' +Cover' : ''}${needAudio ? ' +Audio' : ''}`}`);
+    if (DRY_RUN) continue;
 
     if (needArt && match.art) {
       if (await downloadToFile(match.art, artFile)) report.artSaved++;
     }
 
-    if (FIX_AUDIO && !keepExistingAudio && match.preview) {
+    if (needAudio && !keepExistingAudio && match.preview) {
       const ext = match.preview.includes('.m4a') ? '.m4a' : '.mp3';
       const tmp = path.join(os.tmpdir(), `pg_sync_${i}${ext}`);
       if (await downloadToFile(match.preview, tmp)) {
@@ -299,7 +329,7 @@ function transcodeTo96kMp3(inputPath, outMp3) {
     missedCount: report.missed.length,
   }, null, 2));
 
-  const outPath = '/home/openclaw/.gemini/antigravity-cli/brain/31eb629f-27f3-4a73-a65b-bb11e2f164ed/scratch/song-audit-v2.json';
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  const outPath = path.join(os.tmpdir(), 'partygame-song-sync-report.json');
   fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
+  console.log(`Bericht: ${outPath}`);
 })();

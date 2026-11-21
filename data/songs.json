@@ -1768,12 +1768,12 @@
     "lang": "en"
   },
   {
-    "artist": "Kid Cudi",
-    "title": "Day 'N' Nite (Nightmare)",
+    "artist": "Kid Cudi & Crookers",
+    "title": "Day 'N' Nite (Crookers Remix)",
     "year": 2008,
-    "type": "solo",
+    "type": "gruppe",
     "lang": "en",
-    "query": "Kid Cudi Day N Nite"
+    "query": "Kid Cudi Crookers Day N Nite"
   },
   {
     "artist": "50 Cent feat. Ne-Yo",
@@ -2559,7 +2559,7 @@
   },
   {
     "artist": "Mann feat. 50 Cent",
-    "title": "Buzzin",
+    "title": "Buzzin (Remix)",
     "year": 2011,
     "type": "gruppe",
     "lang": "en",
@@ -2775,5 +2775,104 @@
     "type": "gruppe",
     "lang": "ru",
     "query": "SEREBRO Мало тебя"
+  },
+  {
+    "artist": "Timbaland feat. Justin Timberlake & Nelly Furtado",
+    "title": "Give It to Me",
+    "year": 2007,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Timbaland Give It To Me"
+  },
+  {
+    "artist": "Flo Rida",
+    "title": "Good Feeling",
+    "year": 2011,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Gnarls Barkley",
+    "title": "Crazy",
+    "year": 2006,
+    "type": "gruppe",
+    "lang": "en"
+  },
+  {
+    "artist": "Kevin Rudolf feat. Lil Wayne",
+    "title": "Let It Rock",
+    "year": 2008,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Kevin Rudolf Let It Rock"
+  },
+  {
+    "artist": "Chris Brown",
+    "title": "Turn Up the Music",
+    "year": 2012,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Calvin Harris feat. Tinie Tempah",
+    "title": "Drinking from the Bottle",
+    "year": 2012,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Calvin Harris Drinking from the Bottle"
+  },
+  {
+    "artist": "Timbaland feat. Katy Perry",
+    "title": "If We Ever Meet Again",
+    "year": 2010,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Timbaland If We Ever Meet Again"
+  },
+  {
+    "artist": "Flo Rida feat. David Guetta",
+    "title": "Club Can't Handle Me",
+    "year": 2010,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Flo Rida Club Can't Handle Me"
+  },
+  {
+    "artist": "Nelly Furtado feat. Timbaland",
+    "title": "Promiscuous",
+    "year": 2006,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Nelly Furtado Promiscuous"
+  },
+  {
+    "artist": "The Black Eyed Peas",
+    "title": "Don't Stop the Party",
+    "year": 2010,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Black Eyed Peas Don't Stop the Party"
+  },
+  {
+    "artist": "Sido",
+    "title": "Augen auf",
+    "year": 2009,
+    "type": "solo",
+    "lang": "de"
+  },
+  {
+    "artist": "Juli",
+    "title": "Perfekte Welle",
+    "year": 2004,
+    "type": "gruppe",
+    "lang": "de"
+  },
+  {
+    "artist": "Marteria, Yasha & Miss Platnum",
+    "title": "Lila Wolken",
+    "year": 2012,
+    "type": "gruppe",
+    "lang": "de",
+    "query": "Marteria Lila Wolken"
   }
 ]
