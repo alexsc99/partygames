@@ -4,6 +4,25 @@
 
 ---
 
+## 🧭 Kurz erklärt: Was ist PartyGame?
+
+Ein Browser-Spiel für Partyabende: Einer öffnet die Seite auf dem Fernseher, alle anderen treten **ohne App und ohne Konto** mit dem Handy bei – per QR-Code oder 4-stelligem Raumcode. Danach spielt die Gruppe zusammen Quiz-, Rate-, Mal- und Mutproben-Runden, bei denen die Handys die Controller sind (Prinzip *Kahoot / Jackbox*, aber selbst gehostet und auf Deutsch).
+
+**Das Spiel kann:**
+- 🎮 **19 Spielmodi + Party-Mix:** Quiz, Wer würde?, Entweder-Oder, Schätzen, Imposter, Zeichnen & Raten, Tabu, Pantomime, Song-Erkennen, Bild-Quiz, Wahrheit/Lüge, Heißer Stuhl u. v. m. Der **Party-Mix** wechselt automatisch zwischen den Spielen, wahlweise auch endlos.
+- 📚 **Viel Inhalt:** über 1.100 Fragen in 5 Kategorien (von „Party“ bis „18+“), rund 370 Songs, 200 Bilder-Rätsel; gespielte Fragen wiederholen sich nicht.
+- 👥 **Bis zu 12 Spieler pro Raum, mehrere Räume parallel**, wahlweise in Teams.
+- 📺 **3 Spielweisen:** mit TV als Leinwand, ganz ohne TV (alles am Handy) oder mit nur **einem Gerät** zum Herumreichen.
+- 🎪 **Party-Karten, Joker und geheime Missionen:** kleine Aufgaben zwischen den Runden, Joker für Rundensieger, Finale-Duell der zwei Besten und Auszeichnungen am Ende („Blitzdenker“, „Fotograf des Abends“ …).
+- 📸 **Foto-Wand:** Fotos direkt vom Handy hochladen, Diashow am Spielende, Galerie mit ZIP-Download (Fotos werden nach 3 Tagen automatisch gelöscht).
+- 🌍 **Auch aus der Ferne:** Remote-Modus mit passenden Karten und Foto-Challenges für Runden per Video-Call.
+- 🛠️ **Anpassbar:** Tempo, Kategorien, Rundenzahl, Alkohol-frei-Modus und eigene Insider-Fragen und -Karten über die Admin-Seite.
+- 🔄 **Robust:** Wer kurz das WLAN verliert, steigt mit Punkten wieder ein; laufende Spiele überstehen einen Server-Neustart.
+
+**Technik in einem Satz:** Node.js + Express + Socket.IO (Echtzeit), reines HTML/CSS/JavaScript im Browser, keine Datenbank und kein Build-Schritt – nur `npm install` und `node server.js`.
+
+---
+
 ## 🚀 Wie es funktioniert (Multi-Room)
 
 Jede Runde läuft in einem **eigenen geschützten Raum** mit 4-stelligem Raumcode (z. B. `/?room=K7M2`). Ohne gültigen Raumcode oder Einladungslink/QR-Code hat niemand Zugriff auf laufende Lobbys.
