@@ -2874,5 +2874,59 @@
     "type": "gruppe",
     "lang": "de",
     "query": "Marteria Lila Wolken"
+  },
+  {
+    "artist": "Егор Крид",
+    "title": "Потрачу",
+    "year": 2017,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Егор Крид Потрачу"
+  },
+  {
+    "artist": "Coolio feat. L.V.",
+    "title": "Gangsta's Paradise",
+    "year": 1995,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Coolio Gangsta's Paradise"
+  },
+  {
+    "artist": "Ariana Grande",
+    "title": "34+35",
+    "year": 2020,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "Ariana Grande",
+    "title": "Dangerous Woman",
+    "year": 2016,
+    "type": "solo",
+    "lang": "en"
+  },
+  {
+    "artist": "G-Eazy feat. Remo",
+    "title": "I Mean It",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "G-Eazy I Mean It"
+  },
+  {
+    "artist": "Iggy Azalea feat. Charli XCX",
+    "title": "Fancy",
+    "year": 2014,
+    "type": "gruppe",
+    "lang": "en",
+    "query": "Iggy Azalea Fancy"
+  },
+  {
+    "artist": "GRIVINA",
+    "title": "Я хочу",
+    "year": 2018,
+    "type": "solo",
+    "lang": "ru",
+    "query": "Grivina Ja khochu"
   }
 ]

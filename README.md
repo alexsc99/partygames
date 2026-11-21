@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.28.0)
+# 🎉 PartyGame (Version 3.28.1)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -10,7 +10,7 @@ Ein Browser-Spiel für Partyabende: Einer öffnet die Seite auf dem Fernseher, a
 
 **Das Spiel kann:**
 - 🎮 **19 Spielmodi + Party-Mix:** Quiz, Wer würde?, Entweder-Oder, Schätzen, Imposter, Zeichnen & Raten, Tabu, Pantomime, Song-Erkennen, Bild-Quiz, Wahrheit/Lüge, Heißer Stuhl u. v. m. Der **Party-Mix** wechselt automatisch zwischen den Spielen, wahlweise auch endlos.
-- 📚 **Viel Inhalt:** über 1.100 Fragen in 5 Kategorien (von „Party“ bis „18+“), fast 390 Songs, 200 Bilder-Rätsel; gespielte Fragen wiederholen sich nicht.
+- 📚 **Viel Inhalt:** über 1.100 Fragen in 5 Kategorien (von „Party“ bis „18+“), fast 400 Songs, 200 Bilder-Rätsel; gespielte Fragen wiederholen sich nicht.
 - 👥 **Bis zu 12 Spieler pro Raum, mehrere Räume parallel**, wahlweise in Teams.
 - 📺 **3 Spielweisen:** mit TV als Leinwand, ganz ohne TV (alles am Handy) oder mit nur **einem Gerät** zum Herumreichen.
 - 🎪 **Party-Karten, Joker und geheime Missionen:** kleine Aufgaben zwischen den Runden, Joker für Rundensieger, Finale-Duell der zwei Besten und Auszeichnungen am Ende („Blitzdenker“, „Fotograf des Abends“ …).
@@ -144,10 +144,10 @@ partygame/
 │   ├── teams.json       # Team-Wahl
 │   ├── scale.json       # Skala 1–10
 │   ├── wordassoc.json   # Wort-Assoziation
-│   ├── songs.json       # Erkenne den Song (237 EN, 33 DE, 116 RU = 386 Songs)
-│   ├── song-audio/      # Lokale Song-Vorschau-MP3s (0.mp3–385.mp3); neue Songs: node scripts/sync-song-assets.js --only=<Index>
+│   ├── songs.json       # Erkenne den Song (242 EN, 33 DE, 118 RU = 393 Songs)
+│   ├── song-audio/      # Lokale Song-Vorschau-MP3s (0.mp3–392.mp3); neue Songs: node scripts/sync-song-assets.js --only=<Index>
 │   ├── song-starts.json # Startversatz je Vorschau in Sekunden (leises Intro überspringen), erzeugt von scripts/analyze-song-starts.js
-│   ├── song-art/        # Lokale Album-Cover (0.jpg–385.jpg)
+│   ├── song-art/        # Lokale Album-Cover (0.jpg–392.jpg)
 │   ├── imagequiz.json   # Bild-Quiz (201 Fragen: Logos, Sehenswürdigkeiten, Flaggen, Automarken, Länder-Umrisse)
 │   ├── iq-images/       # Lokale Bilder für das Bild-Quiz (neutrale Dateinamen)
 │   ├── partycards.json  # Party-Karten (128 Aufgaben zwischen den Runden, Platzhalter {leader} {last} {a} {b} {player}; "local"/"remote" = nur vor Ort bzw. nur Remote, "photo" = Foto-Knöpfe am Handy)
@@ -267,7 +267,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.28.0 (Aktueller Stand):** 13 neue Songs (u. a. Gnarls Barkley „Crazy“, Flo Rida „Good Feeling“, Timbaland „Give It to Me“ & „If We Ever Meet Again“, Nelly Furtado „Promiscuous“, Sido „Augen auf“, Juli „Perfekte Welle“, Marteria „Lila Wolken“) mit offiziellen 30-s-Vorschauen und Covern; „Day 'N' Nite“ und „Buzzin“ laufen jetzt in der Crookers- bzw. 50-Cent-Remix-Fassung. `scripts/sync-song-assets.js` kann gezielt einzelne Songs holen (`--only`, `--dry-run`) und bevorzugt die im Titel genannte Fassung (z. B. „(Crookers Remix)“). Party-Karten vereinfacht (bis 10 zählen, „Alle meine Entchen“ summen, Lieblingsessen, Handy-Regel, Herz-Foto, Sprung-Gruppenfoto, Lieblingsglas, Grimassen-Selfie) und neue Weitergeben-Karte „Jeder sagt der Person rechts, was er an ihr mag“.
+- **v3.28.1 (Aktueller Stand):** 7 neue Songs: Егор Крид „Потрачу“, Coolio „Gangsta's Paradise“ (startet nach dem leisen Intro bei 10 s), Ariana Grande „34+35“ & „Dangerous Woman“, G-Eazy „I Mean It“, Iggy Azalea „Fancy“, GRIVINA „Я хочу“ – jeweils offizielle 30-s-Vorschau und Cover. „I Kissed A Girl“ und „Main Chick“ waren schon dabei (Tonspur geprüft).
+- **v3.28.0:** 13 neue Songs (u. a. Gnarls Barkley „Crazy“, Flo Rida „Good Feeling“, Timbaland „Give It to Me“ & „If We Ever Meet Again“, Nelly Furtado „Promiscuous“, Sido „Augen auf“, Juli „Perfekte Welle“, Marteria „Lila Wolken“) mit offiziellen 30-s-Vorschauen und Covern; „Day 'N' Nite“ und „Buzzin“ laufen jetzt in der Crookers- bzw. 50-Cent-Remix-Fassung. `scripts/sync-song-assets.js` kann gezielt einzelne Songs holen (`--only`, `--dry-run`) und bevorzugt die im Titel genannte Fassung (z. B. „(Crookers Remix)“). Party-Karten vereinfacht (bis 10 zählen, „Alle meine Entchen“ summen, Lieblingsessen, Handy-Regel, Herz-Foto, Sprung-Gruppenfoto, Lieblingsglas, Grimassen-Selfie) und neue Weitergeben-Karte „Jeder sagt der Person rechts, was er an ihr mag“.
 - **v3.27.0:** Internet-fest ohne Passwörter: Nachrichten-Limit pro Verbindung, Fehler-Schutz für alle Socket-Handler (kaputte Nachrichten konnten den Server abstürzen lassen und das Log fluten), Sperre nach 30 falschen Raumcodes pro IP. Neu: 🔁 Revanche per Handy-Abstimmung, Party-Karten einzeln abschaltbar, Foto-Challenges auch vor Ort, kurze Anleitung beim ersten Beitritt. Fix: „Nochmal spielen“ nach „🏁 Beenden“ endete sofort wieder. Betrieb: CI auf Node 22 + `npm audit`, Auto-Deploy deployt genau den geprüften Commit und rollt zurück, wenn der Server danach nicht antwortet; Logs werden stündlich nach Größe rotiert und haben eine Obergrenze.
 - **v3.26.1:** Zwei Foto-&-Pose-Karten vereinfacht: statt „Albumcover nachstellen“ und „Boyband-Cover“ jetzt „Rücken an Rücken wie Actionhelden“ (Paar) und „Gruppenfoto mit Daumen hoch“ (alle).
 - **v3.26.0:** ⛶ Vollbild-Knopf auf allen Seiten (Android/Desktop echtes Vollbild, iPhone: Anleitung zum Home-Bildschirm). Richtige App-Icons (PNG 180/192/512) für Home-Bildschirm und „App installieren“; TV-Seite und Foto-Galerie starten vom Home-Bildschirm ebenfalls ohne Adressleiste.
@@ -328,11 +329,11 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 📊 Aktueller Content-Umfang (Stand: 17.11.2026)
 
-Insgesamt **1722 Einträge** in `/opt/partygame/data/`:
+Insgesamt **1729 Einträge** in `/opt/partygame/data/`:
 
-### 🎵 Lieder (`songs.json`: 386 gesamt)
-- **Nach Sprache (`lang`):** `en`: 237 · `ru`: 116 · `de`: 33
-- **Nach Typ (`type`):** `gruppe`: 229 · `solo`: 157
+### 🎵 Lieder (`songs.json`: 393 gesamt)
+- **Nach Sprache (`lang`):** `en`: 242 · `ru`: 118 · `de`: 33
+- **Nach Typ (`type`):** `gruppe`: 232 · `solo`: 161
 
 ### 🖼️ Bilderquiz (`imagequiz.json`: 201 gesamt)
 - `logos`: 50 · `flags`: 41 · `landmarks`: 40 · `countries`: 40 · `cars`: 30
