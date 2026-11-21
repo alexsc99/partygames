@@ -13,3 +13,5 @@ data/photos/
 data/custom.json
 data/customcards.json
 data/customcards.json.*.tmp
+data/disabledcards.json
+data/disabledcards.json.*.tmp

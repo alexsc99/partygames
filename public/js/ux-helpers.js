@@ -682,6 +682,14 @@
     else document.addEventListener('DOMContentLoaded', mount);
   })();
 
+  // Raumcode-Sperre (zu viele falsche Codes von dieser IP): Hinweis statt Spiel, kein automatisches Neuanlegen
+  window.pgShowRoomLocked = function (e) {
+    const msg = (e && e.error) || 'Zu viele falsche Raumcodes – bitte später erneut versuchen.';
+    const app = document.getElementById('app');
+    if (!app) return window.pgToast(msg, 0);
+    app.innerHTML = `<div class="card" style="max-width:520px;margin:10vh auto;text-align:center;padding:20px"><div style="font-size:42px">⛔</div><div style="font-weight:800;margin-top:8px">${window.esc(msg)}</div></div>`;
+  };
+
   // Service Worker: HTML network-first mit Offline-Fallback, Hash-Assets/Bilder aus dem Cache (siehe /sw.js).
   // Nur auf HTTPS/localhost; Fehler werden bewusst still ignoriert (kein Rauschen im Fehler-Reporting).
   try {

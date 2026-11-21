@@ -315,6 +315,7 @@ if (ROOM_CODE) {
     if (tok) socket.emit('host:auth', tok);
   });
   socket.on('room:error', () => createAndOpenRoom('/host'));
+  socket.on('room:locked', pgShowRoomLocked);
 }
 let S = null, url = '', lastPreloadImg = '', feed = [], muted = false, lastSfxKey = '', lastTickSec = -1, lastSongKey = '', songPlayingSent = '', clientDeadline = 0, clientTotalMs = 5000;
 let lastCardOutcome = '';
@@ -942,7 +943,7 @@ function renderView() {
     const snapReady = cardWaiting && S.card.act === 'snap' && S.card.stage === 'vote' && S.card.voters.length >= 2;
     const showNext = ['lobby', 'result', 'discuss', 'end'].includes(S.phase) || (S.phase === 'card' && (!cardWaiting || snapReady));
     hostNextBtn.style.display = showNext ? 'inline-block' : 'none';
-    hostNextBtn.textContent = S.phase === 'lobby' ? '▶ Spiel starten' : S.phase === 'end' ? '🔄 Nochmal' : snapReady ? '🏁 Auswerten' : '▶ Weiter';
+    hostNextBtn.textContent = S.phase === 'lobby' ? '▶ Spiel starten' : S.phase === 'end' ? `🔁 Revanche${S.rematch && S.rematch.count ? ` (${S.rematch.count}/${S.rematch.needed})` : ''}` : snapReady ? '🏁 Auswerten' : '▶ Weiter';
   }
   qrUrl.textContent = url;
   const drawing = S.mode === 'draw' && S.phase === 'question';

@@ -93,7 +93,7 @@
        <option value="vote">🎤 Reihum-Runde (bester Beitrag per Handy)</option>
        <option value="duel">⚡ Blitz-Duell (2 Ausgeloste)</option>
        <option value="rule">📜 Neue Regel (3 Runden)</option>
-       <option value="snap">📸 Foto-Challenge (nur Remote)</option>
+       <option value="snap">📸 Foto-Challenge (Remote oder „auch vor Ort“)</option>
        <option value="crowd">👥 Mitmach-Karte („Alle mit Brille …“, ohne Punkte)</option>
      </select>
      <select id="ccWhere" style="flex:1;min-width:140px;padding:9px;border-radius:10px;background:#1b1340;color:#fff;border:1px solid #ffffff33;font-size:14px">
@@ -106,6 +106,13 @@
    <button class="go" style="margin-top:8px;padding:11px;font-size:15px" onclick="addPartyCard()">Karte hinzufügen</button>
    <div id="ccFb" style="font-size:12px;margin-top:6px;opacity:.85"></div>
    <div id="ccList" class="plist" style="margin-top:8px"></div>
+  </div>
+</details>
+<details class="card grp" id="cardManage">
+  <summary><span class="gt">🗂️ Party-Karten verwalten</span><span class="gs" id="cmSum">alle aktiv</span></summary>
+  <div class="gb">
+   <div style="font-size:13px;opacity:.8;margin-bottom:8px">Häkchen weg = die Karte kommt nicht mehr vor (gilt für alle Räume, bleibt gespeichert). 🏠 nur vor Ort · 🌍 nur Remote.</div>
+   <div id="cmList" class="plist"><div style="opacity:.6">Lädt …</div></div>
   </div>
 </details>
 <div style="text-align:center;font-size:11px;opacity:.45;margin:14px 0 4px">PartyGame v__APP_VERSION__</div>
@@ -193,6 +200,7 @@ if (ROOM_CODE) {
     });
   }
   socket.on('room:error', () => createAndOpenAdmin());
+  socket.on('room:locked', pgShowRoomLocked);
 }
 let S = null; let qrInited = false; let lastAdminSig = '';
 async function copyGalleryLink() {
@@ -278,9 +286,41 @@ function addPartyCard() {
     else fb.textContent = '❌ ' + ((r && r.error) || 'Fehler');
   });
 }
+// Karten verwalten: Liste kommt nur beim Aufklappen vom Server, Häkchen spiegeln S.disabledCards
+let cmCards = null, cmSig = '';
+function loadCardList() {
+  socket.emit('host:cardList', list => { cmCards = Array.isArray(list) ? list : []; cmSig = ''; renderCardManager(); });
+}
+function renderCardManager() {
+  const off = new Set((S && S.disabledCards) || []);
+  const sum = document.getElementById('cmSum');
+  if (cmCards) {
+    const active = cmCards.filter(c => !off.has(c.id)).length;
+    sum.textContent = active === cmCards.length ? `alle ${cmCards.length} aktiv` : `${active} von ${cmCards.length} aktiv`;
+  } else sum.textContent = off.size ? `${off.size} abgeschaltet` : 'alle aktiv';
+  if (!cmCards || !document.getElementById('cardManage').open) return;
+  const sig = [...off].sort().join(',') + '|' + cmCards.length;
+  if (sig === cmSig) return;
+  cmSig = sig;
+  const where = { local: '🏠 ', remote: '🌍 ', both: '' };
+  const groups = [];
+  for (const c of cmCards) {
+    let g = groups.find(x => x.type === c.type);
+    if (!g) groups.push(g = { type: c.type, title: c.title, cards: [] });
+    g.cards.push(c);
+  }
+  document.getElementById('cmList').innerHTML = groups.map(g => `<div class="sub">${esc(g.title)} (${g.cards.filter(c => !off.has(c.id)).length}/${g.cards.length})</div>` +
+    g.cards.map(c => `<label class="prow" style="justify-content:flex-start;gap:10px;font-size:14px;cursor:pointer;${off.has(c.id) ? 'opacity:.5' : ''}">
+      <input type="checkbox" data-id="${esc(c.id)}" ${off.has(c.id) ? '' : 'checked'} onchange="socket.emit('host:cardEnabled',{id:this.dataset.id,on:this.checked})" style="width:20px;height:20px;flex:none">
+      <span>${where[c.where] || ''}${c.custom ? '✏️ ' : ''}${esc(c.text)}${c.cat === 'hot18' ? ' <small>(18+)</small>' : c.cat === 'peinlich' ? ' <small>(Peinlich)</small>' : ''}</span></label>`).join('')).join('');
+}
+document.getElementById('cardManage').addEventListener('toggle', e => { if (e.target.open) loadCardList(); });
 socket.on('state', s => {
+  const customCount = S && S.customCards ? S.customCards.length : -1;
   S = s;
   renderCustomCardList();
+  if (cmCards && customCount !== s.customCards.length) loadCardList(); // eigene Karte neu/gelöscht
+  else renderCardManager();
   if (!qrInited && s.publicUrl) {
     document.getElementById('qrInput').value = s.publicUrl;
     qrInited = true;
@@ -422,7 +462,7 @@ function render() {
         ? `<button class="go" style="background:#d89e00" onclick="socket.emit('host:next')">⏭ Karte überspringen</button>`
         : `<button class="go" onclick="socket.emit('host:next')">▶ Weiter zur nächsten Runde</button>`;
   }
-  else mainBtn = `<button class="go" onclick="socket.emit('host:start')">🔄 Nochmal spielen</button>`;
+  else mainBtn = `<button class="go" onclick="socket.emit('host:start')">🔁 Revanche – gleiche Spieler${S.rematch && S.rematch.count ? ` (${S.rematch.count}/${S.rematch.needed} Handys)` : ''}</button>`;
 
   const PHASE_LABELS = { spin: 'Glücksrad', question: 'Frage läuft', go: 'Los!', wait: 'Warten…', write: 'Schreiben', discuss: 'Diskussion', result: 'Auflösung', card: 'Party-Karte' };
   const phaseLbl = S.paused ? '⏸ Pausiert' : PHASE_LABELS[S.phase];
@@ -448,7 +488,7 @@ function render() {
     S.songLangs?.en !== false, S.songLangs?.de !== false,
     S.effectiveRussianShare ?? S.russianShare ?? 0, S.songOnlyArtistTitle,
     S.roundLimit, S.teamMode, S.displayMode || (S.noTvMode ? 'notv' : 'tv'),
-    S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree, S.partyCards, S.remote,
+    S.timerSpeed, S.finalDouble, S.wheelEnabled !== false, S.secretMissions, S.alcoholFree, S.partyCards, S.remote, S.snapLocal,
     S.discussVotes, S.standUp, S.captainMode, S.partnerRounds, S.duelFinale, S.jokersOn, S.duel ? S.duel.n : '',
     S.card ? JSON.stringify(S.card) : '', S.rule || '', S.photoCount,
     S.lobbyBanner || '', S.spin?.id || '',
@@ -643,6 +683,10 @@ function render() {
       <div class="sub">${S.remote
         ? '🌍 Remote: keine Karten mit Sitznachbarn oder Gruppenfotos. Dafür Foto-Challenges (jeder fotografiert z. B. sein Getränk oder eine Pose, alle wählen anonym das beste Foto) und Kamera-Aufgaben. Tipp: Teile den TV-Bildschirm (/host) im Discord-Call, alle spielen am eigenen Handy mit.'
         : 'Spielt ihr verteilt per Discord/Video-Call? Dann „Remote“ wählen – die Karten passen sich an.'}</div>
+      ${S.remote ? '' : `<div class="cats">
+        <button class="${S.snapLocal ? 'active' : ''}" onclick="socket.emit('host:snapLocal',!S.snapLocal)">📸 Foto-Challenges auch vor Ort: ${S.snapLocal ? 'An' : 'Aus'}</button>
+      </div>
+      <div class="sub">Jeder lädt am Handy ein Foto zum Thema hoch (z. B. „Selfie mit einem Gegenstand als Hut“), danach stimmen alle anonym über das beste ab (+30, jedes Foto +10).</div>`}
     `)}
     ${S.phase === 'lobby' ? grp('wheel', '🎰 Glücksrad', 'Spiel / Spieler auslosen', `
       <div class="cats">

@@ -20,6 +20,7 @@ const {
   getSocketIp,
   isAllowedOrigin,
   createRateLimiter,
+  createRoomGuessGuard,
 } = require('./src/security');
 
 const DATA = {
@@ -84,6 +85,24 @@ function saveCustomCards() {
   fs.writeFile(tmp, JSON.stringify(CUSTOM_CARDS, null, 2), err => {
     if (!err) fs.rename(tmp, CUSTOM_CARDS_FILE, e => e && writeLog('WARN', 'customcards_save_failed', { error: e.message }));
     else writeLog('WARN', 'customcards_save_failed', { error: err.message });
+  });
+}
+// Einzeln abgeschaltete Party-Karten (IDs, global für alle Räume, in /admin umschaltbar, nicht im Git)
+const DISABLED_CARDS_FILE = path.join(__dirname, 'data', 'disabledcards.json');
+const DISABLED_CARDS = new Set();
+try {
+  if (fs.existsSync(DISABLED_CARDS_FILE)) {
+    const saved = JSON.parse(fs.readFileSync(DISABLED_CARDS_FILE, 'utf8'));
+    if (Array.isArray(saved)) saved.filter(id => typeof id === 'string').forEach(id => DISABLED_CARDS.add(id));
+  }
+} catch (err) {
+  writeLog('WARN', 'disabledcards_load_failed', { error: err?.message || String(err) });
+}
+function saveDisabledCards() {
+  const tmp = `${DISABLED_CARDS_FILE}.${process.pid}.tmp`;
+  fs.writeFile(tmp, JSON.stringify([...DISABLED_CARDS]), err => {
+    if (!err) fs.rename(tmp, DISABLED_CARDS_FILE, e => e && writeLog('WARN', 'disabledcards_save_failed', { error: e.message }));
+    else writeLog('WARN', 'disabledcards_save_failed', { error: err.message });
   });
 }
 const PARTY_CARD_GAP = { rare: 5, normal: 3, often: 2 }; // ungefährer Rundenabstand je Häufigkeit
@@ -199,6 +218,30 @@ const apiLimiter = createRateLimiter({ windowMs: 60_000, max: 180 });
 const photoLimiter = createRateLimiter({ windowMs: 60_000, max: 900 });
 app.use('/api/photos', photoLimiter);
 app.use(['/api', '/qr.png', '/info'], (req, res, next) => (req.originalUrl.startsWith('/api/photos') ? next() : apiLimiter(req, res, next)));
+
+// Raumcode-Raten: nach 30 verschiedenen falschen Codes pro IP 10 Min. Sperre (Sockets + HTTP, siehe src/security.js)
+const roomGuessGuard = createRoomGuessGuard({ maxCodes: 30 });
+const roomLockMsg = ms => `Zu viele falsche Raumcodes – bitte in ${Math.max(1, Math.ceil(ms / 60_000))} Min. erneut versuchen.`;
+// Fehlversuch zählen; true, wenn die IP dadurch gerade gesperrt wurde
+function noteRoomMiss(ip, code) {
+  if (!roomGuessGuard.fail(ip, code)) return false;
+  writeLog('WARN', 'room_guess_locked', { ip, minutes: roomGuessGuard.lockMs / 60_000 });
+  return true;
+}
+// Gesperrt ist auch der Zugriff auf existierende Codes (sonst verrät die Sperre Treffer) – außer auf Räume,
+// die von genau dieser IP angelegt wurden (TV der eigenen Party).
+const roomLockedFor = (ip, room) => (room && room.creatorIp === ip ? 0 : roomGuessGuard.lockedFor(ip));
+// HTTP: true = weitermachen; false = 429 wurde bereits gesendet
+function roomLookupAllowed(req, res, code, exists, room = null) {
+  const ip = getClientIp(req);
+  const left = roomLockedFor(ip, room);
+  if (left) {
+    res.status(429).json({ ok: false, locked: true, error: roomLockMsg(left) });
+    return false;
+  }
+  if (!exists && code) noteRoomMiss(ip, code);
+  return true;
+}
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -418,6 +461,7 @@ app.post('/api/rooms', (req, res) => {
   const code = generateRoomCode();
   const hostToken = crypto.randomBytes(8).toString('hex');
   const room = createRoom(code, hostToken);
+  room.creatorIp = getClientIp(req);
   rooms.set(code, room);
   writeLog('INFO', 'room_created', { code });
   scheduleRoomsSnapshot();
@@ -447,6 +491,7 @@ app.delete('/api/rooms/:code', (req, res) => {
 
 app.get('/api/rooms/:code', (req, res) => {
   const room = getRoom(req.params.code);
+  if (!roomLookupAllowed(req, res, normalizeRoomCode(req.params.code), !!room, room)) return;
   res.json({ exists: !!room, code: room ? room.code : null });
 });
 
@@ -454,6 +499,7 @@ const qrCacheMap = new Map();
 app.get('/qr.png', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   const room = getRoom(req.query.room);
+  if (req.query.room && !roomLookupAllowed(req, res, normalizeRoomCode(req.query.room), !!room, room)) return;
   // for=fotos: QR auf die Foto-Galerie des Raums (gleiche Domain wie der Spieler-Link)
   const targetUrl = room && req.query.for === 'fotos'
     ? `${new URL(room.getJoinUrl()).origin}/fotos?room=${room.code}`
@@ -469,6 +515,7 @@ app.get('/qr.png', async (req, res) => {
 
 app.get('/info', (req, res) => {
   const room = getRoom(req.query.room);
+  if (req.query.room && !roomLookupAllowed(req, res, normalizeRoomCode(req.query.room), !!room, room)) return;
   res.json({ url: room ? room.getJoinUrl() : DEFAULT_URL_PLAY, room: room ? room.code : null });
 });
 
@@ -477,11 +524,13 @@ const publicPhoto = (code, p) => ({ id: p.id, name: p.name, ts: p.ts, url: `/pho
 const photoRoomKnown = code => rooms.has(code) || photos.exists(code);
 app.get('/api/photos/:code', (req, res) => {
   const code = normalizeRoomCode(req.params.code);
+  if (!roomLookupAllowed(req, res, code, photoRoomKnown(code), rooms.get(code))) return;
   if (!photoRoomKnown(code)) return res.status(404).json({ ok: false, error: 'Raum nicht gefunden oder Fotos schon gelöscht' });
   res.json({ ok: true, code, ttlDays: PHOTO_TTL_MS / 86_400_000, photos: photos.list(code).map(p => publicPhoto(code, p)) });
 });
 app.post('/api/photos/:code', express.raw({ type: 'image/jpeg', limit: PHOTO_MAX_BYTES }), (req, res) => {
   const code = normalizeRoomCode(req.params.code);
+  if (!roomLookupAllowed(req, res, code, photoRoomKnown(code), rooms.get(code))) return;
   if (!photoRoomKnown(code)) return res.status(404).json({ ok: false, error: 'Raum nicht gefunden' });
   let name = '';
   try { name = decodeURIComponent(String(req.headers['x-photo-name'] || '')); } catch { /* Name ist optional */ }
@@ -513,6 +562,7 @@ app.delete('/api/photos/:code/:id', (req, res) => {
 let zipDownloads = 0;
 app.get('/api/photos/:code/zip', async (req, res) => {
   const code = normalizeRoomCode(req.params.code);
+  if (!roomLookupAllowed(req, res, code, photoRoomKnown(code), rooms.get(code))) return;
   if (!photos.list(code).length) return res.status(404).json({ ok: false, error: 'Keine Fotos' });
   if (zipDownloads >= 3) return res.status(503).json({ ok: false, error: 'Gerade laden viele das ZIP – bitte gleich nochmal versuchen' });
   zipDownloads++;
@@ -740,6 +790,7 @@ let secretMissions = false;
 let alcoholFree = false;
 let partyCards = 'off'; // 'off' | 'rare' | 'normal' | 'often'
 let remoteMode = false; // alle an verschiedenen Orten (Video-Call) → andere Party-Karten
+let snapLocal = false; // Foto-Challenges/-Duelle (Upload + Abstimmung) auch, wenn alle vor Ort sind
 // Mehr Interaktion (Standard an, in /admin abschaltbar)
 let discussVotes = true; // „Wer würde?“/„Entweder-Oder“: 15 s diskutieren, dann abstimmen
 let standUp = true; // „Ich hab noch nie“: aufstehen statt tippen
@@ -853,10 +904,17 @@ function freshState(mode) {
     roundJokers: [], // in dieser Runde wirksame Joker (Zeitdieb: cutAt)
     jokerNews: [], // in der Auflösung neu verteilte Joker { name, type }
     endNow: false, // Spielleitung hat „Spiel beenden“ gedrückt (z. B. im endlosen Party-Mix)
+    rematchVotes: [], // Endstand: Spieler (Name klein), die per Handy „Revanche“ gedrückt haben
   };
 }
 
 const pVals = () => Object.values(players);
+// Revanche-Abstimmung am Endstand: wie „Runde überspringen“ ab 65 % der Handy-Spieler
+function rematchInfo() {
+  const ps = pVals().filter(p => !p.isLocal);
+  const voters = (state.rematchVotes || []).filter(n => ps.some(p => p.name.toLowerCase() === n));
+  return { count: voters.length, needed: Math.max(1, Math.ceil(ps.length * 0.65)), total: ps.length, voters };
+}
 const pickOf = p => ({ name: p.name, avatar: p.avatar || '😎' });
 const duelActive = () => !!(state.duel && state.duel.active);
 const activeMode = () => (duelActive() ? 'quiz' : state.mode === 'mix' && state.subMode ? state.subMode : state.mode);
@@ -1154,6 +1212,9 @@ function pub() {
     jokerNews: state.phase === 'result' ? (state.jokerNews || []) : [],
     jokerLabels: JOKER_LABELS,
     remote: remoteMode,
+    snapLocal,
+    disabledCards: [...DISABLED_CARDS],
+    rematch: state.phase === 'end' && displayMode !== 'onedevice' ? rematchInfo() : null,
     photoCount: photos.list(code).length,
     card: state.phase === 'card' && state.card ? publicCard() : null,
     rule: state.rule && state.phase !== 'lobby' && state.phase !== 'end' && state.idx <= state.rule.untilIdx ? state.rule.text : null,
@@ -1319,6 +1380,8 @@ function startGame() {
   state.jokerNews = [];
   state.rule = null;
   state.lastCardIdx = -1;
+  state.endNow = false; // sonst endet „Nochmal spielen“ nach „🏁 Beenden“ sofort wieder
+  state.rematchVotes = [];
   pVals().forEach(p => { p.score = 0; p.prevScore = 0; p.lastGain = 0; p.streak = 0; p.drinks = 0; p.stats = freshStats(); p.jokers = []; });
   nextRound();
 }
@@ -1517,8 +1580,11 @@ function pickPartyCard() {
   const pool = [...PARTY_CARDS, ...CUSTOM_CARDS].filter(c => {
     const t = PARTY_CARD_TYPES[c.type];
     if (!t || n < (t.min || 2)) return false;
-    // Vor Ort keine Remote-Karten (Kamera/Foto-Challenge), remote keine Karten mit Nachbarn/Gruppenfoto im selben Raum
-    if (remoteMode ? (c.local || t.local) : (c.remote || t.remote)) return false;
+    if (DISABLED_CARDS.has(c.id)) return false; // in /admin abgeschaltet
+    // Vor Ort keine Remote-Karten (Kamera/Foto-Challenge), remote keine Karten mit Nachbarn/Gruppenfoto im selben Raum.
+    // Ausnahme „Foto-Challenges auch vor Ort“: dann kommen Foto-Challenges/-Duelle auch, wenn alle zusammen sind.
+    const snapHere = snapLocal && t.act === 'snap';
+    if (remoteMode ? (c.local || t.local) : ((c.remote || t.remote) && !snapHere)) return false;
     if (c.cat && !activeCategories.includes(c.cat)) return false;
     if ((c.type === 'leader' || c.type === 'underdog') && !hasRanking) return false;
     return c.act !== 'mode' || state.mode === 'mix';
@@ -2632,6 +2698,26 @@ function attachSocket(socket, ip, allowEvent) {
     }
   });
 
+  // Revanche: am Endstand tippen die Handys „🔁 Revanche“; ab 65 % geht es mit denselben Spielern und
+  // Einstellungen von vorn los (wie „Nochmal spielen“ in /admin bzw. am TV)
+  socket.on('player:rematch', () => {
+    if (!allowEvent('rematch', 4_000, 10)) return;
+    const p = players[socket.id];
+    if (!p || state.phase !== 'end' || displayMode === 'onedevice') return;
+    const key = p.name.toLowerCase();
+    const votes = new Set(state.rematchVotes || []);
+    if (votes.has(key)) votes.delete(key);
+    else votes.add(key);
+    state.rematchVotes = [...votes];
+    const info = rematchInfo();
+    if (info.count >= info.needed) {
+      writeLog('INFO', 'rematch_started', { room: code, votes: info.count, players: info.total });
+      startGame();
+    } else {
+      broadcast();
+    }
+  });
+
   socket.on('player:react', emoji => {
     if (!allowEvent('react', 4_000, 14)) return;
     const allowed = ['😂', '🔥', '💀', '🤡', '🍻', '🎉', '❤️'];
@@ -3071,6 +3157,27 @@ function attachSocket(socket, ip, allowEvent) {
     remoteMode = !!on;
     broadcast();
   });
+  socket.on('host:snapLocal', on => {
+    snapLocal = !!on;
+    broadcast();
+  });
+  // Karten-Verwaltung in /admin: komplette Liste nur auf Anfrage (nicht in jedem Status-Update)
+  socket.on('host:cardList', ack => {
+    if (typeof ack !== 'function') return;
+    const whereOf = (c, t) => (c.where || (c.local || t.local ? 'local' : c.remote || t.remote ? 'remote' : 'both'));
+    ack([...PARTY_CARDS, ...CUSTOM_CARDS].filter(c => PARTY_CARD_TYPES[c.type]).map(c => {
+      const t = PARTY_CARD_TYPES[c.type];
+      return { id: c.id, type: c.type, title: t.title, text: c.text, where: whereOf(c, t), cat: c.cat || null, custom: CUSTOM_CARDS.includes(c) };
+    }));
+  });
+  socket.on('host:cardEnabled', payload => {
+    const id = payload && typeof payload.id === 'string' ? payload.id : '';
+    if (!id || ![...PARTY_CARDS, ...CUSTOM_CARDS].some(c => c.id === id)) return;
+    if (payload.on) DISABLED_CARDS.delete(id);
+    else DISABLED_CARDS.add(id);
+    saveDisabledCards();
+    broadcast();
+  });
   // Interaktions-Optionen (an/aus) aus /admin
   const interactionToggles = {
     'host:discussVotes': v => { discussVotes = v; },
@@ -3438,7 +3545,7 @@ function serialize() {
     hostToken,
     settings: {
       activeCategories, roundLimit, teamMode, displayMode, songLangs, imageQuizThemes, russianShare, songOnlyArtistTitle,
-      finalDouble, wheelEnabled, secretMissions, alcoholFree, partyCards, remoteMode, timerSpeed, mixRounds, mixModes, publicUrl,
+      finalDouble, wheelEnabled, secretMissions, alcoholFree, partyCards, remoteMode, snapLocal, timerSpeed, mixRounds, mixModes, publicUrl,
       discussVotes, standUp, captainMode, partnerRounds, duelFinale, jokersOn,
     },
     // roomCustom wird bewusst nicht gespeichert: host:addCustom schreibt die Einträge nach data/custom.json,
@@ -3473,6 +3580,7 @@ function applySnapshot(snap) {
   alcoholFree = !!s.alcoholFree;
   if (s.partyCards === 'off' || PARTY_CARD_GAP[s.partyCards]) partyCards = s.partyCards;
   remoteMode = !!s.remoteMode;
+  snapLocal = !!s.snapLocal;
   for (const [k, set] of Object.entries({
     discussVotes: v => { discussVotes = v; }, standUp: v => { standUp = v; }, captainMode: v => { captainMode = v; },
     partnerRounds: v => { partnerRounds = v; }, duelFinale: v => { duelFinale = v; }, jokersOn: v => { jokersOn = v; },
@@ -3631,6 +3739,28 @@ return {
 
 const ipConnections = new Map(); // ip -> count
 const MAX_CONNS_PER_IP = 25;
+// Schutz pro Verbindung (bewusst nicht pro IP – auf Partys teilen sich alle Handys eine IP):
+const MSG_WINDOW_MS = 10_000;
+const MSG_MAX = 400; // ~40 Nachrichten/s, Zeichnen schickt ~20/s; darüber wird verworfen
+const MSG_KICK = 1500; // massive Flut → Verbindung trennen
+const HOST_MSG_MAX = 60; // host:*-Events pro 10 s (jedes löst ein Update an alle im Raum aus)
+const HANDLER_ERR_KICK = 20; // so viele kaputte Nachrichten → Verbindung trennen
+const RESERVED_EVENTS = new Set(['disconnect', 'disconnecting', 'error']);
+
+// Fehler in Handlern (z. B. absichtlich kaputte Nachrichten) dürfen weder den Prozess noch das Log fluten:
+// höchstens 10 Zeilen pro Minute, der Rest wird gezählt.
+const handlerErrLog = { windowStart: 0, count: 0, suppressed: 0 };
+function logHandlerError(event, err, ip) {
+  const now = Date.now();
+  if (now - handlerErrLog.windowStart > 60_000) {
+    if (handlerErrLog.suppressed) writeLog('WARN', 'socket_handler_errors_suppressed', { count: handlerErrLog.suppressed });
+    handlerErrLog.windowStart = now;
+    handlerErrLog.count = 0;
+    handlerErrLog.suppressed = 0;
+  }
+  if (++handlerErrLog.count > 10) { handlerErrLog.suppressed++; return; }
+  writeLog('WARN', 'socket_handler_error', { event: String(event).slice(0, 40), ip, error: String(err?.message || err).slice(0, 200) });
+}
 
 io.on('connection', socket => {
   const ip = getSocketIp(socket);
@@ -3644,6 +3774,30 @@ io.on('connection', socket => {
     const c = ipConnections.get(ip) || 0;
     if (c <= 1) ipConnections.delete(ip);
     else ipConnections.set(ip, c - 1);
+  });
+
+  let msgWindowAt = Date.now(), msgCount = 0, hostMsgCount = 0, handlerErrors = 0;
+  socket.use((packet, next) => {
+    const now = Date.now();
+    if (now - msgWindowAt > MSG_WINDOW_MS) { msgWindowAt = now; msgCount = 0; hostMsgCount = 0; }
+    if (++msgCount > MSG_MAX) {
+      if (msgCount === MSG_KICK) {
+        writeLog('WARN', 'socket_flood_disconnected', { ip, socketId: socket.id });
+        socket.disconnect(true);
+      }
+      return; // verwerfen (next() nicht aufrufen)
+    }
+    if (typeof packet[0] === 'string' && packet[0].startsWith('host:') && ++hostMsgCount > HOST_MSG_MAX) return;
+    next();
+  });
+  const rawOn = socket.on.bind(socket);
+  socket.on = (ev, fn) => rawOn(ev, RESERVED_EVENTS.has(ev) || typeof fn !== 'function' ? fn : function (...args) {
+    try {
+      return fn.apply(this, args);
+    } catch (err) {
+      logHandlerError(ev, err, ip);
+      if (++handlerErrors === HANDLER_ERR_KICK) socket.disconnect(true);
+    }
   });
 
   const eventLimits = new Map();
@@ -3680,7 +3834,16 @@ io.on('connection', socket => {
     socketId: socket.id, room: room ? room.code : null, page, device,
     transport: socket.conn.transport.name, recovered: socket.recovered,
   });
+  // Wiederhergestellte Sitzungen (Handy kurz weg) sind schon im Raum und werden nicht gesperrt
+  const lockLeft = socket.recovered ? 0 : roomLockedFor(ip, room);
+  if (lockLeft) {
+    // Eigenes Event: auf room:error legen TV/Admin automatisch neue Räume an
+    socket.emit('room:locked', { error: roomLockMsg(lockLeft) });
+    return;
+  }
   if (!room) {
+    const code = normalizeRoomCode(rawRoom);
+    if (code) noteRoomMiss(ip, code);
     socket.emit('room:error', { error: 'Raum nicht gefunden oder abgelaufen.' });
     return;
   }
@@ -3723,6 +3886,7 @@ module.exports = {
   app,
   server,
   io,
+  roomGuessGuard,
   APP_VERSION,
   MAX_ROOMS,
   validHostSecret,

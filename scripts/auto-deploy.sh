@@ -3,15 +3,16 @@
 # Deployt origin/main nur, wenn
 #   - origin/main ein Fast-Forward von HEAD ist und
 #   - alle GitHub-Check-Runs des Commits "completed" mit "success" sind
-# und ruft dann scripts/deploy.sh --from origin auf (ohne --force: bei aktiven Verbindungen
-# bricht deploy.sh ab, der nächste Timer-Lauf versucht es erneut).
+# und ruft dann scripts/deploy.sh --rev <genau dieser Commit> auf (ohne --force: bei aktiven Verbindungen
+# bricht deploy.sh ab, der nächste Timer-Lauf versucht es erneut). Ein Commit, der nach dem Neustart nicht
+# lief und zurückgerollt wurde, wird nicht erneut versucht – erst der nächste Push wieder.
 #
 #   scripts/auto-deploy.sh        # als schultheissa in /opt/partygame (braucht git, curl, node)
 #
 # Ausgabe: knappe Zeilen auf stdout (journald). Wiederholte gleiche Meldungen zum selben Commit
 # werden unterdrückt (Zustand in .git/partygame-auto-deploy.state).
 # Exit: 0 = nichts zu tun / übersprungen / verschoben / deployt, 1 = Fehler (kein Fast-Forward,
-# GitHub-API nicht erreichbar, deploy.sh fehlgeschlagen).
+# GitHub-API nicht erreichbar, deploy.sh fehlgeschlagen), 3 = neuer Stand lief nicht → zurückgerollt.
 set -euo pipefail
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.."
 
@@ -38,6 +39,8 @@ head=$(git rev-parse HEAD)
 remote=$(git rev-parse origin/main)
 [ "$head" = "$remote" ] && exit 0
 short=${remote:0:7}
+# Schon einmal deployt, lief nicht und wurde zurückgerollt → nicht alle 5 min erneut neu starten
+[ "$(cat "$STATE_FILE" 2>/dev/null || true)" = "$remote rolledback" ] && exit 0
 
 if ! git merge-base --is-ancestor "$head" "$remote"; then
   log_once "$remote noff" "origin/main ($short) ist kein Fast-Forward von HEAD (${head:0:7}) – manuell prüfen"
@@ -87,7 +90,7 @@ esac
 
 log "deploye $short ($(git log -1 --format=%s "$remote"))"
 rc=0
-out=$(scripts/deploy.sh --from origin 2>&1) || rc=$?
+out=$(scripts/deploy.sh --rev "$remote" 2>&1) || rc=$?
 if [ "$rc" -ne 0 ]; then
   if grep -q '^Abbruch: .*Verbindung' <<<"$out"; then
     # Spieler verbunden – kein Fehler, nächster Timer-Lauf versucht es erneut
@@ -95,14 +98,14 @@ if [ "$rc" -ne 0 ]; then
     exit 0
   fi
   printf '%s\n' "$out"
-  log "deploy.sh fehlgeschlagen (Exit $rc)"
+  if [ "$rc" -eq 3 ]; then
+    printf '%s\n' "$remote rolledback" > "$STATE_FILE" 2>/dev/null || true
+    log "$short lief nach dem Neustart nicht – zurückgerollt, wird nicht erneut versucht (nächster Push schon)"
+  else
+    log "deploy.sh fehlgeschlagen (Exit $rc)"
+  fi
   exit "$rc"
 fi
 printf '%s\n' "$out"
-now=$(git rev-parse HEAD)
-if [ "$now" != "$remote" ]; then
-  # deploy.sh holt origin/main erneut – ein inzwischen gepushter Commit wäre ungeprüft
-  log "WARNUNG: deployt wurde ${now:0:7} statt geprüftem $short (neuer Push während des Deploys)"
-fi
 printf '%s\n' "$remote deployed" > "$STATE_FILE" 2>/dev/null || true
 log "fertig: $short läuft"

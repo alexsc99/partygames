@@ -1,4 +1,4 @@
-# 🎉 PartyGame (Version 3.26.1)
+# 🎉 PartyGame (Version 3.27.0)
 
 **PartyGame** ist ein selbstgehostetes Multiplayer-Partyspiel für Freunde, WG-Abende und Feiern. Gespielt wird entweder klassisch mit einem Fernseher/Beamer als Hauptbildschirm und Smartphones als Controller – oder komplett ohne TV.
 
@@ -105,6 +105,10 @@ Es gibt drei URLs:
 - **Kein Wiederholen:** Gespielte Fragen/Songs werden in `data/used.json` gespeichert und erst zurückgesetzt, wenn ein Pool durchgespielt ist.
 - **Eigene Insider-Fragen:** Über `/admin` hinzugefügte Fragen werden dauerhaft in `data/custom.json` gespeichert.
 - **Eigene Party-Karten:** In `/admin` unter „🎪 Eigene Party-Karte“ (Gruppen-Challenge, Reihum-Runde, Blitz-Duell, Regel, Foto-Challenge; vor Ort / remote / beides, Platzhalter `{a}` `{b}` `{player}`). Gespeichert in `data/customcards.json` (nicht im Git), gelten für alle Räume und lassen sich dort wieder löschen.
+- **🗂️ Party-Karten verwalten:** In `/admin` lässt sich jede Karte (eingebaut oder eigene) per Häkchen abschalten – sie kommt dann nicht mehr vor. Gilt für alle Räume, gespeichert in `data/disabledcards.json` (nicht im Git, im täglichen Backup).
+- **📸 Foto-Challenges auch vor Ort:** Schalter unter Party-Karten in `/admin` – dann kommen Foto-Challenges und Foto-Duelle (Upload am Handy + anonyme Abstimmung) auch, wenn alle im selben Raum sind, nicht nur im Remote-Modus.
+- **🔁 Revanche:** Am Endstand tippen die Handys „🔁 Revanche!“; sobald 65 % mitmachen, startet dasselbe Spiel mit denselben Spielern und Einstellungen (Punkte auf 0). Admin und TV haben dafür den Knopf „🔁 Revanche“.
+- **👋 Kurze Anleitung beim ersten Beitritt:** Neue Handys sehen in der Lobby einmal „So geht's“ (TV schauen bzw. alles am Handy, Antwort tippen, Party-Karten) – nach „Verstanden“ nie wieder.
 - **QR-Code-URL änderbar:** Die Ziel-URL des QR-Codes lässt sich direkt in `/admin` (oder über `PUBLIC_URL`) anpassen.
 - **Kontextabhängiges `/admin`:** Es werden jeweils nur die Optionen angezeigt, die zum gewählten Spiel passen (z. B. bei *Bild-Quiz* direkt *Beide / Nur Firmen-Logos / Nur Sehenswürdigkeiten*, bei *Erkenne den Song* nur die Sprach- & Fragetyp-Filter).
 - **Lobby-Komfort in `/host`:** Ein Klick auf den Lobby-QR-Code kopiert direkt den Beitritts-Link (`✅ Link kopiert!`); unten rechts gibt es zudem einen kleinen `🎮 Als Spieler beitreten (/)`-Button, der nach Spielstart automatisch ausgeblendet wird.
@@ -230,15 +234,24 @@ Räume speichern ihre URL in `data/rooms.json`; bereits bestehende Räume behalt
   ```
 - **Produktiv (systemd, Server `palworld`)** – als `schultheissa` in `/opt/partygame`:
   ```bash
-  scripts/deploy.sh          # holt main, startet neu – bricht ab, wenn gerade jemand verbunden ist
-  scripts/deploy.sh --wait   # wartet, bis niemand mehr verbunden ist
-  scripts/deploy.sh --force  # trotzdem neu starten (laufende Räume gehen verloren!)
+  scripts/deploy.sh             # holt main, startet neu – bricht ab, wenn gerade jemand verbunden ist
+  scripts/deploy.sh --wait      # wartet, bis niemand mehr verbunden ist
+  scripts/deploy.sh --force     # trotzdem neu starten (Räume werden gesichert und wiederhergestellt)
+  scripts/deploy.sh --rev <sha> # genau diesen Commit deployen (so ruft es auto-deploy.sh auf)
+  ```
+  Antwortet der Server nach dem Neustart nicht innerhalb von 30 s mit der neuen Version auf `/health`, rollt `deploy.sh` automatisch auf den vorherigen Stand zurück (Exit 3). Bei lokalen Änderungen an versionierten Dateien bricht es vorher ab.
+  ```bash
+  journalctl -u partygame-autodeploy -n 20   # was hat der Auto-Deploy zuletzt gemacht?
   ```
   `/health` zeigt `sockets` (aktive Verbindungen). Laufende Räume werden in `data/rooms.json` gesichert (entprellt, atomar, beim Stoppen synchron) und beim Start wiederhergestellt (max. 2 h alt): Handys steigen mit Punkten wieder ein, Timer laufen weiter.
-- Log-Rotation einmalig installieren: `sudo install -m 644 scripts/logrotate-partygame /etc/logrotate.d/partygame`
+- Log-Rotation einmalig installieren: `sudo install -m 644 scripts/logrotate-partygame /etc/logrotate.d/partygame`. Zusätzlich schreibt der Server nichts mehr in die Logdatei, sobald sie größer als 200 MB ist (`PARTYGAME_LOG_MAX_MB`), bis logrotate sie verkleinert hat.
 - **Automatisierung (systemd-Timer, Units in `scripts/systemd/`):**
-  - `partygame-backup.timer` – täglich 04:30 `scripts/backup.sh` → `backups/data-*.tgz` (custom/used/rooms/Host-PIN, 14 Stück).
-  - `partygame-autodeploy.timer` – alle 5 min `scripts/auto-deploy.sh`: neuer Commit auf `origin/main` + GitHub-CI grün + niemand verbunden → `deploy.sh`.
+  - `partygame-backup.timer` – täglich 04:30 `scripts/backup.sh` → `backups/data-*.tgz` (eigene Fragen & Karten, abgeschaltete Karten, used/rooms, Host-PIN; 14 Stück).
+  - `partygame-autodeploy.timer` – alle 5 min `scripts/auto-deploy.sh`: neuer Commit auf `origin/main` + GitHub-CI grün (Tests + `npm audit`, Node 22) + niemand verbunden → `deploy.sh --rev <genau dieser Commit>`. Ein zurückgerollter Commit wird nicht erneut versucht, erst der nächste Push.
+  - `partygame-logrotate.timer` – stündlich logrotate: rotiert `partygame.log`, sobald es größer als 20 MB ist (nicht erst beim täglichen Lauf).
+- **Schutz ohne Passwörter** (`src/security.js`, `server.js`):
+  - Pro Verbindung (nicht pro IP – auf Partys teilen sich alle Handys eine IP): max. 400 Nachrichten und 60 Spielleitungs-Befehle pro 10 s, darüber wird verworfen; bei massiver Flut (1500) oder 20 kaputten Nachrichten wird nur diese Verbindung getrennt. Fehler in Handlern bringen den Server nicht mehr zum Absturz und landen gedrosselt im Log (max. 10 Zeilen/min).
+  - Raumcode-Raten: Pro IP werden *verschiedene* unbekannte Codes gezählt (Socket, `/api/rooms/:code`, `/api/photos/:code`, `/qr.png`, `/info`). Nach 30 in 10 Min. ist die IP 10 Min. gesperrt – auch für existierende Codes, damit die Sperre keine Treffer verrät. Ausnahme: Räume, die von dieser IP angelegt wurden. Ein alter Tab, der sich ständig auf denselben abgelaufenen Raum verbindet, zählt nur einmal.
 - **Monitoring:** Server schreibt jede Minute eine `metrics`-Zeile (Räume, Spieler, Sockets, CPU, RAM, Event-Loop-Lag p50/p99/max, Broadcasts, KB/min). Grafana-Dashboard `scripts/grafana/homelab-partygame.json` (Loki, `{app="partygame"}`).
 - **Lasttest:** `URL=http://localhost:3999 ROOMS=8 PLAYERS=12 ROUNDS=5 node scripts/loadtest.js` (devDependency `socket.io-client`).
 - **Song-Startstellen:** `node scripts/analyze-song-starts.js` (braucht ffmpeg) misst die Lautheit jeder Vorschau und schreibt `data/song-starts.json` neu – nach neuen/ersetzten Song-MP3s ausführen.
@@ -254,7 +267,8 @@ Falls das Spiel über eine eigene HTTPS-Domain erreichbar sein soll:
 
 ## 💾 Backups & Versionen
 
-- **v3.26.1 (Aktueller Stand):** Zwei Foto-&-Pose-Karten vereinfacht: statt „Albumcover nachstellen“ und „Boyband-Cover“ jetzt „Rücken an Rücken wie Actionhelden“ (Paar) und „Gruppenfoto mit Daumen hoch“ (alle).
+- **v3.27.0 (Aktueller Stand):** Internet-fest ohne Passwörter: Nachrichten-Limit pro Verbindung, Fehler-Schutz für alle Socket-Handler (kaputte Nachrichten konnten den Server abstürzen lassen und das Log fluten), Sperre nach 30 falschen Raumcodes pro IP. Neu: 🔁 Revanche per Handy-Abstimmung, Party-Karten einzeln abschaltbar, Foto-Challenges auch vor Ort, kurze Anleitung beim ersten Beitritt. Fix: „Nochmal spielen“ nach „🏁 Beenden“ endete sofort wieder. Betrieb: CI auf Node 22 + `npm audit`, Auto-Deploy deployt genau den geprüften Commit und rollt zurück, wenn der Server danach nicht antwortet; Logs werden stündlich nach Größe rotiert und haben eine Obergrenze.
+- **v3.26.1:** Zwei Foto-&-Pose-Karten vereinfacht: statt „Albumcover nachstellen“ und „Boyband-Cover“ jetzt „Rücken an Rücken wie Actionhelden“ (Paar) und „Gruppenfoto mit Daumen hoch“ (alle).
 - **v3.26.0:** ⛶ Vollbild-Knopf auf allen Seiten (Android/Desktop echtes Vollbild, iPhone: Anleitung zum Home-Bildschirm). Richtige App-Icons (PNG 180/192/512) für Home-Bildschirm und „App installieren“; TV-Seite und Foto-Galerie starten vom Home-Bildschirm ebenfalls ohne Adressleiste.
 - **v3.25.0:** Party-Mix kann **♾️ endlos** laufen (Admin → Party-Mix → Runden), neuer Admin-Knopf **🏁 Beenden** zeigt jederzeit den Endstand (vorher ggf. Finale-Duell); Runden-Limit „Alle“ heißt jetzt „♾️ Ohne Limit“. Galerie `/fotos`: 🗑️ direkt auf den Fotos, und über „🔑 Spielleitung“ (Host-PIN) lassen sich alle Fotos löschen – auch ältere ohne Lösch-Schlüssel und Fotos von Räumen, die nicht mehr laufen.
 - **v3.24.1:** Fotos werden schon nach 3 Tagen automatisch gelöscht (vorher 7).

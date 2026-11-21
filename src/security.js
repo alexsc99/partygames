@@ -114,6 +114,37 @@ function createRateLimiter({ windowMs, max }) {
   };
 }
 
+// Raumcode-Raten bremsen: Pro IP zählen *verschiedene* unbekannte Codes. Auf Partys teilen sich alle Handys
+// eine IP – Tippfehler sind wenige verschiedene Codes, ein alter Tab, der sich immer wieder auf denselben
+// abgelaufenen Raum verbindet, zählt nur einmal. Wer maxCodes verschiedene falsche Codes probiert, wird für
+// lockMs gesperrt (auch für existierende Codes, sonst würde die Sperre Treffer verraten).
+function createRoomGuessGuard({ maxCodes = 30, windowMs = 10 * 60_000, lockMs = 10 * 60_000 } = {}) {
+  const byIp = new Map(); // ip -> { codes: Set, resetAt, lockedUntil }
+  const lockedFor = (ip, now = Date.now()) => {
+    const e = byIp.get(ip);
+    return e && e.lockedUntil > now ? e.lockedUntil - now : 0;
+  };
+  // Gibt true zurück, wenn die IP (jetzt) gesperrt ist
+  function fail(ip, code, now = Date.now()) {
+    let e = byIp.get(ip);
+    if (e && e.lockedUntil > now) return true;
+    if (!e || now > e.resetAt) {
+      e = { codes: new Set(), resetAt: now + windowMs, lockedUntil: 0 };
+      byIp.set(ip, e);
+      if (byIp.size > 5000) {
+        for (const [k, v] of byIp) { if (now > v.resetAt && now > v.lockedUntil) byIp.delete(k); }
+      }
+    }
+    e.codes.add(String(code));
+    if (e.codes.size < maxCodes) return false;
+    e.codes.clear();
+    e.lockedUntil = now + lockMs;
+    e.resetAt = e.lockedUntil + windowMs;
+    return true;
+  }
+  return { lockedFor, fail, reset: () => byIp.clear(), maxCodes, lockMs };
+}
+
 module.exports = {
   HOST_SECRET,
   ALLOWED_ORIGINS,
@@ -125,4 +156,5 @@ module.exports = {
   getSocketIp,
   isAllowedOrigin,
   createRateLimiter,
+  createRoomGuessGuard,
 };

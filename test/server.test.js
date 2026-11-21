@@ -15,6 +15,7 @@ const {
   createRateLimiter,
   createRoom,
   rooms,
+  roomGuessGuard,
   snapshotRooms,
   restoreRooms,
   initWordMask,
@@ -737,7 +738,7 @@ describe('PartyGame Server', () => {
   });
 
   // Raum im Remote-Modus bis zur ersten Party-Karte spielen; Math.random erzwingt dort die Foto-Challenge
-  async function snapRoom(names) {
+  async function snapRoom(names, { local = false } = {}) {
     const { io: ioc } = require('socket.io-client');
     const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
     const connect = () => ioc(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true });
@@ -768,8 +769,9 @@ describe('PartyGame Server', () => {
       r.admin.emit('host:mode', 'quiz');
       r.admin.emit('host:wheelEnabled', false);
       r.admin.emit('host:partyCards', 'often');
-      r.admin.emit('host:remote', true);
-      await r.until(s => s.remote === true && s.players.length === names.length);
+      if (local) r.admin.emit('host:snapLocal', true);
+      else r.admin.emit('host:remote', true);
+      await r.until(s => (local ? s.snapLocal === true && s.remote === false : s.remote === true) && s.players.length === names.length);
       r.admin.emit('host:start');
       for (let round = 0; round < 4 && r.S.phase !== 'card'; round++) {
         await r.until(s => s.phase === 'question' && s.idx === round);
@@ -1495,6 +1497,202 @@ describe('PartyGame Server', () => {
       assert.deepEqual(meta.map(p => p.name), ['b', 'c']);
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  // ---- Sicherheit & neue Funktionen (v3.27) ----
+  const { io: ioClient } = require('socket.io-client');
+  // Verbindet mit einem Raumcode und liefert das erste Raum-Ereignis: state | room:error | room:locked
+  const firstRoomEvent = code => new Promise((resolve, reject) => {
+    const s = ioClient(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true, reconnection: false });
+    const done = (kind, data) => { s.close(); resolve({ kind, data }); };
+    s.on('state', () => done('state'));
+    s.on('room:error', d => done('room:error', d));
+    s.on('room:locked', d => done('room:locked', d));
+    s.on('connect_error', reject);
+  });
+
+  it('room code guessing: 30 different wrong codes lock the IP for sockets and HTTP; one code repeated counts once; own rooms stay reachable', async () => {
+    roomGuessGuard.reset();
+    const other = createRoom('QQ77', 'tok-qq77'); // nicht von dieser IP angelegt
+    rooms.set('QQ77', other);
+    let own = null;
+    try {
+      // Ein alter Tab, der sich ständig auf denselben abgelaufenen Raum verbindet, zählt nur einmal
+      for (let i = 0; i < 40; i++) assert.equal((await (await fetch(`${baseUrl}/api/rooms/ZZZZ`)).json()).exists, false);
+      for (let i = 0; i < 40; i++) assert.equal((await firstRoomEvent('ZZZZ')).kind, 'room:error');
+      // 28 weitere verschiedene falsche Codes (Socket) → 29 → noch keine Sperre
+      for (let i = 0; i < 28; i++) assert.equal((await firstRoomEvent(`W${String(i).padStart(3, '0')}`)).kind, 'room:error');
+      assert.equal((await firstRoomEvent('QQ77')).kind, 'state');
+      assert.equal((await (await fetch(`${baseUrl}/api/rooms/QQ77`)).json()).exists, true);
+      // 30. falscher Code (Foto-Galerie) → wird noch normal beantwortet, danach ist die IP gesperrt
+      assert.equal((await fetch(`${baseUrl}/api/photos/XX30`)).status, 404);
+      const locked = await fetch(`${baseUrl}/api/rooms/QQ77`);
+      assert.equal(locked.status, 429);
+      const lockedBody = await locked.json();
+      assert.equal(lockedBody.locked, true);
+      assert.match(lockedBody.error, /Zu viele falsche Raumcodes/);
+      const sock = await firstRoomEvent('QQ77');
+      assert.equal(sock.kind, 'room:locked', 'locked IP must not learn that QQ77 exists');
+      assert.equal((await firstRoomEvent('ABCD')).kind, 'room:locked');
+      for (const p of ['/info?room=QQ77', '/qr.png?room=QQ77', '/api/photos/QQ77', '/api/photos/QQ77/zip']) {
+        assert.equal((await fetch(`${baseUrl}${p}`)).status, 429, p);
+      }
+      // Eigener neuer Raum (z. B. TV der eigenen Party) bleibt trotz Sperre erreichbar
+      own = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+      assert.equal((await firstRoomEvent(own.code)).kind, 'state');
+      assert.equal((await fetch(`${baseUrl}/api/rooms/${own.code}`)).status, 200);
+    } finally {
+      roomGuessGuard.reset();
+      for (const c of ['QQ77', own && own.code]) { if (c) { rooms.get(c)?.destroy(); rooms.delete(c); } }
+    }
+  });
+
+  it('broken socket payloads neither crash the process nor kill the connection; 20 broken messages disconnect only that socket', async () => {
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const s = ioClient(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true, reconnection: false });
+    let uncaught = 0;
+    const onUncaught = () => { uncaught++; };
+    process.on('uncaughtException', onUncaught);
+    try {
+      await new Promise(res => s.on('connect', res));
+      s.emit('local:team', null); // Destructuring von null
+      s.emit('host:songLang', null);
+      s.emit('join', { name: 'Kaputt' }, 'kein-callback'); // ack ist ein String
+      const ok = await new Promise(res => s.emit('join', { name: 'Heil', avatar: '😎' }, res));
+      assert.equal(ok.ok, true, 'socket must keep working after broken messages');
+      assert.equal(uncaught, 0);
+      const gone = new Promise(res => s.on('disconnect', res));
+      for (let i = 0; i < 20; i++) s.emit('local:team', null);
+      assert.equal(await Promise.race([gone.then(() => 'disconnected'), new Promise(res => setTimeout(() => res('still connected'), 2000))]), 'disconnected');
+      assert.equal(uncaught, 0);
+      assert.equal((await fetch(`${baseUrl}/health`)).status, 200);
+    } finally {
+      process.off('uncaughtException', onUncaught);
+      s.close();
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
+  it('per-connection message budget: a flooding socket is cut off after a bounded number of updates, the other player keeps playing', async () => {
+    const { code } = await (await fetch(`${baseUrl}/api/rooms`, { method: 'POST' })).json();
+    const connect = () => ioClient(baseUrl, { query: { room: code, page: 'play' }, transports: ['websocket'], forceNew: true, reconnection: false });
+    const flooder = connect();
+    const victim = connect();
+    let victimStates = 0;
+    try {
+      await Promise.all([flooder, victim].map(x => new Promise(res => x.on('connect', res))));
+      await new Promise(res => victim.emit('join', { name: 'Opfer', avatar: '😎' }, res));
+      victim.on('state', () => { victimStates++; });
+      // 1) 200 Spielleitungs-Events (unter der Trenn-Schwelle): nur 60 pro 10 s lösen ein Update aus
+      for (let i = 0; i < 200; i++) flooder.emit('host:teamMode', i % 2 === 0);
+      await new Promise(res => setTimeout(res, 800));
+      assert.ok(victimStates >= 50 && victimStates <= 62, `victim got ${victimStates} state updates – host events must be capped at 60 per 10 s and connection`);
+      assert.ok(flooder.connected, 'moderate bursts must not disconnect');
+      // 2) Massive Flut → Verbindung wird getrennt
+      const gone = new Promise(res => flooder.on('disconnect', res));
+      for (let i = 0; i < 2000; i++) flooder.emit('host:teamMode', i % 2 === 0);
+      await Promise.race([gone, new Promise((_, rej) => setTimeout(() => rej(new Error('flooder was not disconnected')), 5000))]);
+      const t0 = Date.now();
+      const ack = await new Promise(res => victim.emit('join', { name: 'Opfer', avatar: '😎' }, res));
+      assert.equal(ack.ok, true);
+      assert.ok(Date.now() - t0 < 500, 'server must stay responsive');
+      assert.ok(victim.connected);
+    } finally {
+      flooder.close();
+      victim.close();
+      rooms.get(code)?.destroy();
+      rooms.delete(code);
+    }
+  });
+
+  it('"Foto-Challenges auch vor Ort": photo challenges come up although everyone is in the same room', async () => {
+    const r = await snapRoom(['Ada', 'Bo', 'Cy'], { local: true });
+    try {
+      assert.equal(r.S.remote, false);
+      assert.equal(r.S.snapLocal, true);
+      assert.equal(r.S.card.act, 'snap');
+      assert.equal((await r.upload('Ada', 1)).status, 201);
+      await r.until(s => s.card.submitted.includes('Ada'));
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  it('cards switched off in /admin never come up; the full card list is only sent on request', async () => {
+    const file = path.join(__dirname, '..', 'data', 'disabledcards.json');
+    const backup = fs.existsSync(file) ? fs.readFileSync(file) : null;
+    let list = [];
+    let off = [];
+    const realRandom = Math.random;
+    const r = await playRoom(['Ada', 'Bo', 'Cy'], 'quiz', async room => {
+      list = await new Promise(res => room.admin.emit('host:cardList', res));
+      assert.ok(list.length >= 127, `card list: ${list.length}`);
+      assert.ok(list.every(c => c.id && c.title && c.text && ['local', 'remote', 'both'].includes(c.where)));
+      // Alle Mitmach-Karten außer k08 abschalten; erzwungener Typ „Mitmach“ muss dann k08 liefern
+      off = list.filter(c => c.type === 'crowd' && c.id !== 'k08').map(c => c.id);
+      off.forEach(id => room.admin.emit('host:cardEnabled', { id, on: false }));
+      room.admin.emit('host:partyCards', 'often');
+      room.admin.emit('host:jokers', false);
+      await room.until(s => s.partyCards === 'often' && off.every(id => s.disabledCards.includes(id)));
+    });
+    try {
+      assert.ok(!('cardList' in r.S) && !JSON.stringify(r.S).includes('Alle mit braunen Haaren'), 'state updates must not carry the card texts');
+      for (let round = 0; round < 4 && r.S.phase !== 'card'; round++) {
+        await r.until(s => s.phase === 'question' && s.idx === round);
+        await Promise.all([0, 1, 2].map(i => r.answer(i, 0)));
+        await r.until(s => s.phase === 'result');
+        Math.random = () => 0.9999; // gewichtete Typ-Wahl → letzter Typ vor Ort = Mitmach-Karte
+        r.admin.emit('host:next');
+        await r.until(s => s.phase === 'card' || (s.phase === 'question' && s.idx === round + 1));
+        Math.random = realRandom;
+      }
+      assert.equal(r.S.phase, 'card');
+      assert.equal(r.S.card.id, 'k08');
+    } finally {
+      Math.random = realRandom;
+      const fixer = ioClient(baseUrl, { query: { room: r.code, page: 'admin' }, transports: ['websocket'], forceNew: true });
+      off.forEach(id => fixer.emit('host:cardEnabled', { id, on: true }));
+      await r.until(s => !off.some(id => s.disabledCards.includes(id))).catch(() => {});
+      fixer.close();
+      r.cleanup();
+      await new Promise(res => setTimeout(res, 100)); // asynchrones Speichern abwarten
+      if (backup) fs.writeFileSync(file, backup);
+      else fs.rmSync(file, { force: true });
+    }
+  });
+
+  it('rematch: phones vote at the end screen, 65 % start a new game with the same players and reset scores – also after "Beenden"', async () => {
+    const r = await playRoom(['Ada', 'Bo', 'Cy'], 'quiz', async room => {
+      room.admin.emit('host:duelFinale', false);
+      room.admin.emit('host:jokers', false);
+      await room.until(s => s.duelFinale === false && s.jokersOn === false);
+    });
+    try {
+      await Promise.all([0, 1, 2].map(i => r.answer(i, correctIdx(r.S))));
+      await r.until(s => s.phase === 'result' && s.players.some(p => p.score > 0));
+      r.admin.emit('host:endGame');
+      await r.until(s => s.phase === 'end');
+      assert.deepEqual({ count: r.S.rematch.count, needed: r.S.rematch.needed, total: r.S.rematch.total }, { count: 0, needed: 2, total: 3 });
+      r.players[0].emit('player:rematch');
+      await r.until(s => s.rematch && s.rematch.count === 1);
+      r.players[0].emit('player:rematch'); // zurücknehmen
+      await r.until(s => s.rematch && s.rematch.count === 0);
+      r.players[0].emit('player:rematch');
+      r.players[1].emit('player:rematch');
+      await r.until(s => s.phase === 'question' && s.idx === 0);
+      assert.equal(r.S.rematch, null);
+      assert.deepEqual(r.S.players.map(p => p.score), [0, 0, 0]);
+      assert.equal(r.S.players.length, 3);
+      // Regression: nach „🏁 Beenden“ darf die Revanche nicht sofort wieder enden
+      r.admin.emit('host:next');
+      await r.until(s => s.phase === 'result' && s.idx === 0);
+      r.admin.emit('host:next');
+      await r.until(s => (s.phase === 'question' && s.idx === 1) || s.phase === 'end');
+      assert.equal(r.S.phase, 'question');
+    } finally {
+      r.cleanup();
     }
   });
 });

@@ -1,0 +1,12 @@
+# Timer für partygame-logrotate.service: stündlich (rotiert nur, wenn partygame.log > 20 MB oder ein Tag um ist).
+# Installation siehe partygame-logrotate.service. Status: systemctl list-timers partygame-logrotate.timer
+[Unit]
+Description=PartyGame Log-Rotation stündlich prüfen
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=2min
+Unit=partygame-logrotate.service
+
+[Install]
+WantedBy=timers.target

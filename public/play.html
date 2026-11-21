@@ -153,10 +153,12 @@ const ROOM_CODE = (new URLSearchParams(location.search).get('room') || '').trim(
 let roomError = '';
 const socket = ROOM_CODE ? pgConnect(ROOM_CODE, 'play') : { on(){}, emit(){}, timeout() { return this; } };
 if (ROOM_CODE) {
-  socket.on('room:error', (e) => {
+  const showRoomError = (e) => {
     roomError = (e && e.error) || 'Raum nicht gefunden oder abgelaufen.';
     render();
-  });
+  };
+  socket.on('room:error', showRoomError);
+  socket.on('room:locked', showRoomError);
 }
 async function joinByRoomInput() {
   const inp = document.getElementById('roomCodeInp');
@@ -166,6 +168,7 @@ async function joinByRoomInput() {
   try {
     const res = await fetch('/api/rooms/' + encodeURIComponent(code));
     const d = await res.json();
+    if (d.locked) { if (errEl) errEl.textContent = d.error; return; }
     if (!d.exists) { if (errEl) errEl.textContent = 'Raum „' + code + '“ wurde nicht gefunden.'; return; }
     location.href = '/?room=' + encodeURIComponent(d.code);
   } catch {
@@ -202,6 +205,24 @@ async function createRoomFromHome(target) {
 }
 let S = null, P = null, joined = false, myAnswer = null, ansState = '', sortPicks = [], lastRoundKey = '', name = localStorage.getItem('qn') || '', avatar = localStorage.getItem('qa') || '😎', reconnectToken = localStorage.getItem('qt') || '';
 let skipReadyTimer = 0;
+// Kurze Anleitung beim ersten Beitritt (einmal pro Gerät)
+let guideSeen = localStorage.getItem('pg_guide_v1') === '1';
+function closeGuide() {
+  guideSeen = true;
+  try { localStorage.setItem('pg_guide_v1', '1'); } catch { /* privates Fenster: dann eben jedes Mal */ }
+  render();
+}
+function guideHtml() {
+  if (guideSeen) return '';
+  const steps = S.noTvMode
+    ? ['📱 Frage, Antworten und Auflösung siehst du hier auf deinem Handy.', '👆 Tippe deine Antwort an, solange der Balken oben läuft.', '⚡ Schnell und richtig gibt die meisten Punkte.']
+    : ['📺 Fragen und Antworten stehen auf dem TV.', '👆 Tippe am Handy die passende Farbe/Form an, solange der Balken oben läuft.', '⚡ Schnell und richtig gibt die meisten Punkte.'];
+  return `<div class="lobbyCard" style="border:2px solid #ffd33d;text-align:left">
+    <div style="font-weight:900;font-size:17px;margin-bottom:6px">👋 Neu hier? So geht's:</div>
+    ${steps.map(s => `<div style="margin:5px 0">${s}</div>`).join('')}
+    <div style="margin:5px 0">🎪 Zwischendurch gibt's Party-Karten – einfach mitmachen und am Handy abstimmen.</div>
+    <button type="button" class="go" style="margin-top:10px" onclick="closeGuide()">👍 Verstanden</button></div>`;
+}
 const JOINED_KEY = 'pg_joined_' + ROOM_CODE;
 let unconfirmed = null; // { rk, v } – Antwort ohne Bestätigung, wird nach Rejoin erneut gesendet
 let localRevealed = false, localSecret = null, localImposterDone = [], localNameDraft = '', localActiveName = '';
@@ -1240,11 +1261,11 @@ function renderView() {
     P ? JSON.stringify(P) : '',
     audioSig,
     mr ? `${mr.resolved}:${mr.success}` : '',
-    S.phase === 'lobby' ? `${S.lobbyBanner || ''}:${avatar}:${avPickerOpen ? 1 : 0}:${S.isMix ? 1 : 0}` : '',
+    S.phase === 'lobby' ? `${S.lobbyBanner || ''}:${avatar}:${avPickerOpen ? 1 : 0}:${S.isMix ? 1 : 0}:${guideSeen ? 1 : 0}:${S.noTvMode ? 1 : 0}` : '',
     S.phase === 'spin' && S.spin ? S.spin.id : '',
     S.phase === 'card' && S.card ? JSON.stringify(S.card) : '',
     S.rule || '',
-    S.phase === 'end' ? S.photoCount : '',
+    S.phase === 'end' ? `${S.photoCount}:${S.rematch ? `${S.rematch.count}/${S.rematch.needed}:${S.rematch.voters.join(',')}` : ''}` : '',
     playersSig,
     interSig,
   ].join('|');
@@ -1396,7 +1417,7 @@ function renderView() {
     const playersBox = `<div class="lobbyCard"><div style="font-size:14px;font-weight:800;opacity:.85">👥 Dabei (${plist.length})</div><div class="pChips">${chips}</div></div>`;
     app.innerHTML = `${inviteBarHtml()}
       <div class="lobbyHi"><span class="lobbyAv">${esc(avatar)}</span><div><div class="lobbyName">Hi ${esc(name)}! 👋</div><button type="button" class="linkBtn" style="padding:2px 0" aria-expanded="${avPickerOpen}" onclick="toggleAvPicker()">${avPickerOpen ? '✕ Schließen' : '🎭 Avatar ändern'}</button></div></div>
-      ${avPicker}${lobbyBan}
+      ${guideHtml()}${avPicker}${lobbyBan}
       <div class="lobbyCard"><div class="lobbyMode">${NAMES[lobbyMode] || esc(lobbyMode)}${S.teamMode ? ' · 👥 Team-Spiel' : ''}</div>${rules}</div>
       <div class="lobbyWait">⏳ Warte auf den Start…</div>
       ${renderAudioControls(true)}${teamPick}${playersBox}${renderEmojiBar()}`;
@@ -1411,7 +1432,13 @@ function renderView() {
     const photoBox = `<div class="resBox" style="text-align:center"><div class="resTitle">📸 Fotos des Abends${S.photoCount ? ` (${S.photoCount})` : ''}</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px">${pgPhotoButtons('pickPhotos(true)', 'pickPhotos(false)')}<a class="photoBtn" style="background:#26890c;text-decoration:none" href="/fotos?room=${encodeURIComponent(ROOM_CODE)}" target="_blank">🖼️ Galerie öffnen</a></div>
       <div style="font-size:12px;opacity:.75;margin-top:6px">Für alle im Raum · 3 Tage verfügbar</div></div>`;
-    app.innerHTML = `<div class="msg" style="margin-top:2vh">Spiel vorbei! Platz ${rank} 🎉<br><small>${me ? me.score : 0} Punkte</small></div>${renderPhonePodium()}${photoBox}${awardsHtml}${renderLb('🏆 Endstand')}${renderEmojiBar()}`;
+    const rm = S.rematch;
+    const iRematch = rm && rm.voters.includes(String(name).toLowerCase());
+    const rematchBox = rm ? `<button class="go" style="margin-top:14px;background:${iRematch ? '#4b3a9e' : '#26890c'}" onclick="socket.emit('player:rematch')">${iRematch
+      ? `✅ Du willst Revanche – warte auf die anderen (${rm.count}/${rm.needed})`
+      : `🔁 Revanche!${rm.count ? ` (${rm.count}/${rm.needed})` : ''}`}</button>
+      <div style="font-size:12px;opacity:.7;margin-top:4px">Gleiche Spieler & Einstellungen – startet, sobald ${rm.needed} von ${rm.total} mitmachen${iRematch ? ' · nochmal tippen zum Zurücknehmen' : ''}</div>` : '';
+    app.innerHTML = `<div class="msg" style="margin-top:2vh">Spiel vorbei! Platz ${rank} 🎉<br><small>${me ? me.score : 0} Punkte</small></div>${rematchBox}${renderPhonePodium()}${photoBox}${awardsHtml}${renderLb('🏆 Endstand')}${renderEmojiBar()}`;
     const endVib = `end:${S.mode}`;
     if (lastVibKey !== endVib) {
       lastVibKey = endVib;

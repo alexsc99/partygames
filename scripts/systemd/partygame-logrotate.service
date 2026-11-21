@@ -1,0 +1,14 @@
+# Logrotate für PartyGame zusätzlich stündlich: rotiert partygame.log, sobald es größer als 20 MB ist
+# (maxsize in /etc/logrotate.d/partygame), statt erst beim täglichen System-Lauf.
+# Installation:
+#   sudo install -m 644 /opt/partygame/scripts/systemd/partygame-logrotate.service /opt/partygame/scripts/systemd/partygame-logrotate.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now partygame-logrotate.timer
+# Log: journalctl -u partygame-logrotate
+[Unit]
+Description=PartyGame Log-Rotation nach Größe
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/logrotate /etc/logrotate.d/partygame
+Nice=10

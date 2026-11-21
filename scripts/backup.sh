@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sichert die veränderlichen Daten (eigene Fragen, Verlauf, Raum-Snapshot, Host-PIN) nach backups/.
+# Sichert die veränderlichen Daten (eigene Fragen & Karten, abgeschaltete Karten, Verlauf, Raum-Snapshot, Host-PIN) nach backups/.
 # Behält die neuesten 14 Sicherungen, ältere werden gelöscht. Gibt den Pfad der neuen Datei aus.
 #
 #   scripts/backup.sh                   # aus dem App-Verzeichnis oder per absolutem Pfad
@@ -12,7 +12,7 @@ set -euo pipefail
 APP_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 BACKUP_DIR="$APP_DIR/backups"
 KEEP=14
-FILES=(data/custom.json data/used.json data/rooms.json data/.host-secret)
+FILES=(data/custom.json data/customcards.json data/disabledcards.json data/used.json data/rooms.json data/.host-secret)
 
 umask 007
 cd "$APP_DIR"
