@@ -380,13 +380,14 @@ function renderCardPanel() {
     actions = `<div class="sub">📱 Die Spieler stimmen am Handy ab: ${c.voters.length}/${(c.judges || []).length} (mind. 2 Stimmen, Mehrheit entscheidet). Nur wenn nötig selbst entscheiden:</div>
       <div class="cats">${btn(`✅ ${c.type === 'photo' ? 'Gelungen' : 'Geschafft'} (+${c.reward}${forWhom})`, { ok: true }, '#26890c')}${btn(`❌ Nicht geschafft (${fail})`, { ok: false }, '#e21b3c')}</div>`;
   } else if (c.act === 'give') {
-    actions = `<div class="sub">Wer bekommt die ${c.amount} Punkte?</div>
+    actions = `<div class="sub">📱 ${esc(c.target)} wählt am Handy, wer die ${c.amount} Punkte bekommt. Nur wenn nötig selbst entscheiden:</div>
       <div class="cats">${others.map(p => btn(`${esc(p.avatar || '😎')} ${esc(p.name)}`, { name: p.name }, '#4b3a9e')).join('')}</div>`;
   } else if (c.act === 'duel') {
-    actions = `<div class="sub">Wer hat gewonnen? (+${c.reward})</div><div class="cats">${c.duel.map(n => btn(`🏆 ${esc(n)}`, { name: n }, '#26890c')).join('')}</div>`;
+    actions = `<div class="sub">📱 Die anderen stimmen am Handy ab, wer gewonnen hat: ${c.voters.length}/${(c.judges || []).length} (Mehrheit entscheidet). Nur wenn nötig selbst entscheiden (+${c.reward}):</div>
+      <div class="cats">${c.duel.map(n => btn(`🏆 ${esc(n)}`, { name: n }, '#26890c')).join('')}</div>`;
   } else if (c.act === 'mode') {
     const modes = (S.mixModes || []).map(m => GAMES.find(g => g[0] === m)).filter(Boolean);
-    actions = `<div class="sub">Welches Spiel hat ${esc(c.target)} gewählt?</div><div class="cats">${modes.map(([id, lbl]) => btn(esc(lbl), { mode: id }, '#4b3a9e')).join('')}</div>`;
+    actions = `<div class="sub">📱 ${esc(c.target)} wählt am Handy das nächste Spiel. Nur wenn nötig selbst entscheiden:</div><div class="cats">${modes.map(([id, lbl]) => btn(esc(lbl), { mode: id }, '#4b3a9e')).join('')}</div>`;
   } else if (c.act === 'vote') {
     actions = `<div class="sub">🗳️ ${c.voters.length}/${S.players.length} haben auf dem Handy abgestimmt (wertet automatisch aus, wenn alle fertig sind).</div>
       <div class="cats">${btn(`🏁 Jetzt auswerten (+${c.reward} für den Sieger)`, {}, '#26890c')}</div>`;

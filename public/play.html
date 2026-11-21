@@ -1372,6 +1372,27 @@ function renderView() {
              <div class="grid"><button class="c3" style="font-size:18px;min-height:10vh" onclick="socket.emit('card:judge', true)">👍 Gelungen</button><button class="c0" style="font-size:18px;min-height:10vh" onclick="socket.emit('card:judge', false)">👎 Nicht gelungen</button></div>`;
     } else if (c.act === 'info' || c.act === 'rule') {
       body = `<div class="msg"><small>${c.act === 'rule' ? '📜 Gilt für die nächsten 3 Runden' : '✋ Los geht’s!'}</small></div>`;
+    } else if (c.act === 'duel' && c.duel) {
+      const judges = c.judges || [];
+      const progress = `${c.voters.length}/${judges.length} haben abgestimmt`;
+      const avOf = n => esc((S.players.find(p => p.name === n) || {}).avatar || '😎');
+      body = !judges.includes(name)
+        ? `<div class="msg"><small>🗳️ Die anderen entscheiden am Handy, wer gewonnen hat … (${progress})</small></div>`
+        : voted
+          ? `<div class="msg">✅ Stimme abgegeben<br><small>${progress} · Mehrheit entscheidet</small></div>`
+          : `<div style="font-size:14px;opacity:.85;margin:10px 0 4px">Wer hat gewonnen? (+${c.reward})</div>
+             <div class="grid">${c.duel.map((n, i) => `<button class="c${i ? 3 : 1}" style="font-size:17px;min-height:10vh" onclick="socket.emit('card:vote', ${esc(JSON.stringify(n))})">🏆 ${avOf(n)} ${esc(n)}</button>`).join('')}</div>`;
+    } else if (c.act === 'give') {
+      const others = S.players.filter(p => p.name !== c.target);
+      body = c.target === name
+        ? `<div style="font-size:14px;opacity:.85;margin:10px 0 4px">Wem schenkst du ${c.amount} Punkte?</div>
+           <div class="grid">${others.map((p, i) => `<button class="c${i % 4}" style="font-size:16px;min-height:9vh" onclick="socket.emit('card:choose', ${esc(JSON.stringify({ name: p.name }))})">${esc(p.avatar || '😎')} ${esc(p.name)}</button>`).join('')}</div>`
+        : `<div class="msg"><small>⏳ ${esc(c.target)} verschenkt gerade ${c.amount} Punkte …</small></div>`;
+    } else if (c.act === 'mode') {
+      body = c.target === name
+        ? `<div style="font-size:14px;opacity:.85;margin:10px 0 4px">Welches Spiel kommt als Nächstes?</div>
+           <div class="grid">${(S.mixModes || []).map((m, i) => `<button class="c${i % 4}" style="font-size:15px;min-height:9vh" onclick="socket.emit('card:choose', ${esc(JSON.stringify({ mode: m }))})">${NAMES[m] || esc(m)}</button>`).join('')}</div>`
+        : `<div class="msg"><small>⏳ ${esc(c.target)} wählt das nächste Spiel …</small></div>`;
     } else {
       body = `<div class="msg"><small>⏳ Der Gastgeber wertet aus…</small></div>`;
     }

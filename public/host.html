@@ -997,7 +997,9 @@ function renderView() {
     let info = '';
     if (!c.resolved) {
       if (c.act === 'vote') info = `🗣️ Reihum erzählen – dann auf dem Handy den besten Beitrag wählen (+${c.reward})<br>🗳️ ${c.voters.length}/${S.players.length} haben abgestimmt`;
-      else if (c.act === 'duel') info = `🏆 Sieger bekommt +${c.reward} · Der Gastgeber entscheidet im Admin`;
+      else if (c.act === 'duel') info = `🏆 Sieger bekommt +${c.reward}<br>📱 Wer hat gewonnen? Abstimmung am Handy – ${c.voters.length}/${(c.judges || []).length} · Mehrheit entscheidet`;
+      else if (c.act === 'give') info = `📱 ${esc(c.target)} wählt am Handy, wer die ${c.amount} Punkte bekommt`;
+      else if (c.act === 'mode') info = `📱 ${esc(c.target)} wählt am Handy das nächste Spiel`;
       else if (c.act === 'rule') info = '📜 Gilt für die nächsten 3 Runden';
       else if (c.act === 'info') info = c.photo ? `📸 Foto machen und am Handy hochladen – es landet auf der Foto-Wand${c.photoBonus ? ` · +${c.photoBonus.pts} Punkte pro Person fürs Foto` : ''} · danach „▶ Weiter“` : '✋ Los geht’s – danach „▶ Weiter“';
       else if (c.act === 'yesno') {
@@ -1015,6 +1017,8 @@ function renderView() {
         info = `🗳️ Welches Foto ist ${c.duel ? 'besser' : 'das beste'}? Abstimmung am Handy (anonym) – ${c.voters.length}/${(c.snapVoters || []).length}${c.voters.length < 2 ? ' · weiter ab 2 Stimmen' : ''}`;
       }
       else info = '⏳ Der Gastgeber wertet im Admin aus…';
+      // Foto-Karten mit Wertung (Foto & Pose, Selfie-Duell, Gruppenfoto): Fotos gehen direkt vom Handy auf die Foto-Wand
+      if (c.photo && c.act !== 'info' && c.act !== 'snap') info += '<br>📸 Foto direkt am Handy hochladen – es landet auf der Foto-Wand';
     }
     const bad = /^❌/u.test(c.outcome || '');
     app.innerHTML = `<div class="bar"><div id="bar" style="width:100%"></div></div>

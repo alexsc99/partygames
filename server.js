@@ -1739,7 +1739,25 @@ function checkCardJudgement() {
   else broadcast();
 }
 
-// Auswertung durch die Handys (Ja/Nein, Reihum) oder über /admin (Duell, Punkte abgeben, Spielwahl; Admin kann alles überstimmen)
+// Blitz-Duell: alle außer den beiden Duellanten stimmen am Handy ab, wer gewonnen hat (sind nur die zwei da,
+// stimmen sie selbst ab). Mehrheit gewinnt; haben alle abgestimmt und es steht unentschieden → keine Punkte.
+function duelJudges(card) {
+  const all = pVals().filter(p => !p.isLocal).map(p => p.name);
+  const others = all.filter(n => !card.duel.includes(n));
+  return others.length ? others : all;
+}
+function checkDuelVotes() {
+  const card = state.card;
+  const judges = duelJudges(card);
+  const vals = judges.filter(n => n in card.votes).map(n => card.votes[n]);
+  const winner = card.duel.find(n => vals.filter(v => v === n).length > judges.length / 2);
+  if (winner) return resolvePartyCard({ name: winner });
+  if (vals.length && vals.length === judges.length) return resolvePartyCard({ tie: true });
+  broadcast();
+}
+
+// Auswertung durch die Handys (Ja/Nein, Reihum, Duell-Abstimmung; Punkte abgeben bzw. Spielwahl macht die betroffene
+// Person an ihrem Handy) – /admin kann jederzeit selbst entscheiden bzw. überstimmen
 function resolvePartyCard(arg) {
   const card = state.card;
   if (state.phase !== 'card' || !card || card.resolved) return;
@@ -1774,10 +1792,14 @@ function resolvePartyCard(arg) {
     addPoints(other, amt);
     outcome = `💸 ${target.name} gibt ${amt} Punkte an ${other.name}`;
   } else if (card.act === 'duel') {
-    const winner = anyPlayer(arg && arg.name);
-    if (!winner || !card.duel.includes(winner.name)) return;
-    addPoints(winner, card.reward);
-    outcome = `🏆 ${winner.name} gewinnt das Duell! +${card.reward}`;
+    if (arg && arg.tie) {
+      outcome = '🤝 Unentschieden – diesmal keine Punkte';
+    } else {
+      const winner = anyPlayer(arg && arg.name);
+      if (!winner || !card.duel.includes(winner.name)) return;
+      addPoints(winner, card.reward);
+      outcome = `🏆 ${winner.name} gewinnt das Duell! +${card.reward}`;
+    }
   } else if (card.act === 'vote') {
     const tally = {};
     for (const n of Object.values(card.votes)) if (anyPlayer(n)) tally[n] = (tally[n] || 0) + 1;
@@ -1826,9 +1848,13 @@ function resolvePartyCard(arg) {
     bumpStat(p, 'cardPts', (p.score || 0) - prev);
   }
   card.resolved = true;
-  if (card.act === 'yesno' && Object.keys(card.votes).length) {
-    const yes = Object.values(card.votes).filter(Boolean).length;
-    outcome += ` (👍 ${yes} · 👎 ${Object.keys(card.votes).length - yes})`;
+  if ((card.act === 'yesno' || card.act === 'duel') && Object.keys(card.votes).length) {
+    if (card.act === 'yesno') {
+      const yes = Object.values(card.votes).filter(Boolean).length;
+      outcome += ` (👍 ${yes} · 👎 ${Object.keys(card.votes).length - yes})`;
+    } else {
+      outcome += ` (${card.duel.map(n => `${n}: ${Object.values(card.votes).filter(v => v === n).length}`).join(' · ')})`;
+    }
   }
   card.outcome = outcome;
   // Foto-Challenge: Siegerfoto und alle Fotos mit Namen etwas länger zeigen
@@ -1843,8 +1869,8 @@ function publicCard() {
     target: c.target, targetLabel: c.target ? lbl(c.target) : null,
     duel: c.duel, pair: c.pair, reward: c.reward, minus: c.minus, amount: c.amount, photo: !!c.photo,
     photoBonus: c.type === 'crowd' && c.photo ? { pts: CARD_PHOTO_BONUS, got: c.photoBonus || [] } : null,
-    voters: c.act === 'vote' || c.act === 'yesno' || c.act === 'snap' ? Object.keys(c.votes) : [],
-    judges: c.act === 'yesno' ? cardJudges(c) : null,
+    voters: ['vote', 'yesno', 'snap', 'duel'].includes(c.act) ? Object.keys(c.votes) : [],
+    judges: c.act === 'yesno' ? cardJudges(c) : c.act === 'duel' && c.duel ? duelJudges(c) : null,
     tally: c.tally, resolved: c.resolved, outcome: c.outcome,
     // Foto-Challenge: beim Sammeln nur, wer schon hat; ab der Abstimmung anonyme Fotos, Namen erst nach der Auswertung
     stage: c.stage,
@@ -1861,6 +1887,7 @@ function recheckOpenCard() {
   const card = state.card;
   if (state.phase !== 'card' || !card || card.resolved) return;
   if (card.act === 'yesno') return checkCardJudgement();
+  if (card.act === 'duel' && card.duel && Object.keys(card.votes).length) return checkDuelVotes();
   if (card.act === 'vote') {
     const voters = pVals().filter(x => !x.isLocal);
     if (Object.keys(card.votes).length && voters.every(x => card.votes[x.name])) resolvePartyCard();
@@ -3059,10 +3086,23 @@ function attachSocket(socket, ip, allowEvent) {
     displayMode = on ? 'notv' : 'tv';
     broadcast();
   });
+  // Song-/Bild-Filter wirken sofort: im laufenden Spiel die noch nicht gespielten Runden neu auswählen
+  // (vorher galt die Auswahl erst ab dem nächsten Spiel)
+  const refreshRunningOrder = mode => {
+    if (state.phase === 'lobby' || state.phase === 'end') return;
+    if (state.mode === mode) {
+      const played = state.order.slice(0, state.idx + 1);
+      const done = new Set(played);
+      state.order = [...played, ...pickOrder(mode).filter(i => !done.has(i))];
+    } else if (state.mode === 'mix' && state.mixPools[mode]) {
+      state.mixPools[mode] = pickOrder(mode);
+    }
+  };
   socket.on('host:songLang', ({ lang, on } = {}) => {
     if (lang !== 'en' && lang !== 'de') return;
     songLangs = { ...songLangs, [lang]: !!on };
     if (!songLangs.en && !songLangs.de && russianShare === 0) russianShare = 100;
+    refreshRunningOrder('songquiz');
     broadcast();
   });
   socket.on('host:imageQuizTheme', ({ theme, on } = {}) => {
@@ -3074,6 +3114,7 @@ function attachSocket(socket, ip, allowEvent) {
     if (state.phase === 'lobby' && state.mode === 'imagequiz') {
       state.order = pickOrder('imagequiz');
     }
+    refreshRunningOrder('imagequiz');
     broadcast();
   });
   socket.on('host:imageQuizThemes', arr => {
@@ -3084,16 +3125,19 @@ function attachSocket(socket, ip, allowEvent) {
     if (state.phase === 'lobby' && state.mode === 'imagequiz') {
       state.order = pickOrder('imagequiz');
     }
+    refreshRunningOrder('imagequiz');
     broadcast();
   });
   socket.on('host:russianShare', pct => {
     const val = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
     russianShare = val;
     if (val === 0 && !songLangs.en && !songLangs.de) songLangs = { en: true, de: true };
+    refreshRunningOrder('songquiz');
     broadcast();
   });
   socket.on('host:russianSongs', on => {
     russianShare = on ? 50 : 0;
+    refreshRunningOrder('songquiz');
     broadcast();
   });
   socket.on('host:songDifficulty', onlyAT => {
@@ -3139,7 +3183,8 @@ function attachSocket(socket, ip, allowEvent) {
     if (where === 'remote') card.remote = true;
     if (type === 'group') card.sec = 30;
     if (type === 'snap') card.sec = 90;
-    if (type === 'crowd' && /foto|selfie|bild/i.test(text)) card.photo = true;
+    // „Foto“/„Selfie“/„Bild“ im Text → Foto-Knöpfe am Handy (Foto-Challenges haben ihren eigenen Upload)
+    if (type !== 'snap' && /foto|selfie|bild/i.test(text)) card.photo = true;
     CUSTOM_CARDS.push(card);
     saveCustomCards();
     writeLog('INFO', 'custom_card_added', { room: code, type, where });
@@ -3239,10 +3284,23 @@ function attachSocket(socket, ip, allowEvent) {
       if (snapVotingDone(card)) return resolvePartyCard();
       return broadcast();
     }
+    if (card.act === 'duel') {
+      if (!card.duel || !card.duel.includes(targetName) || !duelJudges(card).includes(p.name)) return;
+      card.votes[p.name] = targetName;
+      return checkDuelVotes();
+    }
     if (card.act !== 'vote' || !byName(targetName) || targetName === p.name) return;
     card.votes[p.name] = targetName;
     if (pVals().filter(x => !x.isLocal).every(x => card.votes[x.name])) return resolvePartyCard();
     broadcast();
+  });
+  // Kopfgeld „Punkte verschenken“ bzw. Underdog „nächstes Spiel wählen“: entscheidet die betroffene Person am Handy
+  socket.on('card:choose', payload => {
+    const card = state.card;
+    const p = players[socket.id];
+    if (state.phase !== 'card' || !card || card.resolved || !p || p.name !== card.target) return;
+    if (card.act === 'give' && payload && typeof payload.name === 'string') resolvePartyCard({ name: payload.name });
+    else if (card.act === 'mode' && payload && typeof payload.mode === 'string') resolvePartyCard({ mode: payload.mode });
   });
   socket.on('host:timerSpeed', sp => {
     if (TIMER_MULT[sp]) timerSpeed = sp;

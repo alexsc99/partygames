@@ -1695,4 +1695,114 @@ describe('PartyGame Server', () => {
       r.cleanup();
     }
   });
+
+  it('song filters apply to the running game: switching to 100 % Russian makes the next round a Russian song', async () => {
+    const SONGS = require('../data/songs.json');
+    const songIdx = S => Number((S.q && S.q.preview || '').match(/song-audio\/(\d+)\.mp3/)?.[1]);
+    const r = await playRoom(['Ada', 'Bo'], 'songquiz', async room => {
+      room.admin.emit('host:rounds', 5);
+      await room.until(s => s.roundLimit === 5);
+    });
+    try {
+      await r.until(s => Number.isInteger(songIdx(s)));
+      assert.notEqual(SONGS[songIdx(r.S)].lang, 'ru', 'default (0 % Russian) must start with a non-Russian song');
+      r.admin.emit('host:russianShare', 100);
+      await r.until(s => s.russianShare === 100);
+      for (let round = 1; round <= 2; round++) {
+        r.admin.emit('host:next');
+        await r.until(s => s.phase === 'result' && s.idx === round - 1);
+        r.admin.emit('host:next');
+        await r.until(s => s.phase === 'question' && s.idx === round && Number.isInteger(songIdx(s)));
+        assert.equal(SONGS[songIdx(r.S)].lang, 'ru', `round ${round + 1}: ${SONGS[songIdx(r.S)].artist} – ${SONGS[songIdx(r.S)].title}`);
+      }
+      assert.equal(r.S.total, 5);
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  // Spielt Runden, bis eine Party-Karte kommt; Math.random steuert dabei die gewichtete Typ-Wahl
+  async function playToCard(r, randomValue, beforeNext = async () => {}) {
+    const realRandom = Math.random;
+    try {
+      for (let round = 0; round < 5 && r.S.phase !== 'card'; round++) {
+        await r.until(s => s.phase === 'question' && s.idx === round);
+        await beforeNext(round);
+        r.admin.emit('host:next');
+        await r.until(s => s.phase === 'result' && s.idx === round);
+        Math.random = () => randomValue;
+        r.admin.emit('host:next');
+        await r.until(s => s.phase === 'card' || (s.phase === 'question' && s.idx === round + 1));
+        Math.random = realRandom;
+      }
+    } finally {
+      Math.random = realRandom;
+    }
+    assert.equal(r.S.phase, 'card');
+    return r.S.card;
+  }
+
+  it('blitz duel: the others vote on their phones who won (duelists cannot vote), majority gets +40', async () => {
+    const names = ['Ada', 'Bo', 'Cy'];
+    const r = await playRoom(names, 'mostlikely', async room => {
+      room.admin.emit('host:partyCards', 'often');
+      room.admin.emit('host:jokers', false);
+      await room.until(s => s.partyCards === 'often' && s.jokersOn === false);
+    });
+    try {
+      // Ohne Punkte (kein Ranking) vor Ort: Gruppe 3, Reihum 2, Weitergeben 1, Duell 2, … → 0.6 trifft „Duell“
+      const card = await playToCard(r, 0.6);
+      assert.equal(card.act, 'duel');
+      const [a, b] = card.duel;
+      const judge = names.find(n => !card.duel.includes(n));
+      assert.deepEqual(card.judges, [judge]);
+      r.players[names.indexOf(a)].emit('card:vote', a); // Duellanten stimmen nicht mit
+      await new Promise(res => setTimeout(res, 100));
+      assert.equal(r.S.card.resolved, false);
+      const before = r.score(b);
+      r.players[names.indexOf(judge)].emit('card:vote', b);
+      await r.until(s => s.card && s.card.resolved);
+      assert.match(r.S.card.outcome, new RegExp(`${b} gewinnt das Duell`));
+      assert.equal(r.score(b), before + 40);
+    } finally {
+      r.cleanup();
+    }
+  });
+
+  it('bounty "give points": the leader picks the receiver on her own phone, nobody else can', async () => {
+    const file = path.join(__dirname, '..', 'data', 'disabledcards.json');
+    const backup = fs.existsSync(file) ? fs.readFileSync(file) : null;
+    const names = ['Ada', 'Bo', 'Cy'];
+    const otherLeaderCards = ['l01', 'l02', 'l04', 'l05', 'l07']; // nur l03 („spendet 20 Punkte“) bleibt
+    const r = await playRoom(names, 'quiz', async room => {
+      room.admin.emit('host:partyCards', 'often');
+      room.admin.emit('host:jokers', false);
+      otherLeaderCards.forEach(id => room.admin.emit('host:cardEnabled', { id, on: false }));
+      await room.until(s => s.partyCards === 'often' && otherLeaderCards.every(id => s.disabledCards.includes(id)));
+    });
+    try {
+      // Ada antwortet richtig → Ranking; Gruppe 3, Kopfgeld 1.5, … (Summe 15) → 0.25 trifft „Kopfgeld“
+      const card = await playToCard(r, 0.25, () => r.answer(0, correctIdx(r.S)));
+      assert.equal(card.act, 'give');
+      assert.equal(card.target, 'Ada');
+      r.players[1].emit('card:choose', { name: 'Cy' }); // nicht die Spitzenreiterin → ignoriert
+      await new Promise(res => setTimeout(res, 100));
+      assert.equal(r.S.card.resolved, false);
+      const ada = r.score('Ada');
+      const cy = r.score('Cy');
+      r.players[0].emit('card:choose', { name: 'Cy' });
+      await r.until(s => s.card && s.card.resolved);
+      assert.equal(r.score('Ada'), ada - 20);
+      assert.equal(r.score('Cy'), cy + 20);
+    } finally {
+      const fixer = ioClient(baseUrl, { query: { room: r.code, page: 'admin' }, transports: ['websocket'], forceNew: true });
+      otherLeaderCards.forEach(id => fixer.emit('host:cardEnabled', { id, on: true }));
+      await r.until(s => !otherLeaderCards.some(id => s.disabledCards.includes(id))).catch(() => {});
+      fixer.close();
+      r.cleanup();
+      await new Promise(res => setTimeout(res, 100));
+      if (backup) fs.writeFileSync(file, backup);
+      else fs.rmSync(file, { force: true });
+    }
+  });
 });

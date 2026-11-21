@@ -1,7 +1,7 @@
 [
   { "id": "g01", "type": "group", "local": true, "sec": 15, "text": "Alle stehen auf und tauschen die Plätze – in 15 Sekunden sitzt jeder auf einem neuen Platz!" },
   { "id": "g02", "type": "group", "local": true, "sec": 45, "text": "Zählt gemeinsam bis 10: Jeder darf jederzeit eine Zahl sagen, aber reden zwei gleichzeitig, geht's von vorne los." },
-  { "id": "g03", "type": "group", "local": true, "sec": 30, "text": "Gruppenfoto in 30 Sekunden – jeder macht das dümmste Gesicht seines Lebens!" },
+  { "id": "g03", "type": "group", "local": true, "photo": true, "sec": 30, "text": "Gruppenfoto in 30 Sekunden – jeder macht das dümmste Gesicht seines Lebens!" },
   { "id": "g04", "type": "group", "sec": 30, "text": "Summt zusammen „Alle meine Entchen“ – keiner darf lachen!" },
   { "id": "g05", "type": "group", "local": true, "sec": 300, "text": "Stellt euch in eine Reihe, sortiert nach Geburtstag (Tag & Monat) – ohne zu reden! Ihr habt bis zu 5 Minuten." },
   { "id": "g06", "type": "group", "local": true, "sec": 45, "text": "Sagt auf „3“ alle gleichzeitig ein Wort zum Thema „Urlaub“. Sagen alle dasselbe? Ihr habt 3 Versuche." },
@@ -57,7 +57,7 @@
   { "id": "d05", "type": "duel", "text": "{a} gegen {b}: Schere, Stein, Papier – Best of 3!" },
   { "id": "d06", "type": "duel", "text": "{a} gegen {b}: Wer steht länger auf einem Bein – mit geschlossenen Augen?" },
   { "id": "d07", "type": "duel", "text": "{a} gegen {b}: Nennt abwechselnd Pizza-Beläge – wer stockt, verliert." },
-  { "id": "d08", "type": "duel", "local": true, "text": "{a} gegen {b}: Wer zuerst ein Selfie mit allen anderen im Bild macht!" },
+  { "id": "d08", "type": "duel", "local": true, "photo": true, "text": "{a} gegen {b}: Wer zuerst ein Selfie mit allen anderen im Bild macht!" },
 
   { "id": "r01", "type": "rule", "text": "Niemand darf „Ja“ oder „Nein“ sagen. Wer's tut: 1 Schluck.", "af": "Niemand darf „Ja“ oder „Nein“ sagen. Wer's tut: 5 Kniebeugen." },
   { "id": "r03", "type": "rule", "text": "Wer aufs Handy schaut (außer zum Antworten), trinkt einen Schluck.", "af": "Wer aufs Handy schaut (außer zum Antworten), macht 5 Kniebeugen." },
